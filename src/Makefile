@@ -1,8 +1,8 @@
 
-CFLAGS = -Wall -g  -I ../../SPOOLES.2.2 -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DNETWORKOUT -fopenmp
-FFLAGS = -Wall -g -cpp -fopenmp
+CFLAGS = -Wall -O2 -g -I ../../spooles -DARCH="Linux" -DSPOOLES -DARPACK -DMATRIXSTORAGE -DUSE_MT=1 -fopenmp
+FFLAGS = -Wall -O2 -g -cpp -fopenmp
 
-CC=cc
+CC=clang
 FC=gfortran
 
 .c.o :
@@ -18,17 +18,18 @@ OCCXF = $(SCCXF:.f=.o)
 OCCXC = $(SCCXC:.c=.o)
 OCCXMAIN = $(SCCXMAIN:.c=.o)
 
-DIR=../../SPOOLES.2.2
+DIR=../../spooles
+
+ARPACK_LIBS = $(shell pkg-config --libs arpack)
 
 LIBS = \
        $(DIR)/spooles.a \
-	../../LAPACK/lapack-3.12.1/liblapack.a \
-	../../LAPACK/lapack-3.12.1/librefblas.a \
-	../../ARPACK/libarpack_INTEL.a \
+       $(ARPACK_LIBS) \
+       -framework Accelerate \
        -lpthread -lm -lc
 
-CalculiX: $(OCCXMAIN) CalculiX.a $(LIBS)
-	./date.pl; $(CC) $(CFLAGS) -c CalculiX.c; $(FC) -Wall -g -o $@ $(OCCXMAIN) CalculiX.a  $(LIBS) -fopenmp
+CalculiX: $(OCCXMAIN) CalculiX.a
+	./date.pl; $(CC) $(CFLAGS) -c CalculiX.c; $(FC) $(FFLAGS) -o $@ $(OCCXMAIN) CalculiX.a $(LIBS)
 
 CalculiX.a: $(OCCXF) $(OCCXC)
 	ar vr $@ $?
