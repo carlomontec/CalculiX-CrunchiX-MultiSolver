@@ -1,0 +1,17 @@
+.DS_Store
+build*/
+bin/
+*.o
+*.a
+CalculiX
+ccx
+spooles.out
+*.12d
+*.cvg
+*.sta
+test/*.dat
+test/*.frd
+!test/*.dat.ref
+!test/*.frd.ref
+!test/*.net.ref
+!test/*.ref.ref
