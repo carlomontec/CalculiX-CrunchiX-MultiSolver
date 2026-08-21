@@ -1,0 +1,27 @@
+** ------------------------------------------------------------
+** CalculiX Cantilever Beam Benchmark
+** Generated via CGX: 12,466 Nodes (37,398 DOFs), 2,560 C3D20 Elements
+** ------------------------------------------------------------
+*INCLUDE, INPUT=all.msh
+*INCLUDE, INPUT=NFIX.nam
+*INCLUDE, INPUT=NTIP.nam
+
+*MATERIAL, NAME=STEEL
+*ELASTIC
+210000.0, 0.3
+
+*SOLID SECTION, ELSET=Eall, MATERIAL=STEEL
+
+*BOUNDARY
+NNFIX, 1, 3, 0.0
+
+*STEP
+*STATIC
+*CLOAD
+NNTIP, 2, 10.0
+
+*NODE FILE
+U
+*EL FILE
+S
+*END STEP

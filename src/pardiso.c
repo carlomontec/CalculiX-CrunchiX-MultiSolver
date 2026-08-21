@@ -54,7 +54,10 @@ void pardiso_factor(double *ad, double *au, double *adb, double *aub,
   }
 
   iparm[0]=0;
-  iparm[1]=3;
+  /* iparm[1] = 2: METIS nested dissection algorithm.
+     Note: iparm[1] = 3 (Parallel METIS) is unstable in modern Intel oneMKL
+     during symbolic factorizations of multi-threaded symmetric matrices. */
+  iparm[1]=2;
   /* set MKL_NUM_THREADS to min(CCX_NPROC_EQUATION_SOLVER,OMP_NUM_THREADS)
      must be done once  */
   if (mthread_mkl == 0) {
@@ -297,6 +300,10 @@ void pardiso_factor(double *ad, double *au, double *adb, double *aub,
     }
   }
 
+  /* Initialize PARDISO internal state and iparm table with defaults */
+  FORTRAN(pardisoinit,(pt,&mtype,iparm));
+  iparm[1]=2;
+
 /* next line is for the simulateous use of PARDISO and PaStiX */
 
   mkl_domain_set_num_threads(mthread_mkl,MKL_DOMAIN_PARDISO);
@@ -330,7 +337,8 @@ void pardiso_solve(double *b, ITG *neq,ITG *symmetryflag,ITG *inputformat,
       mtype=1;
     }
   }
-  iparm[1]=3;
+  /* Consistent with nested dissection (iparm[1]=2) used during factorization */
+  iparm[1]=2;
   
   /* pardiso_factor has been called before, MKL_NUM_THREADS=mthread_mkl is set*/
 

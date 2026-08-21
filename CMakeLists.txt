@@ -21,6 +21,7 @@ set(CMAKE_C_STANDARD 99)
 # User Configuration Options
 # -----------------------------------------------------------------------------
 option(CCX_USE_SPOOLES "Enable SPOOLES direct sparse solver" ON)
+option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"   OFF)
 option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"     ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"        ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"   OFF)
@@ -45,7 +46,7 @@ endif()
 
 # Fortran Flags
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-O2;-g;-cpp;-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-label>")
+    add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-O2;-g;-cpp;-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-label;-fallow-argument-mismatch>")
 endif()
 
 if(APPLE AND CMAKE_OSX_SYSROOT)
@@ -60,28 +61,97 @@ if(CCX_USE_OPENMP)
 endif()
 
 # -----------------------------------------------------------------------------
-# BLAS & LAPACK (Platform-Adaptive)
+# Intel oneMKL PARDISO Solver
 # -----------------------------------------------------------------------------
 set(EXTRA_LINK_LIBS)
 
-if(APPLE)
-    # Prefer native Apple Accelerate Framework on macOS
-    find_library(ACCELERATE_FRAMEWORK Accelerate)
-    if(ACCELERATE_FRAMEWORK)
-        message(STATUS "Found Apple Accelerate Framework: ${ACCELERATE_FRAMEWORK}")
-        list(APPEND EXTRA_LINK_LIBS ${ACCELERATE_FRAMEWORK})
+if(CCX_USE_PARDISO)
+    add_compile_definitions(PARDISO)
+    if(CCX_INT64)
+        add_compile_definitions(MKL_ILP64)
+        set(MKL_INTERFACE "ilp64")
     else()
+        add_compile_definitions(MKL_LP64)
+        set(MKL_INTERFACE "lp64")
+    endif()
+
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        set(MKL_THREADING "GNU" CACHE STRING "MKL Threading library" FORCE)
+    endif()
+    if(CCX_INT64)
+        set(MKL_INTERFACE_FULL "ilp64" CACHE STRING "MKL Interface" FORCE)
+    else()
+        set(MKL_INTERFACE_FULL "lp64" CACHE STRING "MKL Interface" FORCE)
+    endif()
+
+    # 1. Try modern oneAPI MKL CMake config
+    find_package(MKL CONFIG QUIET PATHS $ENV{MKLROOT} $ENV{MKLROOT}/lib/cmake/mkl /opt/intel/oneapi/mkl/latest/lib/cmake/mkl)
+    if(TARGET MKL::MKL)
+        message(STATUS "Found Intel oneMKL via CMake Config: MKL::MKL")
+        list(APPEND EXTRA_LINK_LIBS MKL::MKL)
+    else()
+        # 2. Direct library and header discovery
+        find_path(MKL_INCLUDE_DIR
+            NAMES mkl.h mkl_service.h
+            PATHS
+                $ENV{MKLROOT}/include
+                /opt/intel/oneapi/mkl/latest/include
+                /usr/include/mkl
+        )
+
+        set(MKL_LIB_SEARCH_PATHS
+            $ENV{MKLROOT}/lib/intel64
+            $ENV{MKLROOT}/lib
+            /opt/intel/oneapi/mkl/latest/lib/intel64
+            /opt/intel/oneapi/mkl/latest/lib
+            /usr/lib/x86_64-linux-gnu
+            /usr/lib
+        )
+
+        find_library(MKL_INTERFACE_LIB NAMES mkl_intel_${MKL_INTERFACE} mkl_gf_${MKL_INTERFACE} PATHS ${MKL_LIB_SEARCH_PATHS})
+        if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+            find_library(MKL_THREAD_LIB NAMES mkl_intel_thread PATHS ${MKL_LIB_SEARCH_PATHS})
+        else()
+            find_library(MKL_THREAD_LIB NAMES mkl_gnu_thread PATHS ${MKL_LIB_SEARCH_PATHS})
+        endif()
+        find_library(MKL_CORE_LIB NAMES mkl_core PATHS ${MKL_LIB_SEARCH_PATHS})
+
+        if(MKL_INCLUDE_DIR AND MKL_INTERFACE_LIB AND MKL_THREAD_LIB AND MKL_CORE_LIB)
+            message(STATUS "Found Intel MKL Include: ${MKL_INCLUDE_DIR}")
+            message(STATUS "Found Intel MKL Interface: ${MKL_INTERFACE_LIB}")
+            message(STATUS "Found Intel MKL Threading: ${MKL_THREAD_LIB}")
+            message(STATUS "Found Intel MKL Core: ${MKL_CORE_LIB}")
+            include_directories(${MKL_INCLUDE_DIR})
+            list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB} -lpthread -lm -ldl)
+        else()
+            message(FATAL_ERROR "Intel MKL PARDISO requested (CCX_USE_PARDISO=ON) but MKL was not found.\nPlease ensure Intel oneAPI MKL is installed and set MKLROOT or source /opt/intel/oneapi/setvars.sh.")
+        endif()
+    endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# BLAS & LAPACK (Platform-Adaptive, when not using MKL)
+# -----------------------------------------------------------------------------
+if(NOT CCX_USE_PARDISO)
+    if(APPLE)
+        # Prefer native Apple Accelerate Framework on macOS
+        find_library(ACCELERATE_FRAMEWORK Accelerate)
+        if(ACCELERATE_FRAMEWORK)
+            message(STATUS "Found Apple Accelerate Framework: ${ACCELERATE_FRAMEWORK}")
+            list(APPEND EXTRA_LINK_LIBS ${ACCELERATE_FRAMEWORK})
+        else()
+            find_package(BLAS REQUIRED)
+            find_package(LAPACK REQUIRED)
+            list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+        endif()
+    else()
+        # Linux & Windows standard linear algebra
         find_package(BLAS REQUIRED)
         find_package(LAPACK REQUIRED)
+        message(STATUS "Found BLAS: ${BLAS_LIBRARIES}")
+        message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
         list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
     endif()
-else()
-    # Linux & Windows standard linear algebra
-    find_package(BLAS REQUIRED)
-    find_package(LAPACK REQUIRED)
-    message(STATUS "Found BLAS: ${BLAS_LIBRARIES}")
-    message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
-    list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
 # -----------------------------------------------------------------------------
@@ -127,6 +197,9 @@ if(CCX_USE_SPOOLES)
     elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles/spooles.a")
         list(APPEND EXTRA_LINK_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles/spooles.a")
         include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../spooles")
+    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/spooles.a")
+        list(APPEND EXTRA_LINK_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/spooles.a")
+        include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../spooles")
     else()
         message(FATAL_ERROR "SPOOLES not found in ../spooles or ../../spooles")
     endif()
@@ -137,8 +210,10 @@ endif()
 # -----------------------------------------------------------------------------
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../spooles
 )
+if(CCX_USE_SPOOLES)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../spooles)
+endif()
 
 # Parse Makefile.inc to extract Dr. Dhondt's exact source list
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/Makefile.inc" MAKEFILE_INC_CONTENT)
@@ -174,8 +249,14 @@ message(STATUS "Discovered ${CCX_SOURCES_COUNT} source files from Makefile.inc")
 add_library(CalculiX_lib STATIC ${CCX_SOURCES})
 target_include_directories(CalculiX_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../spooles>
 )
+if(CCX_USE_SPOOLES)
+    target_include_directories(CalculiX_lib PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../spooles>
+    )
+endif()
+
+target_link_libraries(CalculiX_lib PUBLIC ${EXTRA_LINK_LIBS})
 
 if(CCX_USE_OPENMP)
     target_link_libraries(CalculiX_lib PUBLIC OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
@@ -185,10 +266,7 @@ endif()
 # Main Executable: CalculiX (and alias 'ccx')
 # -----------------------------------------------------------------------------
 add_executable(CalculiX src/CalculiX.c)
-target_link_libraries(CalculiX PRIVATE
-    CalculiX_lib
-    ${EXTRA_LINK_LIBS}
-)
+target_link_libraries(CalculiX PRIVATE CalculiX_lib)
 
 if(CCX_USE_OPENMP)
     target_link_libraries(CalculiX PRIVATE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)

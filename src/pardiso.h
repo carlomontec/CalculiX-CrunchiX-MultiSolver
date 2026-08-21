@@ -44,6 +44,8 @@ void pardiso_solve_cp(double *b,ITG *neq,ITG *symmetryflag,ITG *inputformat,
 
 void pardiso_cleanup_cp(ITG *neq,ITG *symmetryflag,ITG *inputformat);
 
+void FORTRAN(pardisoinit,(long long *pt,ITG *mtype,ITG *iparm));
+
 void FORTRAN(pardiso,(long long *pt,ITG *maxfct,ITG *mnum,ITG *mtype,ITG *phase,
                    ITG *neq,double *aupardiso,ITG *pointers,ITG *irowpardiso,
                    ITG *perm,ITG *nrhs,ITG *iparm,ITG *msglvl,double *b,

@@ -1,0 +1,53 @@
+# =============================================================================
+# CalculiX CrunchiX (CCX) - Makefile for Intel oneMKL PARDISO Solver
+# =============================================================================
+
+# Verify MKLROOT environment variable
+ifndef MKLROOT
+    ifneq ($(wildcard /opt/intel/oneapi/mkl/latest),)
+        MKLROOT = /opt/intel/oneapi/mkl/latest
+    else
+        $(error MKLROOT is not set. Please source /opt/intel/oneapi/setvars.sh or set MKLROOT in your environment)
+    endif
+endif
+
+CC  = gcc
+FC  = gfortran
+OPT = -O3 -march=native
+
+CFLAGS = -Wall $(OPT) -mcmodel=medium -m64 -I"$(MKLROOT)/include" -fopenmp \
+         -DARCH="Linux" -DPARDISO -DMATRIXSTORAGE -DUSE_MT=1 -DMKL_LP64 -DARPACK
+
+FFLAGS = -Wall $(OPT) -m64 -cpp -I"$(MKLROOT)/include" -mcmodel=medium -fopenmp \
+         -w -fno-second-underscore -fcray-pointer -fallow-argument-mismatch
+
+ARPACK_LIBS = $(shell pkg-config --libs arpack 2>/dev/null || echo "-larpack")
+
+MKL_LIB_DIR = $(shell if [ -d "$(MKLROOT)/lib/intel64" ]; then echo "$(MKLROOT)/lib/intel64"; else echo "$(MKLROOT)/lib"; fi)
+
+LDFLAGS = -L$(MKL_LIB_DIR) -Wl,--no-as-needed \
+          -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core \
+          -lgomp -lpthread -lm -ldl $(ARPACK_LIBS)
+
+.c.o :
+	$(CC) $(CFLAGS) -c $<
+.f.o :
+	$(FC) $(FFLAGS) -c $<
+
+include Makefile.inc
+
+SCCXMAIN = CalculiX.c
+OCCXF    = $(SCCXF:.f=.o)
+OCCXC    = $(SCCXC:.c=.o)
+OCCXMAIN = $(SCCXMAIN:.c=.o)
+
+all: CalculiX
+
+CalculiX: $(OCCXMAIN) CalculiX.a
+	./date.pl; $(CC) $(CFLAGS) -c $(SCCXMAIN); $(FC) $(FFLAGS) -o $@ $(OCCXMAIN) CalculiX.a $(LDFLAGS)
+
+CalculiX.a: $(OCCXF) $(OCCXC)
+	ar vr $@ $?
+
+clean:
+	rm -f *.o CalculiX.a CalculiX
