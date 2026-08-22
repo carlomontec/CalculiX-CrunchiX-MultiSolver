@@ -19,7 +19,7 @@ CalculiX CrunchiX (CCX) is a 470,000-line finite element solver developed by Dr.
 |:---|:---|:---|
 | **SPOOLES 2.2** | Active (Default) | Built-in direct sparse solver. CMake subproject replaces legacy 1998 build system. |
 | **Intel oneMKL PARDISO** | Active | Multi-threaded direct sparse solver for Linux/Windows (`-DCCX_USE_PARDISO=ON` or `src/Makefile.pardiso`). |
-| **MUMPS 5.x** | *Phase 2 Target* | Modern direct sparse solver with MPI, OpenMP, GPU, and Block Low-Rank (BLR) memory reduction. De facto standard in open-source FEA. |
+| **MUMPS 5.x** | Active | Modern direct sparse solver with OpenMP, Out-of-Core, and Block Low-Rank (BLR) memory reduction (`-DCCX_USE_MUMPS=ON` or `src/Makefile.mumps`). |
 | **PaStiX** | Exists in source | High-performance direct solver with GPU acceleration support (`-DPASTIX_GPU`). |
 | **ARPACK** | Active | Arnoldi eigenvalue solver for modal dynamic, frequency, and buckling analysis. |
 
@@ -34,9 +34,9 @@ CalculiX CrunchiX (CCX) is a 470,000-line finite element solver developed by Dr.
 - [x] Multi-platform BLAS/LAPACK detection (OpenBLAS, Intel MKL, Apple Accelerate).
 
 ### Phase 2: MUMPS & Advanced Solver Integration
-- [ ] MUMPS direct sparse solver interface (`mumps.c`, `mumps.h`).
-- [ ] Keyword parsing: `*STATIC, SOLVER=MUMPS`.
-- [ ] Comparative performance benchmarks (SPOOLES vs MUMPS) across 600+ test cases.
+- [x] MUMPS direct sparse solver interface (`mumps.c`, `mumps.h`).
+- [x] Keyword parsing: `*STATIC, SOLVER=MUMPS` (`isolver=9`).
+- [x] Comparative performance benchmarks (SPOOLES vs PARDISO vs MUMPS) via `test/benchmark_solvers.py`.
 
 ### Phase 3: Python Bindings (`pyccx`)
 - [ ] C-API in-memory wrapper based on `CalculiXstep.c`.

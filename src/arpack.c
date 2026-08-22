@@ -40,6 +40,9 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
 
 void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 	    ITG *ne, 
@@ -684,6 +687,15 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
     FORTRAN(stop,());
 #endif
   }
+  else if(*isolver==9){
+#ifdef MUMPS
+    mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+		 &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+    printf(" *ERROR in arpack: the MUMPS library is not linked\n\n");
+    FORTRAN(stop,());
+#endif
+  }
 
   if(igreen==0){
   
@@ -789,6 +801,11 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 #endif	    
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(temp_array,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
 	  for(jrow=0;jrow<neq[1];jrow++){
 	    workd[ipntr[1]-1+jrow]=temp_array[jrow];
 	  }
@@ -822,6 +839,11 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 	    if( pastix_solve(&workd[ipntr[2]-1],&neq[1],&symmetryflag,&nrhs)==-1 )
 	      printf(" *WARNING in arpack: solving step didn't converge! Continuing anyway\n");
 #endif
+#endif
+	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(&workd[ipntr[2]-1],&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	  }
 	  for(jrow=0;jrow<neq[1];jrow++){
@@ -1091,6 +1113,11 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 #endif
 	  
 	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_solve(z,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	}
       }
     }
 
@@ -1251,6 +1278,11 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 #ifdef PARDISO
     pardiso_cleanup(&neq[1],&symmetryflag,&inputformat);
 #endif
+#endif
+  }
+  else if(*isolver==9){
+#ifdef MUMPS
+    mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
 #endif
   }
 

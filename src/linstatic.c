@@ -35,6 +35,9 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
 
 void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	       ITG *ne,
@@ -519,6 +522,15 @@ void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	FORTRAN(stop,());
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_factor(ad,au,adb,aub,&sigma,icol,irow,neq,nzs,
+		     &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in linstatic: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
     }
 
     /* solving the system of equations with appropriate rhs */
@@ -552,6 +564,12 @@ void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	else if(*isolver==8){
 #ifdef PASTIX
 	  pastix_solve(b,neq,&symmetryflag,&nrhs);
+#endif
+		      
+	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_solve(b,neq,&symmetryflag,&inputformat,&nrhs);
 #endif
 		      
 	}
@@ -640,6 +658,11 @@ void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 #ifdef PASTIX
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_cleanup(&neq[0],&symmetryflag,&inputformat);
+#endif
+      }
     }
       
     SFREE(iretain);
@@ -723,6 +746,15 @@ void linstatic(double *co,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 		  &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
 #else
       printf(" *ERROR in linstatic: the PASTIX library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,neq,nzs,
+		 &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+      printf(" *ERROR in linstatic: the MUMPS library is not linked\n\n");
       FORTRAN(stop,());
 #endif
     }
