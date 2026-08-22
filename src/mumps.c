@@ -23,6 +23,15 @@
 #include "mumps.h"
 #include <dmumps_c.h>
 
+/*
+ * MUMPS 5.x Interface for CalculiX CCX
+ * 
+ * Note on Linux Linking:
+ * On Debian/Ubuntu systems, link with 'libmumps-seq-dev' (sequential/OpenMP)
+ * rather than 'libmumps-dev' (MPI). The sequential package bundles the 'mpiseq'
+ * stub library, enabling multi-threaded OpenMP execution without requiring MPI_Init.
+ */
+
 static DMUMPS_STRUC_C id;
 static ITG mumps_initialized = 0;
 
@@ -42,9 +51,9 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
     printf(" Factoring the system of equations using the unsymmetric MUMPS solver\n");
   }
 
-  /* 1. Initialize MUMPS instance */
+  /* 1. Initialize MUMPS instance (using sequential communicator) */
   if(!mumps_initialized){
-    id.comm_fortran = -987654; /* USE_COMM_WORLD (single host / sequential MPI) */
+    id.comm_fortran = -987654; /* USE_COMM_WORLD (single host / sequential MPI stub) */
     id.par = 1;                /* Host participates in computation */
     id.sym = (*symmetryflag == 0) ? 2 : 0; /* 2 = symmetric general, 0 = unsymmetric */
     id.job = -1;               /* JOB = -1: Initialize MUMPS */

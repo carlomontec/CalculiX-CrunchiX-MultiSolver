@@ -163,11 +163,15 @@ if(CCX_USE_MUMPS)
         /opt/local/lib
     )
 
-    find_library(MUMPS_DMUMPS_LIB NAMES dmumps PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_COMMON_LIB NAMES mumps_common PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_PORD_LIB   NAMES pord PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_MPISEQ_LIB NAMES mpiseq PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_ESMUMPS_LIB NAMES esmumps PATHS ${MUMPS_LIB_PATHS})
+    # On Debian/Ubuntu Linux, libmumps-dev links against OpenMPI which requires
+    # an active MPI runtime environment (MPI_Init). For sequential/OpenMP shared
+    # builds, libmumps-seq-dev provides dmumps_seq, mumps_common_seq, and mpiseq.
+    # We probe for the _seq variants first to ensure seamless OpenMP execution.
+    find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_PORD_LIB   NAMES pord_seq pord PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_ESMUMPS_LIB NAMES esmumps_seq esmumps PATHS ${MUMPS_LIB_PATHS})
     find_library(MUMPS_SCOTCH_LIB NAMES scotch scotcherr PATHS ${MUMPS_LIB_PATHS})
     find_library(MUMPS_METIS_LIB  NAMES metis PATHS ${MUMPS_LIB_PATHS})
 

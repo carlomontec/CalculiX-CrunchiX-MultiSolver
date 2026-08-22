@@ -156,7 +156,7 @@ Intel oneMKL PARDISO provides the fastest solve times with multi-threaded AVX2/A
 
 * **Ubuntu / Debian / Linux Mint**:
   ```bash
-  sudo apt-get update && sudo apt-get install -y build-essential gfortran cmake libopenblas-dev liblapack-dev libarpack2-dev libmumps-dev
+  sudo apt-get update && sudo apt-get install -y build-essential gfortran cmake libopenblas-dev liblapack-dev libarpack2-dev libmumps-seq-dev
   ```
 
 * **Fedora / RHEL / Rocky**:
