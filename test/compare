@@ -68,7 +68,11 @@ for i in *.inp; do
 #       the .frd file
 #
 
-        ~/CalculiX/src/CalculiX  ${i%.inp} >> $tempfile 2>&1
+        CCX_BIN=${CCX:-../build_spooles/CalculiX}
+        if [ ! -x "$CCX_BIN" ]; then
+            CCX_BIN=${HOME}/CalculiX/src/CalculiX
+        fi
+        $CCX_BIN ${i%.inp} >> $tempfile 2>&1
 
 #
 #       moving the .mtx file to the .dat file in order to compare

@@ -11,6 +11,8 @@ spooles.out
 *.sta
 test/*.dat
 test/*.frd
+test_NewLib/*.dat
+test_NewLib/*.frd
 !test/*.dat.ref
 !test/*.frd.ref
 !test/*.net.ref
