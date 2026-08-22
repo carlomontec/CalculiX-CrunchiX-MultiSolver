@@ -53,6 +53,38 @@ Supported solver keywords:
 * `*STATIC, SOLVER=MUMPS`
 * `*STATIC, SOLVER=SPOOLES` (or `SOLVER=DEFAULT`)
 
+### Platform Defaults & Automatic Fallback Hierarchy
+
+When no `SOLVER=` parameter is specified in the `.inp` deck, CalculiX selects the default solver based on the compile-time configuration:
+
+1. **macOS**: **Apple Accelerate** (`isolver = 11`) is enabled by default.
+2. **Linux (x86_64)**: **Intel oneMKL PARDISO** (`isolver = 7`) when built with `-DCCX_USE_PARDISO=ON`, else **MUMPS 5.x** (`isolver = 9`), else **SPOOLES 2.2** (`isolver = 0`).
+3. **Linux (ARM / aarch64)**: **MUMPS 5.x** (`isolver = 9`), falling back to **SPOOLES 2.2**.
+4. **Windows**: **Intel oneMKL PARDISO** or **SPOOLES 2.2**.
+5. **Universal Fallback**: Built-in **SPOOLES 2.2** is always compiled and available across all platforms.
+
+---
+
+## Native Apple Accelerate Sparse Solver (macOS)
+
+We have added native support for Apple's Accelerate Framework (`vecLib/Sparse`) direct solver to CalculiX.
+
+### Technical Implementation:
+* **Zero External Dependencies**: Links directly with macOS `-framework Accelerate`, removing the need for external Fortran or third-party solver libraries on macOS.
+* **Symmetric $LDL^T$ with Threshold Partial Pivoting (`SparseFactorizationLDLTTPP`)**: Provides numerical stability for contact conditions, MPC constraints, and indefinite systems.
+* **Unsymmetric QR (`SparseFactorizationQR`)**: Decomposition for unsymmetric CFD and plasticity formulations.
+* **Adaptive METIS Ordering**: Automatically uses METIS nested dissection for larger 3D solid meshes ($N \ge 5,000$ DOFs) to reduce non-zero fill-in.
+* **Efficient Triangular Backsolves**: Fast forward/backward substitution (~100 µs per iteration) benefiting iterative ARPACK modal frequency extraction.
+
+### Performance vs. SPOOLES on Apple Silicon:
+
+| Benchmark Model | DOFs | Non-Zeros | SPOOLES 2.2 | Apple Accelerate | Speedup |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Medium 3D Beam** | 36,912 | 2.78 M | 2.26 s | **1.15 s** | **2.00x** |
+| **High-Density 3D Beam** | 178,920 | 14.38 M | 43.90 s | **19.51 s** | **2.25x** |
+
+*(See [`BENCHMARK_ACCELERATE.md`](BENCHMARK_ACCELERATE.md) for full benchmark data and scaling details).*
+
 ---
 
 ## Solver Benchmarks & Verification
