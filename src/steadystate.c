@@ -36,6 +36,12 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 
 void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG *ne,
 		 ITG **nodebounp,ITG **ndirbounp,double **xbounp,ITG *nboun,
@@ -1172,6 +1178,24 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
 	FORTRAN(stop,());
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+		     &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in steadystate: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			  &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in steadystate: the Apple Accelerate solver is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
     }
       
     for(l=0;l<ndatatot;l=l+*jout){
@@ -1513,6 +1537,16 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
 	    pastix_solve(ubr,&neq[1],&symmetryflag,&nrhs);
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(ubr,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(ubr,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
 	}else{
 
 	  /* rigid body mode: all displacements are equal */
@@ -1684,6 +1718,16 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
 	  else if(*isolver==8){
 #ifdef PASTIX
 	    pastix_solve(ubi,&neq[1],&symmetryflag,&nrhs);
+#endif
+	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(ubi,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(ubi,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	  }
 	}else{
@@ -2367,6 +2411,16 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
 #ifdef PASTIX
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	accelerate_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+      }
       SFREE(xbounr);SFREE(xbouni);SFREE(fr);SFREE(fi);SFREE(ubr);SFREE(ubi);
       SFREE(mubr);SFREE(mubi);
     }
@@ -2579,6 +2633,24 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
 		      &symmetryflag,&inputformat,jq,&nzs[2]);
 #else
 	printf(" *ERROR in steadystate: the PASTIX library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+		     &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in steadystate: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			  &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	printf(" *ERROR in steadystate: the Apple Accelerate solver is not linked\n\n");
 	FORTRAN(stop,());
 #endif
       }
@@ -2964,6 +3036,16 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
 	    else if(*isolver==8){
 #ifdef PASTIX
 	      pastix_solve(ubr,&neq[1],&symmetryflag,&nrhs);
+#endif
+	    }
+	    else if(*isolver==9){
+#ifdef MUMPS
+	      mumps_solve(ubr,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	    }
+	    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	      accelerate_solve(ubr,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	    }
 	  }else{
@@ -3377,6 +3459,16 @@ void steadystate(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG 
       }
       else if(*isolver==8){
 #ifdef PASTIX
+#endif
+      }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	accelerate_cleanup(&neq[1],&symmetryflag,&inputformat);
 #endif
       }
     }

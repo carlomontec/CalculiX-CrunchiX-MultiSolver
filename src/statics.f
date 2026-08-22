@@ -89,6 +89,8 @@
          solver(1:6)='PASTIX'
       elseif(isolver.eq.9) then
          solver(1:5)='MUMPS'
+      elseif(isolver.eq.11) then
+         solver(1:10)='ACCELERATE'
       endif
 !
       do i=2,n
@@ -127,6 +129,8 @@
          isolver=8
       elseif(solver(1:5).eq.'MUMPS') then
          isolver=9
+      elseif(solver(1:10).eq.'ACCELERATE') then
+         isolver=11
       else
          write(*,*) '*WARNING reading *STATIC: unknown solver;'
          write(*,*) '         the default solver is used'

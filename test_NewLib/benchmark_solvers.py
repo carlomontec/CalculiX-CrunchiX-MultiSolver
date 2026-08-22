@@ -43,6 +43,12 @@ DEFAULT_SOLVERS = {
         "env": {},
         "description": "MUMPS Direct Sparse Solver (Phase 2 Target)",
     },
+    "ACCELERATE": {
+        "bin": CCX_DIR / "build_accelerate" / "CalculiX",
+        "alt_bin": CCX_DIR / "build" / "CalculiX",
+        "env": {},
+        "description": "Apple Accelerate Sparse Direct Solver (macOS Native)",
+    },
 }
 
 
@@ -162,7 +168,7 @@ def main():
     parser = argparse.ArgumentParser(description="CalculiX Solver Benchmark Suite")
     parser.add_argument("--deck", default="beam_benchmark", help="Benchmark input deck name (without .inp)")
     parser.add_argument("--threads", nargs="+", type=int, default=[1, 2, 4, 6], help="Thread counts to evaluate")
-    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ALL"], default=["SPOOLES", "PARDISO"])
+    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ACCELERATE", "ALL"], default=["SPOOLES", "ACCELERATE"])
     parser.add_argument("--markdown", action="store_true", help="Output results in Markdown format")
     args = parser.parse_args()
 

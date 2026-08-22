@@ -88,6 +88,10 @@
          solver(1:7)='PARDISO'
       elseif(isolver.eq.8) then
          solver(1:6)='PASTIX'
+      elseif(isolver.eq.9) then
+         solver(1:5)='MUMPS'
+      elseif(isolver.eq.11) then
+         solver(1:10)='ACCELERATE'
       endif
 !
       idirect=2
@@ -169,6 +173,10 @@
             isolver=7
          elseif(solver(1:6).eq.'PASTIX') then
             isolver=8
+         elseif(solver(1:5).eq.'MUMPS') then
+            isolver=9
+         elseif(solver(1:10).eq.'ACCELERATE') then
+            isolver=11
          else
             write(*,*) 
      &          '*WARNING reading *ELECTROMAGNETICS: unknown solver;'
@@ -259,6 +267,10 @@
             isolver=7
          elseif(solver(1:6).eq.'PASTIX') then
             isolver=8
+         elseif(solver(1:5).eq.'MUMPS') then
+            isolver=9
+         elseif(solver(1:10).eq.'ACCELERATE') then
+            isolver=11
          else
             write(*,*) 
      &          '*WARNING reading *ELECTROMAGNETICS: unknown solver;'

@@ -35,6 +35,12 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 
 
 void electromagnetics(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,
@@ -609,6 +615,24 @@ void electromagnetics(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,
 		&symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
 #else
     printf(" *ERROR in electromagnetics: the PASTIX library is not linked\n\n");
+    FORTRAN(stop,());
+#endif
+  }
+  else if(*isolver==9){
+#ifdef MUMPS
+    mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[1],&nzs[1],
+	       &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+    printf(" *ERROR in electromagnetics: the MUMPS library is not linked\n\n");
+    FORTRAN(stop,());
+#endif
+  }
+  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+    accelerate_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[1],&nzs[1],
+		    &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+    printf(" *ERROR in electromagnetics: the Apple Accelerate solver is not linked\n\n");
     FORTRAN(stop,());
 #endif
   }
@@ -1400,6 +1424,34 @@ void electromagnetics(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,
 	}
 #else
 	printf(" *ERROR in electromagnetics: the PASTIX library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==9){
+#ifdef MUMPS
+	if(*ithermal<2){
+	  mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[0],&nzs[0],
+		     &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+	}else{
+	  mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[1],&nzs[1],
+		     &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+	}
+#else
+	printf(" *ERROR in electromagnetics: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	if(*ithermal<2){
+	  accelerate_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[0],&nzs[0],
+			  &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+	}else{
+	  accelerate_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[1],&nzs[1],
+			  &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+	}
+#else
+	printf(" *ERROR in electromagnetics: the Apple Accelerate solver is not linked\n\n");
 	FORTRAN(stop,());
 #endif
       }
