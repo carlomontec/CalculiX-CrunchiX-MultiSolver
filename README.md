@@ -33,7 +33,7 @@ This project is designed to pair seamlessly with **[CalculiX-GraphiX-GLFW](https
   * **Intel oneMKL PARDISO**: Industry-standard, highly parallel direct sparse solver with AVX2 / AVX-512 CPU acceleration (our recommended default on x86_64).
   * **MUMPS 5.x**: Advanced, robust parallel direct sparse solver with OpenMP, Out-of-Core, and Block Low-Rank (BLR) capabilities—envisioned as a modern open-source candidate substitution/upgrade for SPOOLES.
   * **Apple Accelerate**: Native hardware-accelerated direct sparse solver (`SparseFactorizationLDLTTPP` and `SparseFactorizationQR`) tailored for macOS and Apple Silicon (M-series) unified memory architecture (default on macOS).
-* **Unified Cross-Platform CMake Build System**: Full cross-platform build configuration replacing legacy 1990s platform makefiles, with automatic discovery of BLAS/LAPACK (oneMKL, OpenBLAS, Accelerate), OpenMP, ARPACK, and MUMPS.
+* **Unified Cross-Platform CMake Build System**: Full cross-platform build configuration replacing legacy makefiles, with automatic discovery of BLAS/LAPACK (oneMKL, OpenBLAS, Accelerate), OpenMP, ARPACK, and MUMPS.
 * **Parallel Automated Verification Suite**: Sandboxed multi-worker test runner that executes 637+ official benchmark decks in parallel, with automatic numerical verification against official `datcheck.pl` and `frdcheck.pl`.
 * **Complete Backward Compatibility**: 100% compatible with existing CalculiX input decks, user subroutines, boundary conditions, and solver workflows.
 
@@ -57,17 +57,17 @@ Supported solver keywords:
 
 When no `SOLVER=` parameter is specified in the `.inp` deck, CalculiX selects the default solver based on the compile-time configuration:
 
-1. **macOS**: **Apple Accelerate** (`isolver = 11`) is enabled by default.
-2. **Linux (x86_64)**: **Intel oneMKL PARDISO** (`isolver = 7`) when built with `-DCCX_USE_PARDISO=ON`, else **MUMPS 5.x** (`isolver = 9`), else **SPOOLES 2.2** (`isolver = 0`).
-3. **Linux (ARM / aarch64)**: **MUMPS 5.x** (`isolver = 9`), falling back to **SPOOLES 2.2**.
-4. **Windows**: **Intel oneMKL PARDISO** or **SPOOLES 2.2**.
+1. **macOS**: **Apple Accelerate** is enabled by default.
+2. **Linux (x86_64)**: **Intel oneMKL PARDISO** when built with `-DCCX_USE_PARDISO=ON`, else **MUMPS 5.x**, else **SPOOLES 2.2**.
+3. **Linux (ARM / aarch64)**: **MUMPS 5.x**, falling back to **SPOOLES 2.2**.
+4. **Windows**: **Intel oneMKL PARDISO** or **SPOOLES 2.2** (roadmap) .
 5. **Universal Fallback**: Built-in **SPOOLES 2.2** is always compiled and available across all platforms.
 
 ---
 
 ## Native Apple Accelerate Sparse Solver (macOS)
 
-We have added native support for Apple's Accelerate Framework (`vecLib/Sparse`) direct solver to CalculiX.
+As novelty, we have added native support for Apple's Accelerate Framework (`vecLib/Sparse`) direct solver to CalculiX (https://developer.apple.com/documentation/accelerate/sparse-solvers-library). 
 
 ### Technical Implementation:
 * **Zero External Dependencies**: Links directly with macOS `-framework Accelerate`, removing the need for external Fortran or third-party solver libraries on macOS.
