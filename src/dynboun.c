@@ -36,6 +36,12 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 
 void dynboun(double *amta,ITG *namta,ITG *nam,double *ampli, double *time,
              double *ttime,double *dtime,double *xbounold,double *xboun,
@@ -193,6 +199,20 @@ void dynboun(double *amta,ITG *namta,ITG *nam,double *ampli, double *time,
       pastix_solve(bplus,&neq[1],&symmetryflag,&nrhs);
 #endif
     }
+    if(*isolver==9){
+#ifdef MUMPS
+      mumps_solve(bmin,&neq[1],&symmetryflag,&inputformat,&nrhs);
+      mumps_solve(bact,&neq[1],&symmetryflag,&inputformat,&nrhs);
+      mumps_solve(bplus,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+    }
+    if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_solve(bmin,&neq[1],&symmetryflag,&inputformat,&nrhs);
+      accelerate_solve(bact,&neq[1],&symmetryflag,&inputformat,&nrhs);
+      accelerate_solve(bplus,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+    }
   }
 
   /* check whether boundary conditions changed 
@@ -251,6 +271,16 @@ void dynboun(double *amta,ITG *namta,ITG *nam,double *ampli, double *time,
     if(*isolver==8){
 #ifdef PASTIX
       pastix_solve(bplus,&neq[1],&symmetryflag,&nrhs);
+#endif
+    }
+    if(*isolver==9){
+#ifdef MUMPS
+      mumps_solve(bplus,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+    }
+    if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_solve(bplus,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
     }
   }

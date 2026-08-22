@@ -40,6 +40,12 @@
 #ifdef PASTIX
    #include "pastix.h"
 #endif
+#ifdef MUMPS
+   #include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+   #include "accelerate_solver.h"
+#endif
 
 
 void dudsmain(ITG *isolver,double *au,double *ad,double *aub,double*adb,
@@ -149,6 +155,24 @@ void dudsmain(ITG *isolver,double *au,double *ad,double *aub,double*adb,
 	    FORTRAN(stop,());
 #endif
 	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			 &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	    printf(" *ERROR in dudsmain: the MUMPS library is not linked\n\n");
+	    FORTRAN(stop,());
+#endif
+	}
+	else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			      &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	    printf(" *ERROR in dudsmain: the Apple Accelerate solver is not linked\n\n");
+	    FORTRAN(stop,());
+#endif
+	}
 
   /* Computation of the matrix duds */
   /* duds = K^-1 * ( dF/ds + dK/ds * u )
@@ -205,7 +229,17 @@ void dudsmain(ITG *isolver,double *au,double *ad,double *aub,double*adb,
 #ifdef PASTIX
 			pastix_solve(dudsvec,&neq[1],&symmetryflag,&nrhs);
 #endif
-                    }	      
+                    }
+		    else if(*isolver==9){
+#ifdef MUMPS
+			mumps_solve(dudsvec,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+                    }
+		    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+			accelerate_solve(dudsvec,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+                    }
 
      /* copy results vector in duds */
 
@@ -243,6 +277,16 @@ void dudsmain(ITG *isolver,double *au,double *ad,double *aub,double*adb,
 	}
 	else if(*isolver==8){
 #ifdef PASTIX
+#endif
+	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+	}
+	else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_cleanup(&neq[1],&symmetryflag,&inputformat);
 #endif
 	}
        

@@ -986,6 +986,7 @@ zeta_calc.f \
 zienzhu.f 
 
 SCCXC = \
+accelerate_solver.c \
 add_rect.c \
 arpack.c \
 arpackbu.c \

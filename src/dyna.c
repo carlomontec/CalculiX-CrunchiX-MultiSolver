@@ -35,6 +35,12 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 
 void dyna(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG *ne,
 	  ITG **nodebounp,ITG **ndirbounp,double **xbounp,ITG *nboun,
@@ -1084,6 +1090,24 @@ void dyna(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG *ne,
       FORTRAN(stop,());
 #endif
     }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+		   &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+      printf(" *ERROR in dyna: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			&symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+      printf(" *ERROR in dyna: the Apple Accelerate solver is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
 
     NNEW(bact,double,neq[1]);
     NNEW(bmin,double,neq[1]);
@@ -1984,6 +2008,16 @@ void dyna(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,ITG *ne,
     }
     else if(*isolver==8){
 #ifdef PASTIX
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(&neq[1],&symmetryflag,&inputformat);
 #endif
     }
     SFREE(bact);SFREE(bmin);SFREE(bv);SFREE(bprev);SFREE(bdiff);

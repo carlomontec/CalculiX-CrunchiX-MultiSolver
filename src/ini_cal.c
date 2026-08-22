@@ -348,7 +348,9 @@ void ini_cal(char *jobnamec,char *output,char *fneig,char *kind1,char *kind2,
   
   /* default solver */
 
-#if defined(SGI)
+#if defined(ACCELERATE_SOLVER)
+  *isolver=11;
+#elif defined(SGI)
   *isolver=4;
 #elif defined(PASTIX)
   *isolver=8;

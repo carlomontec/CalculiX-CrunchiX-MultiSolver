@@ -31,8 +31,8 @@ This project is designed to pair seamlessly with **[CalculiX-GraphiX-GLFW](https
 * **Pluggable Sparse Direct Solvers**:
   * **SPOOLES 2.2**: Classic embedded sparse direct solver with modernized CMake compilation.
   * **Intel oneMKL PARDISO**: Industry-standard, highly parallel direct sparse solver with AVX2 / AVX-512 CPU acceleration (our recommended default on x86_64).
-  * **MUMPS 5.x**: Advanced, robust parallel direct sparse solver with OpenMP, Out-of-Core, and Block Low-Rank (BLR) capabilities—envisioned as a potential modern open-source candidate substitution/upgrade for SPOOLES.
-  * **Apple Accelerate (Roadmap)**: Native hardware-accelerated sparse direct solver integration tailored for Apple Silicon (M-series) unified memory.
+  * **MUMPS 5.x**: Advanced, robust parallel direct sparse solver with OpenMP, Out-of-Core, and Block Low-Rank (BLR) capabilities—envisioned as a modern open-source candidate substitution/upgrade for SPOOLES.
+  * **Apple Accelerate**: Native hardware-accelerated direct sparse solver (`SparseFactorizationLDLTTPP` and `SparseFactorizationQR`) tailored for macOS and Apple Silicon (M-series) unified memory architecture (default on macOS).
 * **Unified Cross-Platform CMake Build System**: Full cross-platform build configuration replacing legacy 1990s platform makefiles, with automatic discovery of BLAS/LAPACK (oneMKL, OpenBLAS, Accelerate), OpenMP, ARPACK, and MUMPS.
 * **Parallel Automated Verification Suite**: Sandboxed multi-worker test runner that executes 637+ official benchmark decks in parallel, with automatic numerical verification against official `datcheck.pl` and `frdcheck.pl`.
 * **Complete Backward Compatibility**: 100% compatible with existing CalculiX input decks, user subroutines, boundary conditions, and solver workflows.
@@ -44,13 +44,14 @@ This project is designed to pair seamlessly with **[CalculiX-GraphiX-GLFW](https
 You can select your preferred direct solver directly inside your CalculiX input deck (`.inp`) using the `SOLVER` parameter:
 
 ```text
-*STATIC, SOLVER=PARDISO
+*STATIC, SOLVER=ACCELERATE
 ```
 
 Supported solver keywords:
-* `*STATIC, SOLVER=SPOOLES` (or `SOLVER=DEFAULT`)
-* `*STATIC, SOLVER=PARDISO`
+* `*STATIC, SOLVER=ACCELERATE` (default on macOS builds)
+* `*STATIC, SOLVER=PARDISO` (default on x86_64 Linux when built with oneMKL)
 * `*STATIC, SOLVER=MUMPS`
+* `*STATIC, SOLVER=SPOOLES` (or `SOLVER=DEFAULT`)
 
 ---
 
@@ -112,7 +113,7 @@ Intel oneMKL PARDISO provides the fastest solve times with multi-threaded AVX2/A
 ## Platform Support & Roadmap
 
 * **Linux (x86_64 / aarch64)**: Fully supported across Arch, CachyOS, Ubuntu, Debian, Fedora, RHEL.
-* **macOS (Apple Silicon & Intel)**: Fully supported via Apple Clang / GCC + Homebrew. Native Apple Accelerate solver in active development.
+* **macOS (Apple Silicon & Intel)**: Fully supported via Apple Clang / GCC + Homebrew with native Apple Accelerate sparse direct solver enabled by default.
 * **Windows (MSYS2 / MinGW-w64 / MSVC)**: Supported via portable CMake toolchains.
 
 ---
@@ -138,7 +139,7 @@ Intel oneMKL PARDISO provides the fastest solve times with multi-threaded AVX2/A
 
 * **macOS (Homebrew)**:
   ```bash
-  brew install cmake gcc openblas arpack mumps
+  brew install cmake gcc arpack
   ```
 
 ---
@@ -151,9 +152,15 @@ git clone https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver.git ccx
 cd ccx
 ```
 
+#### Build for macOS (Native Apple Accelerate Direct Solver - Default):
+```bash
+cmake -B build
+cmake --build build -j$(sysctl -n hw.ncpu)
+```
+
 #### Build with Default SPOOLES:
 ```bash
-cmake -B build_spooles -DCCX_USE_SPOOLES=ON
+cmake -B build_spooles -DCCX_USE_SPOOLES=ON -DCCX_USE_ACCELERATE=OFF
 cmake --build build_spooles -j$(nproc)
 ```
 

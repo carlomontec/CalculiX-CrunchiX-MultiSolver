@@ -79,6 +79,10 @@
          solver(1:7)='PARDISO'
       elseif(isolver.eq.8) then
          solver(1:6)='PASTIX'
+      elseif(isolver.eq.9) then
+         solver(1:5)='MUMPS'
+      elseif(isolver.eq.11) then
+         solver(1:10)='ACCELERATE'
       endif
 !
       do i=2,n
@@ -120,8 +124,12 @@
          isolver=5
       elseif(solver(1:7).eq.'PARDISO') then
          isolver=7
-      elseif(solver(1:6).eq.'PARDISO') then
+      elseif(solver(1:6).eq.'PASTIX') then
          isolver=8
+      elseif(solver(1:5).eq.'MUMPS') then
+         isolver=9
+      elseif(solver(1:10).eq.'ACCELERATE') then
+         isolver=11
       else
          write(*,*) '*WARNING reading *MODAL DYNAMIC: unknown solver;'
          write(*,*) '         the default solver is used'

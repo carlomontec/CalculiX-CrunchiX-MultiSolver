@@ -40,6 +40,12 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 
 void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
 	      ITG *ne, 
@@ -298,9 +304,9 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
   buckling=1;rhsi=0;
 
   sigma=0.;
-  if(*isolver>9){
+  if(*isolver>=100){
     storematrix=1;
-    *isolver-=10;
+    *isolver-=100;
   }
   if(*isolver==0){
 #ifdef SPOOLES
@@ -343,6 +349,24 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
 		&symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
 #else
     printf(" *ERROR in arpackbu: the PASTIX library is not linked\n\n");
+    FORTRAN(stop,());
+#endif    
+  }
+  else if(*isolver==9){
+#ifdef MUMPS
+    mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[0],&nzs[0],
+	       &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+    printf(" *ERROR in arpackbu: the MUMPS library is not linked\n\n");
+    FORTRAN(stop,());
+#endif    
+  }
+  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+    accelerate_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[0],&nzs[0],
+		    &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+    printf(" *ERROR in arpackbu: the Apple Accelerate solver is not linked\n\n");
     FORTRAN(stop,());
 #endif    
   }
@@ -574,6 +598,24 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
       FORTRAN(stop,());
 #endif
     }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],
+		   &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+      printf(" *ERROR in arpack: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],
+			&symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+      printf(" *ERROR in arpack: the Apple Accelerate solver is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
   
 
     /* calculating the bucking factors and buckling modes */
@@ -640,6 +682,16 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
 #endif
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(temp_array,&neq[0],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(temp_array,&neq[0],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
 	  for(jrow=0;jrow<neq[0];jrow++){
 	    workd[ipntr[1]-1+jrow]=temp_array[jrow];
 	  }
@@ -676,6 +728,18 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
 	    if( pastix_solve(&workd[ipntr[2]-1],&neq[0],&symmetryflag,&nrhs)==-1 )
            printf(" *WARNING in arpackbu: solving step didn't converge! Continuing anyway\n");
 #endif
+#endif
+	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(&workd[ipntr[2]-1],&neq[0],
+			&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(&workd[ipntr[2]-1],&neq[0],
+			    &symmetryflag,&inputformat,&nrhs);
 #endif
 	  }
 	  for(jrow=0;jrow<neq[0];jrow++){
@@ -725,6 +789,16 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
 #ifdef PARDISO
       pardiso_cleanup(&neq[0],&symmetryflag,&inputformat);
 #endif
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(&neq[0],&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(&neq[0],&symmetryflag,&inputformat);
 #endif
     }
 

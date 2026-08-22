@@ -49,6 +49,12 @@ SOLVER_CONFIGS = {
         },
         "description": "MUMPS 5.x Direct Solver",
     },
+    "ACCELERATE": {
+        "bin": CCX_DIR / "build_accelerate" / "CalculiX",
+        "alt_bin": CCX_DIR / "build" / "CalculiX",
+        "env": {},
+        "description": "Apple Accelerate Sparse Direct Solver",
+    },
 }
 
 # Decks to exclude (known interactive or optimization scripts)
@@ -212,7 +218,7 @@ def run_single_test(task):
 def main():
     parser = argparse.ArgumentParser(description="CalculiX Multi-Solver Official Verification Suite")
     parser.add_argument("--pattern", nargs="+", help="Glob pattern(s) to filter test decks (e.g. 'achtel*' 'beam*')")
-    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ALL"], default=["ALL"])
+    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ACCELERATE", "ALL"], default=["ALL"])
     parser.add_argument("--threads-per-job", type=int, default=2, help="OpenMP threads per job (default: 2)")
     parser.add_argument("--max-workers", type=int, default=None, help="Max concurrent workers (default: physical_cores // threads_per_job)")
     parser.add_argument("--timeout", type=int, default=60, help="Per-test timeout in seconds (default: 60s)")
