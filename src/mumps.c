@@ -68,9 +68,14 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
   id.icntl[1] = -1;  /* ICNTL(2): Diagnostic output stream suppressed */
   id.icntl[2] = -1;  /* ICNTL(3): Global info output stream suppressed */
   id.icntl[3] = 0;   /* ICNTL(4): Printing level (0 = quiet) */
-  id.icntl[5] = 7;   /* ICNTL(6): Automatic permutation strategy for structural matrices */
-  id.icntl[7] = 77;  /* ICNTL(8): Automatic matrix scaling */
-  id.icntl[15] = (MUMPS_INT)nthread; /* ICNTL(16): OpenMP thread count */
+  
+  id.icntl[5] = getenv("CCX_MUMPS_ICNTL6") ? atoi(getenv("CCX_MUMPS_ICNTL6")) : 7;
+  id.icntl[6] = getenv("CCX_MUMPS_ICNTL7") ? atoi(getenv("CCX_MUMPS_ICNTL7")) : 7;
+  id.icntl[7] = getenv("CCX_MUMPS_ICNTL8") ? atoi(getenv("CCX_MUMPS_ICNTL8")) : 77;
+  id.icntl[15] = getenv("CCX_MUMPS_ICNTL16") ? atoi(getenv("CCX_MUMPS_ICNTL16")) : (MUMPS_INT)nthread;
+  
+  if (getenv("CCX_MUMPS_ICNTL13")) id.icntl[12] = atoi(getenv("CCX_MUMPS_ICNTL13"));
+  if (getenv("CCX_MUMPS_ICNTL48")) id.icntl[47] = atoi(getenv("CCX_MUMPS_ICNTL48"));
 
   /* 4. Optional Block Low-Rank (BLR) compression for memory reduction */
   if(getenv("CCX_MUMPS_BLR")){
