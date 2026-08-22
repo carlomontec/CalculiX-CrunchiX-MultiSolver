@@ -1,0 +1,26 @@
+pnt p1 0 0 0
+pnt p2 2 0 0
+pnt p3 2 2 0
+pnt p4 0 2 0
+
+line l1 p1 p2 30
+line l2 p2 p3 30
+line l3 p3 p4 30
+line l4 p4 p1 30
+
+surf s0 l1 l2 l3 l4
+
+swep all all tra 0 0 100 120
+
+elty all he20
+mesh all
+
+seta FIX s s0
+seta NFIX n FIX
+seta TIP s A001
+seta NTIP n TIP
+
+send all abq
+send NFIX abq nam
+send NTIP abq nam
+quit
