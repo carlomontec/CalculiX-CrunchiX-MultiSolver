@@ -20,7 +20,7 @@ The objective is to explore agent-assisted scientific software modernization by 
 
 ---
 
-## Companion Visualizer
+## Companion Pre-/Post-Processor 
 
 This project is designed to pair seamlessly with **[CalculiX-GraphiX-GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW)** (`cgx_glfw`), a modernized approach to CalculiX GraphiX in pure GLFW3 / OpenGL 3D, extended with native ParaView VTU/PVD export and some additional eye-candy.
 
