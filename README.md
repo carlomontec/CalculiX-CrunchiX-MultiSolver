@@ -18,6 +18,16 @@ This project is an **academic exercise for learning AI agentic programming** by 
 
 The objective is to explore agent-assisted scientific software modernization by making CalculiX CrunchiX (CCX) as **flexible, fast, and accessible across all major operating systems** as possible. We intend to update to pluggable state-of-the-art sparse direct solvers (**Intel oneMKL PARDISO**, **MUMPS 5.x**, and **Apple Accelerate**), modern **CMake** build pipelines, and automated multi-solver verification suites; while strictly preserving the original core mechanical computations.
 
+## Quick Installation (Universal 1-Liner)
+
+Install or build CalculiX with automated solver selection across macOS and Linux with a single command:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
+```
+
+The installer automatically detects your operating system, hardware architecture, and installed linear algebra libraries (Apple Accelerate on macOS, Intel oneMKL PARDISO or MUMPS on Linux, or SPOOLES), builds the binary, and installs it to `~/.local/bin/ccx`.
+
 ---
 
 ## Companion Pre-/Post-Processor 
@@ -178,13 +188,14 @@ Intel oneMKL PARDISO provides the fastest solve times with multi-threaded AVX2/A
 
 ### 2. Configure and Compile
 
-Clone the repository:
+#### Option A: Automated Build & Install Script (Recommended)
 ```bash
-git clone https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver.git ccx
-cd ccx
+./install.sh
 ```
 
-#### Build for macOS (Native Apple Accelerate Direct Solver - Default):
+#### Option B: Manual CMake Commands
+
+##### Build for macOS (Native Apple Accelerate Direct Solver - Default):
 ```bash
 cmake -B build
 cmake --build build -j$(sysctl -n hw.ncpu)
