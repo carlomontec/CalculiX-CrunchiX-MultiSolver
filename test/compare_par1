@@ -72,6 +72,10 @@ for i in *.inp; do
 #       executing CalculiX and generating the .dat and
 #       the .frd file
 #
-            ~/CalculiX/src/CalculiX  ${i%.inp} >> ${i%.inp}.lst 2>&1 &
+            CCX_BIN=${CCX:-../build_spooles/CalculiX}
+            if [ ! -x "$CCX_BIN" ]; then
+                CCX_BIN=${HOME}/CalculiX/src/CalculiX
+            fi
+            $CCX_BIN ${i%.inp} >> ${i%.inp}.lst 2>&1 &
 	
 done
