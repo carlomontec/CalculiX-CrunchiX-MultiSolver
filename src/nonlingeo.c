@@ -36,6 +36,9 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
 
 #define max(a,b) ((a) >= (b) ? (a) : (b))
 
@@ -1303,6 +1306,15 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	FORTRAN(stop,());
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_factor(adb,aub,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],
+		     &symmetryflag,&inputformat,jq,&nzs[0]);
+#else
+	printf(" *ERROR in nonlingeo: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
 
       // Storing contact force vector initial solution
 
@@ -1399,6 +1411,15 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	FORTRAN(stop,());
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[0],&nzs[0],
+		   &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+#else
+	printf(" *ERROR in nonlingeo: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
+      }
     }
       
     else{
@@ -1467,6 +1488,17 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	  pastix_solve(b,&neq[0],&symmetryflag,&nrhs);
 #else
 	  printf(" *ERROR in nonlingeo: the PASTIX library is not linked\n\n");
+	  FORTRAN(stop,());
+#endif
+	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_factor(adb,aub,adb,aub,&sigma,icol,irow,&neq[0],&nzs[0],
+		       &symmetryflag,&inputformat,jq,&nzs[0]);
+
+	  mumps_solve(b,&neq[0],&symmetryflag,&inputformat,&nrhs);
+#else
+	  printf(" *ERROR in nonlingeo: the MUMPS library is not linked\n\n");
 	  FORTRAN(stop,());
 #endif
 	}
@@ -3161,6 +3193,30 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	  FORTRAN(stop,());
 #endif
 	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  if(*ithermal<2){
+	    mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[0],&nzs[0],
+		       &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+	  }else if((*ithermal==2)&&(uncoupled)){
+	    n1=neq[1]-neq[0];
+	    n2=nzs[1]-nzs[0];
+	    NNEW(jqtherm,ITG,n1+1);
+	    for(i=0;i<n1+1;i++){
+	      jqtherm[i]=jq[neq[0]+i]-nzs[0];}
+	    mumps_main(&ad[neq[0]],&au[nzs[0]],&adb[neq[0]],&aub[nzs[0]],
+		       &sigma,&b[neq[0]],&icol[neq[0]],iruc,
+		       &n1,&n2,&symmetryflag,&inputformat,jqtherm,&nzs[2],&nrhs);
+	    SFREE(jqtherm);
+	  }else{
+	    mumps_main(ad,au,adb,aub,&sigma,b,icol,irow,&neq[1],&nzs[1],
+		       &symmetryflag,&inputformat,jq,&nzs[2],&nrhs);
+	  }
+#else
+	  printf(" *ERROR in nonlingeo: the MUMPS library is not linked\n\n");
+	  FORTRAN(stop,());
+#endif
+	}
 	  
 	if(*mortar<=1){
 	  if(isensitivity){
@@ -3213,6 +3269,11 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 	    else if(*isolver==8){
 #ifdef PASTIX
 	      pastix_solve(b,&neq[0],&symmetryflag,&nrhs);
+#endif
+	    }
+	    else if(*isolver==9){
+#ifdef MUMPS
+	      mumps_solve(b,&neq[0],&symmetryflag,&inputformat,&nrhs);
 #endif
 	    }
 	    if(*mortar==-1){
@@ -4212,6 +4273,11 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
       }
       else if(*isolver==8){
 #ifdef PASTIX
+#endif
+      }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_cleanup(&neq[0],&symmetryflag,&inputformat);
 #endif
       }
     }

@@ -22,6 +22,7 @@ set(CMAKE_C_STANDARD 99)
 # -----------------------------------------------------------------------------
 option(CCX_USE_SPOOLES "Enable SPOOLES direct sparse solver" ON)
 option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"   OFF)
+option(CCX_USE_MUMPS   "Enable MUMPS direct sparse solver"   OFF)
 option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"     ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"        ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"   OFF)
@@ -126,6 +127,68 @@ if(CCX_USE_PARDISO)
         else()
             message(FATAL_ERROR "Intel MKL PARDISO requested (CCX_USE_PARDISO=ON) but MKL was not found.\nPlease ensure Intel oneAPI MKL is installed and set MKLROOT or source /opt/intel/oneapi/setvars.sh.")
         endif()
+    endif()
+endif()
+
+# -----------------------------------------------------------------------------
+# MUMPS 5.x Solver
+# -----------------------------------------------------------------------------
+if(CCX_USE_MUMPS)
+    add_compile_definitions(MUMPS)
+
+    find_path(MUMPS_INCLUDE_DIR
+        NAMES dmumps_c.h
+        PATHS
+            ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include/mumps_seq
+            $ENV{MUMPS_DIR}/include
+            /usr/include
+            /usr/include/mumps_seq
+            /usr/local/include
+            /opt/homebrew/include
+            /opt/local/include
+    )
+
+    set(MUMPS_LIB_PATHS
+        ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/lib
+        $ENV{MUMPS_DIR}/lib
+        /usr/lib
+        /usr/local/lib
+        /opt/homebrew/lib
+        /opt/local/lib
+    )
+
+    find_library(MUMPS_DMUMPS_LIB NAMES dmumps PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_COMMON_LIB NAMES mumps_common PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_PORD_LIB   NAMES pord PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_MPISEQ_LIB NAMES mpiseq PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_ESMUMPS_LIB NAMES esmumps PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_SCOTCH_LIB NAMES scotch scotcherr PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_METIS_LIB  NAMES metis PATHS ${MUMPS_LIB_PATHS})
+
+    if(MUMPS_INCLUDE_DIR AND MUMPS_DMUMPS_LIB AND MUMPS_COMMON_LIB)
+        message(STATUS "Found MUMPS Include: ${MUMPS_INCLUDE_DIR}")
+        message(STATUS "Found MUMPS dmumps:  ${MUMPS_DMUMPS_LIB}")
+        message(STATUS "Found MUMPS common:  ${MUMPS_COMMON_LIB}")
+        include_directories(${MUMPS_INCLUDE_DIR})
+        list(APPEND EXTRA_LINK_LIBS ${MUMPS_DMUMPS_LIB} ${MUMPS_COMMON_LIB})
+        if(MUMPS_PORD_LIB)
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_PORD_LIB})
+        endif()
+        if(MUMPS_MPISEQ_LIB)
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_MPISEQ_LIB})
+        endif()
+        if(MUMPS_ESMUMPS_LIB)
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_ESMUMPS_LIB})
+        endif()
+        if(MUMPS_SCOTCH_LIB)
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_SCOTCH_LIB})
+        endif()
+        if(MUMPS_METIS_LIB)
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_METIS_LIB})
+        endif()
+    else()
+        message(FATAL_ERROR "MUMPS solver requested (CCX_USE_MUMPS=ON) but MUMPS headers or libraries were not found.")
     endif()
 endif()
 

@@ -1089,6 +1089,7 @@ matrixsort.c \
 matrixstorage.c \
 mortar_postfrd.c \
 mortar_prefrd.c \
+mumps.c \
 mulmatvec_asymmain.c \
 multimortar.c \
 multi_rect.c \
