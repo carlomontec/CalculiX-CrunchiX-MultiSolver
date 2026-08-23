@@ -56,8 +56,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-O2;-g;-cpp;-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-label;-fallow-argument-mismatch>")
 endif()
 
-if(APPLE AND CMAKE_OSX_SYSROOT)
-    add_link_options("-Wl,-syslibroot,${CMAKE_OSX_SYSROOT}")
+if(APPLE)
+    if(CMAKE_OSX_SYSROOT)
+        add_link_options("-Wl,-syslibroot,${CMAKE_OSX_SYSROOT}")
+    endif()
+    # Embed 256MB stack size to prevent stack overflow in deep Fortran contact & explicit dynamic routines
+    add_link_options("-Wl,-stack_size,0x10000000")
 endif()
 
 # -----------------------------------------------------------------------------

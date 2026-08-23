@@ -49,12 +49,12 @@ jobs:
       - name: Run Verification Test Suite
         run: |
           export OMP_NUM_THREADS=1
-          ulimit -s hard || ulimit -s 65532 || true
+          export OMP_STACKSIZE=128M
           if [ "${{ github.event.inputs.full_test_suite }}" = "true" ]; then
-            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers 4
+            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers $(sysctl -n hw.ncpu)
           else
             python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE \
-              --pattern "achtel2*" "beam8*" "spring1*" "therm1*" "contact1*" --max-workers 4
+              --pattern "achtel2*" "beam8*" "spring1*" "therm1*" "contact1*" --max-workers $(sysctl -n hw.ncpu)
           fi
 
   # ============================================================================
@@ -123,6 +123,7 @@ jobs:
       - name: Run Verification Test Suite
         run: |
           export OMP_NUM_THREADS=1
+          export OMP_STACKSIZE=128M
           ulimit -s unlimited
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
           if [ "${{ github.event.inputs.full_test_suite }}" = "true" ]; then
