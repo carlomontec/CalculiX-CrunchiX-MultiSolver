@@ -43,16 +43,30 @@ This project is designed to pair seamlessly with **[CalculiX-GraphiX-GLFW](https
 
 ---
 
-## Highlights & Multi-Solver Architecture
+## Highlights & Modern Multi-Solver Architecture
 
 * **Pluggable Sparse Direct Solvers**:
-  * **SPOOLES 2.2**: Classic embedded sparse direct solver with modernized CMake compilation.
-  * **Intel oneMKL PARDISO**: Industry-standard, highly parallel direct sparse solver with AVX2 / AVX-512 CPU acceleration (our recommended default on x86_64).
-  * **MUMPS 5.x**: Advanced, robust parallel direct sparse solver with OpenMP, Out-of-Core, and Block Low-Rank (BLR) capabilities—envisioned as a modern open-source candidate substitution/upgrade for SPOOLES.
-  * **Apple Accelerate**: Native hardware-accelerated direct sparse solver (`SparseFactorizationLDLTTPP` and `SparseFactorizationQR`) tailored for macOS and Apple Silicon (M-series) unified memory architecture (default on macOS).
-* **Unified Cross-Platform CMake Build System**: Full cross-platform build configuration replacing legacy makefiles, with automatic discovery of BLAS/LAPACK (oneMKL, OpenBLAS, Accelerate), OpenMP, ARPACK, and MUMPS.
+  * **MUMPS 5.x (Primary Open-Source Default)**: The standard open-source sparse direct solver of modern scientific computing (used in *Code_Aster*, *OpenFOAM*, and *Elmer FEM*). Features multi-threaded OpenMP parallelism, Out-of-Core memory scaling, and Block Low-Rank (BLR) compression.
+  * **Apple Accelerate (macOS Default)**: Native hardware-accelerated direct sparse solver (`SparseFactorizationLDLTTPP` and `SparseFactorizationQR`) tailored for macOS and Apple Silicon (M-series) unified memory architecture with zero external solver dependencies.
+  * **Intel oneMKL PARDISO (Performance King on x86_64)**: Industry-standard, highly parallel direct sparse solver with AVX2 / AVX-512 acceleration for x86_64 Intel and AMD processors.
+  * **SPOOLES 2.2 (Legacy Compatibility)**: Preserved for historical compatibility via dynamic linking against system packages (`libspooles-dev` on Linux).
+* **Modernized Clean Repository**: No legacy third-party source folders embedded in the repository—all solvers link cleanly against modern system or OS runtime libraries.
+* **Unified Cross-Platform CMake Build System**: Full cross-platform build configuration replacing legacy makefiles, with automatic discovery of BLAS/LAPACK (oneMKL, OpenBLAS, Accelerate, AMD AOCL), OpenMP, ARPACK, and MUMPS.
 * **Parallel Automated Verification Suite**: Sandboxed multi-worker test runner that executes 637+ official benchmark decks in parallel, with automatic numerical verification against official `datcheck.pl` and `frdcheck.pl`.
 * **Complete Backward Compatibility**: 100% compatible with existing CalculiX input decks, user subroutines, boundary conditions, and solver workflows.
+
+---
+
+## Modernization: Transitioning from SPOOLES to MUMPS 5.x
+
+### Why Modernize the Open-Source Default Solver?
+For nearly three decades, CalculiX distributed the 1999 SPOOLES 2.2 solver as its default open-source sparse backend. While historically groundbreaking, SPOOLES lacks modern SIMD vectorization (AVX2/AVX-512), is not actively maintained, and is missing from modern package ecosystems like macOS Homebrew and Windows MSYS2.
+
+This project establishes **MUMPS 5.x** as the primary open-source direct solver:
+* **Active Scientific Maintenance**: Actively developed by INRIA and CERFACS.
+* **Multi-Threaded Performance**: Up to **$2.33\times$ faster** than SPOOLES on multi-core systems via OpenMP.
+* **Seamless Availability**: Packaged out-of-the-box across all major Linux distributions (`libmumps-seq-dev`), MSYS2 (`mingw-w64-ucrt-x86_64-mumps`), and Homebrew (`brew install mumps`).
+* **Preserved Compatibility**: Dr. Dhondt's original `src/spooles.c` interface remains fully preserved and functional; Linux users who specifically require legacy SPOOLES can simply install `libspooles-dev` and build with `-DCCX_USE_SPOOLES=ON`.
 
 ---
 
@@ -61,24 +75,22 @@ This project is designed to pair seamlessly with **[CalculiX-GraphiX-GLFW](https
 You can select your preferred direct solver directly inside your CalculiX input deck (`.inp`) using the `SOLVER` parameter:
 
 ```text
-*STATIC, SOLVER=ACCELERATE
+*STATIC, SOLVER=MUMPS
 ```
 
 Supported solver keywords:
 * `*STATIC, SOLVER=ACCELERATE` (default on macOS builds)
-* `*STATIC, SOLVER=PARDISO` (default on x86_64 Linux when built with oneMKL)
-* `*STATIC, SOLVER=MUMPS`
-* `*STATIC, SOLVER=SPOOLES` (or `SOLVER=DEFAULT`)
+* `*STATIC, SOLVER=MUMPS` (default on Linux and Windows builds)
+* `*STATIC, SOLVER=PARDISO` (when built with Intel oneMKL)
+* `*STATIC, SOLVER=SPOOLES` (when built with legacy SPOOLES)
 
 ### Platform Defaults & Automatic Fallback Hierarchy
 
-When no `SOLVER=` parameter is specified in the `.inp` deck, CalculiX selects the default solver based on the compile-time configuration:
+When no `SOLVER=` parameter is specified in the `.inp` deck, CalculiX selects the default solver based on compile-time configuration:
 
 1. **macOS**: **Apple Accelerate** is enabled by default.
-2. **Linux (x86_64)**: **Intel oneMKL PARDISO** when built with `-DCCX_USE_PARDISO=ON`, else **MUMPS 5.x**, else **SPOOLES 2.2**.
-3. **Linux (ARM / aarch64)**: **MUMPS 5.x**, falling back to **SPOOLES 2.2**.
-4. **Windows**: **MUMPS 5.x** (default via MSYS2), **Intel oneMKL PARDISO** (when oneMKL is installed), or **SPOOLES 2.2**.
-5. **Universal Fallback**: Built-in **SPOOLES 2.2** is always compiled and available across all platforms.
+2. **Linux (x86_64 & ARM64)**: **MUMPS 5.x** (or **Intel oneMKL PARDISO** when built with oneMKL).
+3. **Windows**: **MUMPS 5.x** (or **Intel oneMKL PARDISO** when built with oneMKL).
 
 ---
 

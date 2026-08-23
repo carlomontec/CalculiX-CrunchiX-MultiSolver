@@ -48,14 +48,14 @@ jobs:
       - name: Run Verification Test Suite
         run: |
           if [ "${{ github.event.inputs.full_test_suite }}" = "true" ]; then
-            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE SPOOLES --max-workers 4
+            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers 4
           else
-            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE SPOOLES \
+            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE \
               --pattern "achtel2*" "beam8*" "spring1*" "therm1*" "contact1*" --max-workers 4
           fi
 
   # ============================================================================
-  # 2. Linux x86_64 - MUMPS 5.x, Intel oneMKL PARDISO, and SPOOLES 2.2
+  # 2. Linux x86_64 - MUMPS 5.x, Intel oneMKL PARDISO, and Legacy SPOOLES
   # ============================================================================
   linux:
     name: Linux (${{ matrix.solver_name }})
@@ -71,8 +71,8 @@ jobs:
             solver_name: "Intel oneMKL PARDISO"
             cmake_flags: "-DCCX_USE_PARDISO=ON -DCCX_USE_ACCELERATE=OFF"
           - solver: spooles
-            solver_name: "SPOOLES 2.2 Classic"
-            cmake_flags: "-DCCX_USE_SPOOLES=ON -DCCX_USE_ACCELERATE=OFF"
+            solver_name: "SPOOLES 2.2 (System Lib)"
+            cmake_flags: "-DCCX_USE_SPOOLES=ON -DCCX_USE_MUMPS=OFF -DCCX_USE_ACCELERATE=OFF"
 
     steps:
       - name: Check out repository
@@ -87,6 +87,11 @@ jobs:
         if: matrix.solver == 'mumps'
         run: |
           sudo apt-get install -y libmumps-seq-dev
+
+      - name: Install SPOOLES Package (if SPOOLES)
+        if: matrix.solver == 'spooles'
+        run: |
+          sudo apt-get install -y libspooles-dev
 
       - name: Install Intel oneMKL Repository (if PARDISO)
         if: matrix.solver == 'pardiso'
@@ -118,7 +123,7 @@ jobs:
           fi
 
   # ============================================================================
-  # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS, PARDISO, and SPOOLES
+  # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS & PARDISO
   # ============================================================================
   windows:
     name: Windows MSYS2 (${{ matrix.solver_name }})
@@ -128,14 +133,11 @@ jobs:
       matrix:
         include:
           - solver: mumps
-            solver_name: "MUMPS 5.x"
+            solver_name: "MUMPS 5.x Open-Source"
             cmake_flags: "-DCCX_USE_MUMPS=ON"
           - solver: pardiso
             solver_name: "Intel oneMKL PARDISO"
             cmake_flags: "-DCCX_USE_PARDISO=ON"
-          - solver: spooles
-            solver_name: "SPOOLES 2.2"
-            cmake_flags: "-DCCX_USE_SPOOLES=ON"
 
     steps:
       - name: Check out repository
