@@ -150,6 +150,7 @@ def run_single_test(task):
                 "status": "FAIL",
                 "time": elapsed,
                 "detail": f"Exit {proc.returncode}",
+                "stdout": proc.stdout,
             }
 
         # Substructure conversion if applicable
@@ -333,6 +334,19 @@ def main():
         print(f"  * {s:<8}: {st['PASS']:3d} PASS | {st['DIFF']:2d} DIFF | {st['FAIL']:2d} FAIL | {st['TIMEOUT']:2d} TIMEOUT | Cumul Time: {st['TOTAL_TIME']:6.2f}s | Pass Rate: {pass_rate:5.1f}% ({st['PASS']}/{total_runs})")
     print(f"\nTotal Suite Wall-Clock Time: {total_wall:.2f} s across {max_workers} workers")
     print("=" * 80)
+
+    # Print failure diagnostics
+    failures = [(d, s, res) for d in decks for s, res in results[d].items() if res.get("status") in ("FAIL", "ERROR") and res.get("stdout")]
+    if failures:
+        print("\n" + "=" * 80)
+        print(" ❌ Diagnostic Output for Failed Test Executions:")
+        print("=" * 80)
+        for d, s, res in failures:
+            print(f"\n--- [{s}] {d} ({res['detail']}) ---")
+            lines = res["stdout"].strip().splitlines()
+            tail_lines = lines[-40:] if len(lines) > 40 else lines
+            print("\n".join(tail_lines))
+        print("=" * 80 + "\n")
 
     # Write GitHub Step Summary if running in CI
     step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
