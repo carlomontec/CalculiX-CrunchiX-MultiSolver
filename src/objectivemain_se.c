@@ -37,6 +37,12 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 
 static char *lakon1,*matname1,*filabl1,*objectset1;
 
@@ -225,6 +231,24 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 			 &symmetryflag,&inputformat,jq,&nzs[2]);
 #else
       printf(" *ERROR in objectivemain_se: the PASTIX library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+		   &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+      printf(" *ERROR in objectivemain_se: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			&symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+      printf(" *ERROR in objectivemain_se: the Apple Accelerate solver is not linked\n\n");
       FORTRAN(stop,());
 #endif
     }
@@ -447,6 +471,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	  pastix_solve(fint,&neq[1],&symmetryflag,&nrhs);
 #endif
 	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_solve(fint,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	}
+	else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	  accelerate_solve(fint,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	}
 	      
 	/* solve the system */	      
 	       	    
@@ -589,6 +623,24 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	    FORTRAN(stop,());
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			 &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	    printf(" *ERROR in objectivemain_se: the MUMPS library is not linked\n\n");
+	    FORTRAN(stop,());
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,&neq[1],&nzs[1],
+			      &symmetryflag,&inputformat,jq,&nzs[2]);
+#else
+	    printf(" *ERROR in objectivemain_se: the Apple Accelerate solver is not linked\n\n");
+	    FORTRAN(stop,());
+#endif
+	  }
 	}	
 		
 	/* loop over all design variables */
@@ -636,6 +688,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	    else if(*isolver==8){
 #ifdef PASTIX
 	      pastix_solve(b,&neq[1],&symmetryflag,&nrhs);
+#endif
+	    }
+	    else if(*isolver==9){
+#ifdef MUMPS
+	      mumps_solve(b,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	    }
+	    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	      accelerate_solve(b,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	    }
 	  }else{
@@ -778,6 +840,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 #ifdef PASTIX
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+	  }
 	}
 
 	SFREE(temp);SFREE(bfix);SFREE(b);SFREE(inum);
@@ -860,6 +932,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	    pastix_solve(b,&neq[1],&symmetryflag,&nrhs);
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(b,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(b,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
 
 		    
 	  /* store the answer in temp w.r.t. node and direction
@@ -924,6 +1006,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	else if(*isolver==8){
 #ifdef PASTIX
 	  pastix_solve(dgdu,&neq[1],&symmetryflag,&nrhs);
+#endif
+	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_solve(dgdu,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	}
+	else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	  accelerate_solve(dgdu,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	}
 	      
@@ -1123,6 +1215,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	  else if(*isolver==8){
 #ifdef PASTIX
 	    pastix_solve(b,&neq[1],&symmetryflag,&nrhs);
+#endif
+	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(b,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(b,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	  }
 		
@@ -1408,6 +1510,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
 	else if(*isolver==8){
 #ifdef PASTIX
 	  pastix_solve(dgdu,&neq[1],&symmetryflag,&nrhs);
+#endif
+	}
+	else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_solve(dgdu,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+	}
+	else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	  accelerate_solve(dgdu,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
 	}
 	      
@@ -1756,6 +1868,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
       else if(*isolver==8){
 #ifdef PASTIX
 	pastix_solve(dgdu,&neq[1],&symmetryflag,&nrhs);
+#endif
+      }
+      else if(*isolver==9){
+#ifdef MUMPS
+	mumps_solve(dgdu,&neq[1],&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	accelerate_solve(dgdu,&neq[1],&symmetryflag,&inputformat,&nrhs);
 #endif
       }
 	      
@@ -2159,6 +2281,16 @@ void objectivemain_se(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,
     }
     else if(*isolver==8){
 #ifdef PASTIX
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(&neq[1],&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(&neq[1],&symmetryflag,&inputformat);
 #endif
     }
   }
