@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies via Homebrew
         run: |
           brew update
-          brew install gcc arpack cmake ninja
+          brew install gcc arpack cmake ninja libomp
 
       - name: Configure CMake
         run: |
@@ -66,13 +66,13 @@ jobs:
         include:
           - solver: mumps
             solver_name: "MUMPS 5.x Open-Source"
-            cmake_flags: "-DCCX_USE_MUMPS=ON"
+            cmake_flags: "-DCCX_USE_MUMPS=ON -DCCX_USE_ACCELERATE=OFF"
           - solver: pardiso
             solver_name: "Intel oneMKL PARDISO"
-            cmake_flags: "-DCCX_USE_PARDISO=ON"
+            cmake_flags: "-DCCX_USE_PARDISO=ON -DCCX_USE_ACCELERATE=OFF"
           - solver: spooles
             solver_name: "SPOOLES 2.2 Classic"
-            cmake_flags: "-DCCX_USE_SPOOLES=ON"
+            cmake_flags: "-DCCX_USE_SPOOLES=ON -DCCX_USE_ACCELERATE=OFF"
 
     steps:
       - name: Check out repository
@@ -170,7 +170,8 @@ jobs:
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             ${{ matrix.cmake_flags }} \
-            -DCCX_USE_ARPACK=ON
+            -DCCX_USE_ARPACK=ON \
+            -DCCX_USE_ACCELERATE=OFF
           cmake --build build -j
 
       - name: Run Verification Test in MSYS2
