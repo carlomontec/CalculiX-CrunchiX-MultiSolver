@@ -37,6 +37,9 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
 
 static ITG neqslavs1,*iacti1,nacti1,num_cpus_loc,*nk1,mt1,*nactdof1,*neq1;
 
@@ -88,6 +91,10 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
     }else if(*isolver==8){
 #ifdef PASTIX
       pastix_solve_cp(qb,neqtot,&symmetryflag,&nrhs);
+#endif
+    }else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup_cp(neqtot,&symmetryflag,&inputformat);
 #endif
     }
     SFREE(jqbi);SFREE(aubi);SFREE(irowbi);
@@ -204,6 +211,15 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
 	printf(" *ERROR in massless: the PASTIX library is not linked\n\n");
 	FORTRAN(stop,());
 #endif
+      }else if(*isolver==9){
+#ifdef MUMPS
+	mumps_factor_cp(adbb,aubb,adbbb,aubbb,&sigma,icolbb,
+			irowbb,neqtot,&nzsbb,&symmetryflag,&inputformat,jqbb,
+			&nzsbb,iexpl);
+#else
+	printf(" *ERROR in massless: the MUMPS library is not linked\n\n");
+	FORTRAN(stop,());
+#endif
       }
       SFREE(aubb);SFREE(adbb);SFREE(irowbb);SFREE(icolbb);SFREE(jqbb);
     }
@@ -242,6 +258,10 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
 #ifdef PASTIX
 	  pastix_solve_cp(gvec,neqtot,&symmetryflag,&nrhs);
 #endif
+	}else if(*isolver==9){
+#ifdef MUMPS
+	  mumps_solve_cp(gvec,neqtot,&symmetryflag,&inputformat,&nrhs);
+#endif
 	}
 	
 	/* premultiplying per Wb^T */
@@ -276,6 +296,10 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
     }else if(*isolver==8){
 #ifdef PASTIX
       pastix_solve_cp(gapdisp0,neqtot,&symmetryflag,&nrhs);
+#endif
+    }else if(*isolver==9){
+#ifdef MUMPS
+      mumps_solve_cp(gapdisp0,neqtot,&symmetryflag,&inputformat,&nrhs);
 #endif
     }
   
@@ -399,6 +423,10 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
 #ifdef PASTIX
 	      pastix_solve_cp(gvec,neqtot,&symmetryflag,&nrhs);
 #endif
+	    }else if(*isolver==9){
+#ifdef MUMPS
+	      mumps_solve_cp(gvec,neqtot,&symmetryflag,&inputformat,&nrhs);
+#endif
 	    }
 	
 	    /* premultiplying per Wb^T */
@@ -489,6 +517,10 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
     }else if(*isolver==8){
 #ifdef PASTIX
       pastix_solve_cp(qb,neqtot,&symmetryflag,&nrhs);
+#endif
+    }else if(*isolver==9){
+#ifdef MUMPS
+      mumps_solve_cp(qb,neqtot,&symmetryflag,&inputformat,&nrhs);
 #endif
     }
 
@@ -621,6 +653,10 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
       }else if(*isolver==8){
 #ifdef PASTIX
 	pastix_solve_cp(qb,neqtot,&symmetryflag,&nrhs);
+#endif
+      }else if(*isolver==9){
+#ifdef MUMPS
+	mumps_cleanup_cp(neqtot,&symmetryflag,&inputformat);
 #endif
       }
     }

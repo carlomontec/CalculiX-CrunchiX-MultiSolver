@@ -37,6 +37,9 @@
 #ifdef PASTIX
 #include "pastix.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
 
 static char *sideload1,*covered1=NULL;
 
@@ -640,6 +643,12 @@ void radflowload(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,double *adrad,
 			irowrad,ntr,nzsrad,&symmetryflag,&inputformat,jqrad,
 			nzsrad,iexpl);
       ifactorization=1;
+#elif defined(MUMPS)
+      if(ifactorization==1) mumps_cleanup_cp(ntr,&symmetryflag,&inputformat);
+      mumps_factor_cp(adrad,aurad,adbrad,aubrad,&sigma,icolrad,
+		      irowrad,ntr,nzsrad,&symmetryflag,&inputformat,jqrad,
+		      nzsrad,iexpl);
+      ifactorization=1;
 #elif defined(SPOOLES)
       if(ifactorization==1) spooles_cleanup_rad();
       spooles_factor_rad(adrad,aurad,adbrad,aubrad,&sigma,
@@ -662,7 +671,9 @@ void radflowload(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,double *adrad,
 #elif defined(PARDISO)
     ITG nrhs = 1;
     pardiso_solve_cp(bcr,ntr,&symmetryflag,&inputformat,&nrhs);
-
+#elif defined(MUMPS)
+    ITG nrhs = 1;
+    mumps_solve_cp(bcr,ntr,&symmetryflag,&inputformat,&nrhs);
 #elif defined(SPOOLES)
     spooles_solve_rad(bcr,ntr);
 #endif
