@@ -144,12 +144,10 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
       ITG k2 = 0;
       for(i = 0; i < *neq; i++){
         for(j = 0; j < icol[i]; j++){
-          if(au[k] > 1.e-12 || au[k] < -1.e-12){
-            coo_cols[k2] = (int)i;
-            coo_rows[k2] = (int)(irow[k] - 1);
-            coo_vals[k2] = (*sigma == 0.) ? au[k] : (au[k] - (*sigma)*aub[k]);
-            k2++;
-          }
+          coo_cols[k2] = (int)i;
+          coo_rows[k2] = (int)(irow[k] - 1);
+          coo_vals[k2] = (*sigma == 0.) ? au[k] : (au[k] - (*sigma)*aub[k]);
+          k2++;
           k++;
         }
       }
@@ -248,10 +246,10 @@ void accelerate_solve(double *b, ITG *neq, ITG *symmetryflag, ITG *inputformat, 
 
   DenseMatrix_Double XB = {
     .rowCount = (int)(*neq),
-    .columnCount = (int)(*nrhs),
+    .columnCount = (int)(*nrhs > 0 ? *nrhs : -*nrhs),
     .columnStride = (int)(*neq),
     .attributes = (SparseAttributes_t){
-      .transpose = false,
+      .transpose = (*nrhs < 0),
       .triangle = SparseLowerTriangle,
       .kind = SparseOrdinary,
       ._reserved = 0,
