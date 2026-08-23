@@ -162,74 +162,88 @@ endif()
 if(CCX_USE_MUMPS)
     add_compile_definitions(MUMPS)
 
-    find_path(MUMPS_INCLUDE_DIR
-        NAMES dmumps_c.h
-        PATH_SUFFIXES mumps_seq mumps
-        PATHS
-            ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include
-            $ENV{MUMPS_DIR}/include
-            $ENV{MINGW_PREFIX}/include
-            $ENV{MSYSTEM_PREFIX}/include
-            /ucrt64/include
-            /mingw64/include
-            C:/msys64/ucrt64/include
-            C:/msys64/mingw64/include
-            /usr/include
-            /usr/local/include
-            /opt/homebrew/include
-            /opt/local/include
-    )
+    find_package(PkgConfig QUIET)
+    set(MUMPS_FOUND_VIA_PKG FALSE)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(MUMPS_PKG QUIET mumps mumps-seq mumps_seq dmumps)
+        if(MUMPS_PKG_FOUND)
+            message(STATUS "Found MUMPS via pkg-config: ${MUMPS_PKG_LIBRARIES}")
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_PKG_LIBRARIES})
+            link_directories(${MUMPS_PKG_LIBRARY_DIRS})
+            include_directories(${MUMPS_PKG_INCLUDE_DIRS})
+            set(MUMPS_FOUND_VIA_PKG TRUE)
+        endif()
+    endif()
 
-    set(MUMPS_LIB_PATHS
-        ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/lib
-        $ENV{MUMPS_DIR}/lib
-        $ENV{MINGW_PREFIX}/lib
-        $ENV{MSYSTEM_PREFIX}/lib
-        /ucrt64/lib
-        /mingw64/lib
-        C:/msys64/ucrt64/lib
-        C:/msys64/mingw64/lib
-        /usr/lib
-        /usr/local/lib
-        /opt/homebrew/lib
-        /opt/local/lib
-    )
+    if(NOT MUMPS_FOUND_VIA_PKG)
+        find_path(MUMPS_INCLUDE_DIR
+            NAMES dmumps_c.h
+            PATH_SUFFIXES mumps_seq mumps
+            PATHS
+                ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include
+                $ENV{MUMPS_DIR}/include
+                $ENV{MINGW_PREFIX}/include
+                $ENV{MSYSTEM_PREFIX}/include
+                /ucrt64/include
+                /mingw64/include
+                C:/msys64/ucrt64/include
+                C:/msys64/mingw64/include
+                /usr/include
+                /usr/local/include
+                /opt/homebrew/include
+                /opt/local/include
+        )
 
-    # On Debian/Ubuntu Linux, libmumps-dev links against OpenMPI which requires
-    # an active MPI runtime environment (MPI_Init). For sequential/OpenMP shared
-    # builds, libmumps-seq-dev provides dmumps_seq, mumps_common_seq, and mpiseq.
-    # We probe for the _seq variants first to ensure seamless OpenMP execution.
-    find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common libmumps_common_seq libmumps_common PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_PORD_LIB   NAMES pord_seq pord libpord_seq libpord PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq libmpiseq_seq libmpiseq PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_ESMUMPS_LIB NAMES esmumps_seq esmumps libesmumps_seq libesmumps PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_SCOTCH_LIB NAMES scotch scotcherr libscotch libscotcherr PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_METIS_LIB  NAMES metis libmetis PATHS ${MUMPS_LIB_PATHS})
+        set(MUMPS_LIB_PATHS
+            ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/lib
+            $ENV{MUMPS_DIR}/lib
+            $ENV{MINGW_PREFIX}/lib
+            $ENV{MSYSTEM_PREFIX}/lib
+            /ucrt64/lib
+            /mingw64/lib
+            C:/msys64/ucrt64/lib
+            C:/msys64/mingw64/lib
+            /usr/lib
+            /usr/local/lib
+            /opt/homebrew/lib
+            /opt/local/lib
+        )
 
-    if(MUMPS_INCLUDE_DIR AND MUMPS_DMUMPS_LIB AND MUMPS_COMMON_LIB)
-        message(STATUS "Found MUMPS Include: ${MUMPS_INCLUDE_DIR}")
-        message(STATUS "Found MUMPS dmumps:  ${MUMPS_DMUMPS_LIB}")
-        message(STATUS "Found MUMPS common:  ${MUMPS_COMMON_LIB}")
-        include_directories(${MUMPS_INCLUDE_DIR})
-        list(APPEND EXTRA_LINK_LIBS ${MUMPS_DMUMPS_LIB} ${MUMPS_COMMON_LIB})
-        if(MUMPS_PORD_LIB)
-            list(APPEND EXTRA_LINK_LIBS ${MUMPS_PORD_LIB})
+        find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common libmumps_common_seq libmumps_common PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_PORD_LIB   NAMES pord_seq pord libpord_seq libpord PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq libmpiseq_seq libmpiseq PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_ESMUMPS_LIB NAMES esmumps_seq esmumps libesmumps_seq libesmumps PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_SCOTCH_LIB NAMES scotch scotcherr libscotch libscotcherr PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_METIS_LIB  NAMES metis libmetis PATHS ${MUMPS_LIB_PATHS})
+
+        if(MUMPS_INCLUDE_DIR AND MUMPS_DMUMPS_LIB)
+            message(STATUS "Found MUMPS Include: ${MUMPS_INCLUDE_DIR}")
+            message(STATUS "Found MUMPS dmumps:  ${MUMPS_DMUMPS_LIB}")
+            if(MUMPS_COMMON_LIB)
+                message(STATUS "Found MUMPS common:  ${MUMPS_COMMON_LIB}")
+                list(APPEND EXTRA_LINK_LIBS ${MUMPS_COMMON_LIB})
+            endif()
+            include_directories(${MUMPS_INCLUDE_DIR})
+            list(APPEND EXTRA_LINK_LIBS ${MUMPS_DMUMPS_LIB})
+            if(MUMPS_PORD_LIB)
+                list(APPEND EXTRA_LINK_LIBS ${MUMPS_PORD_LIB})
+            endif()
+            if(MUMPS_MPISEQ_LIB)
+                list(APPEND EXTRA_LINK_LIBS ${MUMPS_MPISEQ_LIB})
+            endif()
+            if(MUMPS_ESMUMPS_LIB)
+                list(APPEND EXTRA_LINK_LIBS ${MUMPS_ESMUMPS_LIB})
+            endif()
+            if(MUMPS_SCOTCH_LIB)
+                list(APPEND EXTRA_LINK_LIBS ${MUMPS_SCOTCH_LIB})
+            endif()
+            if(MUMPS_METIS_LIB)
+                list(APPEND EXTRA_LINK_LIBS ${MUMPS_METIS_LIB})
+            endif()
+        else()
+            message(FATAL_ERROR "MUMPS solver requested (CCX_USE_MUMPS=ON) but MUMPS headers or libraries were not found.")
         endif()
-        if(MUMPS_MPISEQ_LIB)
-            list(APPEND EXTRA_LINK_LIBS ${MUMPS_MPISEQ_LIB})
-        endif()
-        if(MUMPS_ESMUMPS_LIB)
-            list(APPEND EXTRA_LINK_LIBS ${MUMPS_ESMUMPS_LIB})
-        endif()
-        if(MUMPS_SCOTCH_LIB)
-            list(APPEND EXTRA_LINK_LIBS ${MUMPS_SCOTCH_LIB})
-        endif()
-        if(MUMPS_METIS_LIB)
-            list(APPEND EXTRA_LINK_LIBS ${MUMPS_METIS_LIB})
-        endif()
-    else()
-        message(FATAL_ERROR "MUMPS solver requested (CCX_USE_MUMPS=ON) but MUMPS headers or libraries were not found.")
     endif()
 endif()
 
