@@ -169,7 +169,7 @@ if(CCX_USE_MUMPS)
     find_package(PkgConfig QUIET)
     set(MUMPS_FOUND_VIA_PKG FALSE)
     if(PKG_CONFIG_FOUND)
-        pkg_check_modules(MUMPS_PKG QUIET mumps mumps-seq mumps_seq dmumps)
+        pkg_check_modules(MUMPS_PKG QUIET mumps mumps-seq mumps_seq dmumps mumps-dso)
         if(MUMPS_PKG_FOUND)
             message(STATUS "Found MUMPS via pkg-config: ${MUMPS_PKG_LIBRARIES}")
             list(APPEND EXTRA_LINK_LIBS ${MUMPS_PKG_LIBRARIES})
@@ -194,6 +194,7 @@ if(CCX_USE_MUMPS)
                 C:/msys64/ucrt64/include
                 C:/msys64/mingw64/include
                 /usr/include
+                /usr/include/mumps_seq
                 /usr/local/include
                 /opt/homebrew/include
                 /opt/local/include
@@ -201,10 +202,10 @@ if(CCX_USE_MUMPS)
 
         set(MUMPS_LIB_PATHS
             ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/lib
+            ${CMAKE_PREFIX_PATH}/lib
             $ENV{MUMPS_DIR}/lib
             $ENV{MINGW_PREFIX}/lib
             $ENV{MSYSTEM_PREFIX}/lib
-            ${CMAKE_PREFIX_PATH}/lib
             /ucrt64/lib
             /mingw64/lib
             C:/msys64/ucrt64/lib
@@ -215,7 +216,7 @@ if(CCX_USE_MUMPS)
             /opt/local/lib
         )
 
-        find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps mumps libmumps PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps mumps libmumps mumps-dso libmumps-dso mumps-dmo libmumps-dmo PATHS ${MUMPS_LIB_PATHS})
         find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common libmumps_common_seq libmumps_common PATHS ${MUMPS_LIB_PATHS})
         find_library(MUMPS_PORD_LIB   NAMES pord_seq pord libpord_seq libpord PATHS ${MUMPS_LIB_PATHS})
         find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq libmpiseq_seq libmpiseq PATHS ${MUMPS_LIB_PATHS})
