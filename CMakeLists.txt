@@ -163,16 +163,17 @@ if(CCX_USE_MUMPS)
 
     find_path(MUMPS_INCLUDE_DIR
         NAMES dmumps_c.h
+        PATH_SUFFIXES mumps_seq mumps
         PATHS
             ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include
-            ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include/mumps_seq
             $ENV{MUMPS_DIR}/include
             $ENV{MINGW_PREFIX}/include
             $ENV{MSYSTEM_PREFIX}/include
+            /ucrt64/include
+            /mingw64/include
             C:/msys64/ucrt64/include
             C:/msys64/mingw64/include
             /usr/include
-            /usr/include/mumps_seq
             /usr/local/include
             /opt/homebrew/include
             /opt/local/include
@@ -183,6 +184,8 @@ if(CCX_USE_MUMPS)
         $ENV{MUMPS_DIR}/lib
         $ENV{MINGW_PREFIX}/lib
         $ENV{MSYSTEM_PREFIX}/lib
+        /ucrt64/lib
+        /mingw64/lib
         C:/msys64/ucrt64/lib
         C:/msys64/mingw64/lib
         /usr/lib

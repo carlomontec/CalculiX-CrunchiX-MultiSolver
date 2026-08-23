@@ -25,16 +25,18 @@ CCX_DIR = SCRIPT_DIR.parent
 TEST_DIR = CCX_DIR / "test"
 
 # Available Solver Binaries
+EXE_NAME = "CalculiX.exe" if sys.platform in ("win32", "msys", "cygwin") or os.name == "nt" else "CalculiX"
+
 SOLVER_CONFIGS = {
     "SPOOLES": {
-        "bin": CCX_DIR / "build_spooles" / "CalculiX",
-        "alt_bin": CCX_DIR / "src" / "CalculiX",
+        "bin": CCX_DIR / "build_spooles" / EXE_NAME,
+        "alt_bin": CCX_DIR / "build" / EXE_NAME,
         "env": {},
         "description": "SPOOLES 2.2 Direct Solver",
     },
     "PARDISO": {
-        "bin": CCX_DIR / "build_pardiso" / "CalculiX",
-        "alt_bin": None,
+        "bin": CCX_DIR / "build_pardiso" / EXE_NAME,
+        "alt_bin": CCX_DIR / "build" / EXE_NAME,
         "env": {
             "MKL_ENABLE_INSTRUCTIONS": "AVX2",
             "MKL_DYNAMIC": "FALSE",
@@ -42,16 +44,16 @@ SOLVER_CONFIGS = {
         "description": "Intel oneMKL PARDISO Solver",
     },
     "MUMPS": {
-        "bin": CCX_DIR / "build_mumps" / "CalculiX",
-        "alt_bin": None,
+        "bin": CCX_DIR / "build_mumps" / EXE_NAME,
+        "alt_bin": CCX_DIR / "build" / EXE_NAME,
         "env": {
             "MKL_THREADING_LAYER": "GNU",
         },
         "description": "MUMPS 5.x Direct Solver",
     },
     "ACCELERATE": {
-        "bin": CCX_DIR / "build_accelerate" / "CalculiX",
-        "alt_bin": CCX_DIR / "build" / "CalculiX",
+        "bin": CCX_DIR / "build_accelerate" / EXE_NAME,
+        "alt_bin": CCX_DIR / "build" / EXE_NAME,
         "env": {},
         "description": "Apple Accelerate Sparse Direct Solver",
     },
