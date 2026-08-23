@@ -63,7 +63,23 @@ endif()
 # OpenMP Support
 # -----------------------------------------------------------------------------
 if(CCX_USE_OPENMP)
-    find_package(OpenMP REQUIRED)
+    find_package(OpenMP)
+    if(NOT OpenMP_FOUND AND APPLE)
+        # Check Homebrew libomp location on macOS
+        if(EXISTS "/opt/homebrew/opt/libomp")
+            set(OpenMP_C_FLAGS "-Xclang -fopenmp -I/opt/homebrew/opt/libomp/include")
+            set(OpenMP_C_LIB_NAMES "omp")
+            set(OpenMP_omp_LIBRARY "/opt/homebrew/opt/libomp/lib/libomp.dylib")
+            set(OpenMP_C_INCLUDE_DIR "/opt/homebrew/opt/libomp/include")
+            find_package(OpenMP)
+        endif()
+    endif()
+    if(OpenMP_FOUND)
+        message(STATUS "Found OpenMP: C=${OpenMP_C_FOUND} Fortran=${OpenMP_Fortran_FOUND}")
+    else()
+        message(STATUS "OpenMP not found or disabled. Continuing without OpenMP flags.")
+        set(CCX_USE_OPENMP OFF)
+    endif()
 endif()
 
 # -----------------------------------------------------------------------------
@@ -347,18 +363,24 @@ endif()
 # -----------------------------------------------------------------------------
 if(CCX_USE_SPOOLES)
     add_compile_definitions(SPOOLES)
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/CMakeLists.txt")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/spooles/CMakeLists.txt")
+        add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/spooles" "${CMAKE_CURRENT_BINARY_DIR}/spooles_build")
+        list(APPEND EXTRA_LINK_LIBS spooles)
+        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/spooles")
+    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/CMakeLists.txt")
         add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../spooles" "${CMAKE_CURRENT_BINARY_DIR}/spooles_build")
         list(APPEND EXTRA_LINK_LIBS spooles)
+        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../spooles")
     elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles/spooles.a")
         list(APPEND EXTRA_LINK_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles/spooles.a")
-        include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../spooles")
+        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles")
     elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/spooles.a")
         list(APPEND EXTRA_LINK_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/spooles.a")
-        include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../spooles")
+        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../spooles")
     else()
-        message(FATAL_ERROR "SPOOLES not found in ../spooles or ../../spooles")
+        message(FATAL_ERROR "SPOOLES not found in spooles, ../spooles, or ../../spooles")
     endif()
+    include_directories(${SPOOLES_INCLUDE_DIR})
 endif()
 
 # -----------------------------------------------------------------------------
@@ -367,9 +389,6 @@ endif()
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-if(CCX_USE_SPOOLES)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../spooles)
-endif()
 
 # Parse Makefile.inc to extract Dr. Dhondt's exact source list
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/src/Makefile.inc" MAKEFILE_INC_CONTENT)
@@ -406,9 +425,9 @@ add_library(CalculiX_lib STATIC ${CCX_SOURCES})
 target_include_directories(CalculiX_lib PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
-if(CCX_USE_SPOOLES)
+if(CCX_USE_SPOOLES AND SPOOLES_INCLUDE_DIR)
     target_include_directories(CalculiX_lib PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../spooles>
+        $<BUILD_INTERFACE:${SPOOLES_INCLUDE_DIR}>
     )
 endif()
 
