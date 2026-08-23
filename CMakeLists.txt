@@ -128,7 +128,11 @@ if(CCX_USE_PARDISO)
             message(STATUS "Found Intel MKL Threading: ${MKL_THREAD_LIB}")
             message(STATUS "Found Intel MKL Core: ${MKL_CORE_LIB}")
             include_directories(${MKL_INCLUDE_DIR})
-            list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB} -lpthread -lm -ldl)
+            if(WIN32)
+                list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB})
+            else()
+                list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB} -lpthread -lm -ldl)
+            endif()
         else()
             message(FATAL_ERROR "Intel MKL PARDISO requested (CCX_USE_PARDISO=ON) but MKL was not found.\nPlease ensure Intel oneAPI MKL is installed and set MKLROOT or source /opt/intel/oneapi/setvars.sh.")
         endif()
@@ -147,6 +151,10 @@ if(CCX_USE_MUMPS)
             ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include
             ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include/mumps_seq
             $ENV{MUMPS_DIR}/include
+            $ENV{MINGW_PREFIX}/include
+            $ENV{MSYSTEM_PREFIX}/include
+            C:/msys64/ucrt64/include
+            C:/msys64/mingw64/include
             /usr/include
             /usr/include/mumps_seq
             /usr/local/include
@@ -157,6 +165,10 @@ if(CCX_USE_MUMPS)
     set(MUMPS_LIB_PATHS
         ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/lib
         $ENV{MUMPS_DIR}/lib
+        $ENV{MINGW_PREFIX}/lib
+        $ENV{MSYSTEM_PREFIX}/lib
+        C:/msys64/ucrt64/lib
+        C:/msys64/mingw64/lib
         /usr/lib
         /usr/local/lib
         /opt/homebrew/lib
@@ -167,13 +179,13 @@ if(CCX_USE_MUMPS)
     # an active MPI runtime environment (MPI_Init). For sequential/OpenMP shared
     # builds, libmumps-seq-dev provides dmumps_seq, mumps_common_seq, and mpiseq.
     # We probe for the _seq variants first to ensure seamless OpenMP execution.
-    find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_PORD_LIB   NAMES pord_seq pord PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_ESMUMPS_LIB NAMES esmumps_seq esmumps PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_SCOTCH_LIB NAMES scotch scotcherr PATHS ${MUMPS_LIB_PATHS})
-    find_library(MUMPS_METIS_LIB  NAMES metis PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common libmumps_common_seq libmumps_common PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_PORD_LIB   NAMES pord_seq pord libpord_seq libpord PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq libmpiseq_seq libmpiseq PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_ESMUMPS_LIB NAMES esmumps_seq esmumps libesmumps_seq libesmumps PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_SCOTCH_LIB NAMES scotch scotcherr libscotch libscotcherr PATHS ${MUMPS_LIB_PATHS})
+    find_library(MUMPS_METIS_LIB  NAMES metis libmetis PATHS ${MUMPS_LIB_PATHS})
 
     if(MUMPS_INCLUDE_DIR AND MUMPS_DMUMPS_LIB AND MUMPS_COMMON_LIB)
         message(STATUS "Found MUMPS Include: ${MUMPS_INCLUDE_DIR}")
@@ -230,13 +242,57 @@ if(NOT CCX_USE_PARDISO)
             list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
         endif()
     else()
-        # Prefer optimized BLAS (MKL runtime, OpenBLAS, BLIS) over slow reference Netlib BLAS
+        # Prefer optimized BLAS (MKL runtime, AMD AOCL-BLIS, OpenBLAS) over slow reference Netlib BLAS
         find_library(MKL_RT_LIB NAMES mkl_rt PATHS $ENV{MKLROOT}/lib/intel64 $ENV{MKLROOT}/lib /opt/intel/oneapi/mkl/latest/lib /usr/lib)
-        find_library(OPENBLAS_LIB NAMES openblas openblas64 PATHS /usr/lib /usr/local/lib)
+        find_library(AOCL_BLAS_LIB NAMES blis-mt blis blis-openmp blis-pthread libblis-mt libblis
+            PATHS
+                $ENV{AOCL_ROOT}/lib
+                $ENV{MINGW_PREFIX}/lib
+                $ENV{MSYSTEM_PREFIX}/lib
+                C:/msys64/ucrt64/lib
+                C:/msys64/mingw64/lib
+                /opt/AMD/aocl/latest/lib
+                /opt/aocl/lib
+                /usr/lib
+                /usr/lib/x86_64-linux-gnu
+                /usr/local/lib
+        )
+        find_library(AOCL_LAPACK_LIB NAMES flame libflame
+            PATHS
+                $ENV{AOCL_ROOT}/lib
+                $ENV{MINGW_PREFIX}/lib
+                $ENV{MSYSTEM_PREFIX}/lib
+                C:/msys64/ucrt64/lib
+                C:/msys64/mingw64/lib
+                /opt/AMD/aocl/latest/lib
+                /opt/aocl/lib
+                /usr/lib
+                /usr/lib/x86_64-linux-gnu
+                /usr/local/lib
+        )
+        find_library(OPENBLAS_LIB NAMES openblas openblas64 libopenblas
+            PATHS
+                $ENV{MINGW_PREFIX}/lib
+                $ENV{MSYSTEM_PREFIX}/lib
+                C:/msys64/ucrt64/lib
+                C:/msys64/mingw64/lib
+                /usr/lib
+                /usr/local/lib
+        )
 
         if(MKL_RT_LIB)
             message(STATUS "Using Intel oneMKL Optimized BLAS/LAPACK: ${MKL_RT_LIB}")
             list(APPEND EXTRA_LINK_LIBS ${MKL_RT_LIB})
+        elseif(AOCL_BLAS_LIB)
+            message(STATUS "Using AMD AOCL (BLIS) Optimized BLAS: ${AOCL_BLAS_LIB}")
+            list(APPEND EXTRA_LINK_LIBS ${AOCL_BLAS_LIB})
+            if(AOCL_LAPACK_LIB)
+                message(STATUS "Using AMD AOCL (libflame) LAPACK: ${AOCL_LAPACK_LIB}")
+                list(APPEND EXTRA_LINK_LIBS ${AOCL_LAPACK_LIB})
+            else()
+                find_package(LAPACK REQUIRED)
+                list(APPEND EXTRA_LINK_LIBS ${LAPACK_LIBRARIES})
+            endif()
         elseif(OPENBLAS_LIB)
             message(STATUS "Using OpenBLAS Optimized BLAS/LAPACK: ${OPENBLAS_LIB}")
             list(APPEND EXTRA_LINK_LIBS ${OPENBLAS_LIB})
@@ -265,8 +321,12 @@ if(CCX_USE_ARPACK)
         list(APPEND EXTRA_LINK_LIBS ${ARPACK_LIBRARIES})
         link_directories(${ARPACK_LIBRARY_DIRS})
     else()
-        find_library(ARPACK_LIB NAMES arpack arpack_LINUX
+        find_library(ARPACK_LIB NAMES arpack arpack_LINUX libarpack
             PATHS
+                $ENV{MINGW_PREFIX}/lib
+                $ENV{MSYSTEM_PREFIX}/lib
+                C:/msys64/ucrt64/lib
+                C:/msys64/mingw64/lib
                 /opt/homebrew/lib
                 /usr/local/lib
                 /usr/lib
