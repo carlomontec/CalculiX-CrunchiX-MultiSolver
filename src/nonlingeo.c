@@ -1045,7 +1045,8 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
         scaling is activated if the user time increment cannot be satisfied */
 
       dtset=*tmin*(*tper);
-      NNEW(smscale,double,*ne);
+      /* Allocate with ne0 (total elements including contact elements) to avoid out-of-bounds in calcstabletimeincvol */
+      NNEW(smscale,double,ne0);
 	  
       FORTRAN(calcstabletimeincvol,(&ne0,elcon,nelcon,rhcon,nrhcon,alcon,
 				    nalcon,orab,ntmat_,ithermal,alzero,plicon,
