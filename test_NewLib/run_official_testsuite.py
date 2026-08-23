@@ -98,6 +98,7 @@ def run_single_test(task):
     env["OMP_NUM_THREADS"] = str(threads)
     env["MKL_NUM_THREADS"] = str(threads)
     env["CCX_NPROC_EQUATION_SOLVER"] = str(threads)
+    env["OMP_STACKSIZE"] = "128M"
     env.update(custom_env)
 
     # Create isolated sandbox directory

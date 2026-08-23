@@ -1056,6 +1056,8 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
 				    jobnamef,iperturb));
 
       printf(" Explicit time integration: Volumetric COURANT initial stable time increment:%e\n\n",dtvol);
+      /* Ensure output is immediately flushed in non-interactive batch/CI runs */
+      fflush(stdout);
 
       if(dtvol>(*tmax*(*tper))){
 	*tinc=*tmax*(*tper);}
@@ -1068,6 +1070,8 @@ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
       dtheta=(*tinc)/(*tper);
       dthetaref=dtheta;
       printf(" SELECTED time increment (not considering penalty contact):%e\n\n",*tinc);
+      /* Ensure output is immediately flushed in non-interactive batch/CI runs */
+      fflush(stdout);
     }
       
     /* in mafillsm the stiffness and mass matrix are computed;
