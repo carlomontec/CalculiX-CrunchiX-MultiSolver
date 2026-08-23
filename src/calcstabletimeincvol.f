@@ -72,7 +72,7 @@
      &     t0(*),t1(*),shp(4,20),vold(0:mi(2),*),tt,
      &     e,un,wavspd,xi,et,ze,weight,co(3,*),xl(3,20),xsj,
      &     xl2(3,9),xsj2(3),xs2(3,7),shp2(7,9),hmin,area,
-     &     volume,dtvol,safefac,alpha,bet,gam,critom,damping,
+     &     volume,dtvol,safefac,alpha(*),bet,gam,critom,damping,
      &     elemfac,quadfac,smscale(*),dtset   
 !     
       data ifaceq /4,3,2,1,11,10,9,12,
@@ -111,8 +111,8 @@
       damping=0
       icount=0
 !     
-      bet=(1.d0-alpha)*(1.d0-alpha)/4.d0
-      gam=0.5d0-alpha
+      bet=(1.d0-alpha(1))*(1.d0-alpha(1))/4.d0
+      gam=0.5d0-alpha(1)
 !     
 !     Calculation of Omega Critical
 !     Om_cr=dt*freq_max
@@ -121,8 +121,8 @@
 !        Element Method for Three-Dimensional Thermomechanical Applications.
 !     factor 0.98 in critom from miranda?
 !      
-      aa=1.d0-alpha*(1.d0+alpha*(2.d0+alpha))
-      bb=2.d0*damping*(1.d0+alpha*(1.d0+2.d0*alpha))
+      aa=1.d0-alpha(1)*(1.d0+alpha(1)*(2.d0+alpha(1)))
+      bb=2.d0*damping*(1.d0+alpha(1)*(1.d0+2.d0*alpha(1)))
       cc=-4.d0
       critom=0.98d0*(-bb+dsqrt(bb*bb-aa*cc))/aa
 !     
@@ -163,6 +163,10 @@ c        write(*,*) 'calcstabletimeincvol ',nelem
 !     ------------Shape Functions --------------------------------
 !
           elemfac=1.d0
+          nope=8
+          nopes=4
+          nfaces=6
+          weight=8.d0
 !
           if(lakon(nelem)(4:5).eq.'20')then
             nope=20
