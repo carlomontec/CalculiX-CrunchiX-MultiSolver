@@ -118,7 +118,7 @@ jobs:
           fi
 
   # ============================================================================
-  # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS & SPOOLES
+  # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS, PARDISO, and SPOOLES
   # ============================================================================
   windows:
     name: Windows MSYS2 (${{ matrix.solver_name }})
@@ -130,6 +130,9 @@ jobs:
           - solver: mumps
             solver_name: "MUMPS 5.x"
             cmake_flags: "-DCCX_USE_MUMPS=ON"
+          - solver: pardiso
+            solver_name: "Intel oneMKL PARDISO"
+            cmake_flags: "-DCCX_USE_PARDISO=ON"
           - solver: spooles
             solver_name: "SPOOLES 2.2"
             cmake_flags: "-DCCX_USE_SPOOLES=ON"
@@ -154,6 +157,12 @@ jobs:
             mingw-w64-ucrt-x86_64-metis
             mingw-w64-ucrt-x86_64-scotch
             mingw-w64-ucrt-x86_64-python
+
+      - name: Install Intel oneMKL on Windows (if PARDISO)
+        if: matrix.solver == 'pardiso'
+        shell: pwsh
+        run: |
+          winget install Intel.oneAPI.MKL --silent --accept-package-agreements --accept-source-agreements || true
 
       - name: Build CalculiX in MSYS2
         shell: msys2 {0}
