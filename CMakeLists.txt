@@ -488,6 +488,10 @@ endif()
 add_executable(CalculiX src/CalculiX.c)
 target_link_libraries(CalculiX PRIVATE CalculiX_lib)
 
+if(APPLE)
+    target_link_options(CalculiX PRIVATE "-Wl,-stack_size,0x10000000")
+endif()
+
 if(CCX_USE_OPENMP)
     target_link_libraries(CalculiX PRIVATE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 endif()
