@@ -440,7 +440,13 @@ c            if(mortar.eq.-1) elemfac=0.9d0
         mscalmethod=1
 !     
         ilen=index(jobnamef(1),' ')-1
-        fn=jobnamef(1)(1:ilen)//'_WarnElementMassScaled.nam'
+        if(ilen.le.0) ilen=len_trim(jobnamef(1))
+        if(ilen.le.0) then
+          fn='WarnElementMassScaled.nam'
+          ilen=0
+        else
+          fn=jobnamef(1)(1:ilen)//'_WarnElementMassScaled.nam'
+        endif
         open(40,file=fn,status='unknown')
         write(40,*) '*ELSET,ELSET=MassScaled'
 !     
@@ -467,11 +473,11 @@ c            if(mortar.eq.-1) elemfac=0.9d0
           write(*,*) 
           write(*,*) '*INFO in calcstabletimeincvol:'
           write(*,*) '      scaled elements are stored in file'
-          write(*,*) '      ',fn(1:ilen+26)
+          write(*,*) '      ',trim(fn)
           write(*,*) '      This file can be loaded into'
           write(*,*) '      an active cgx-session by typing'
           write(*,*)
-     &         '      read ',fn(1:ilen+26),' inp'
+     &         '      read ',trim(fn),' inp'
           write(*,*)
           close(40)
         else
