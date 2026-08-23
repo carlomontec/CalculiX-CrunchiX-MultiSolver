@@ -45,6 +45,13 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
   char *env;
   ITG nthread = 1;
 
+  if(*neq == 0) return;
+
+  /* Reset and release previous solver instance if called repeatedly (e.g. contact iterations) */
+  if(mumps_initialized){
+    mumps_cleanup(neq, symmetryflag, inputformat);
+  }
+
   if(*symmetryflag == 0){
     printf(" Factoring the system of equations using the symmetric MUMPS solver\n");
   }else{
@@ -134,18 +141,16 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
       ITG k2 = 0;
       for(i = 0; i < *neq; i++){
         for(j = 0; j < icol[i]; j++){
-          if(au[k] > 1.e-12 || au[k] < -1.e-12){
-            id.jcn[k2] = (MUMPS_INT)(i + 1);
-            id.irn[k2] = (MUMPS_INT)irow[k];
-            id.a[k2]   = (*sigma == 0.) ? au[k] : (au[k] - (*sigma)*aub[k]);
-            k2++;
-          }
+          id.irn[k2] = (MUMPS_INT)irow[k];
+          id.jcn[k2] = (MUMPS_INT)(i + 1);
+          id.a[k2]   = (*sigma == 0.) ? au[k] : (au[k] - (*sigma)*aub[k]);
+          k2++;
           k++;
         }
       }
       for(i = 0; i < *neq; i++){
-        id.jcn[k2] = (MUMPS_INT)(i + 1);
         id.irn[k2] = (MUMPS_INT)(i + 1);
+        id.jcn[k2] = (MUMPS_INT)(i + 1);
         id.a[k2]   = (*sigma == 0.) ? ad[i] : (ad[i] - (*sigma)*adb[i]);
         k2++;
       }
