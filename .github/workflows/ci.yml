@@ -172,6 +172,7 @@ jobs:
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="/ucrt64" \
             ${{ matrix.cmake_flags }} \
             -DCCX_USE_ARPACK=ON \
             -DCCX_USE_ACCELERATE=OFF
