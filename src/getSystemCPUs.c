@@ -18,26 +18,27 @@
 	for both *NIX and Windows systems. Convergent Mechanical, Dec 5, 2012
 */
 
+#if !defined(_WIN32) && !defined(__WIN32)
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include "CalculiX.h"
 
-#ifdef __WIN32
+#if defined(_WIN32) || defined(__WIN32)
 #include <windows.h>
 
 ITG getSystemCPUs(){
 	SYSTEM_INFO sysinfo;
 	GetSystemInfo( &sysinfo );
-	return sysinfo.dwNumberOfProcessors;
+	return (ITG)sysinfo.dwNumberOfProcessors;
 }
 
 #else
-#include <unistd.h>
 
 ITG getSystemCPUs(){
-	return sysconf(_SC_NPROCESSORS_CONF);;
+	return sysconf(_SC_NPROCESSORS_CONF);
 }
 #endif

@@ -188,118 +188,118 @@ check_dependencies() {
 check_dependencies
 
 # -----------------------------------------------------------------------------
-# Solver Configuration Selection
+# Solver Backend Configuration & Dependencies
 # -----------------------------------------------------------------------------
-echo -e "\n${BOLD}--> Selecting Sparse Direct Solver Backend...${NC}"
+echo -e "\n${BOLD}--> Configuring Sparse Direct Solvers...${NC}"
 
 CMAKE_SOLVER_FLAGS=""
+SOLVER_NAME=""
 
 if [ "${OS}" = "Darwin" ]; then
-    echo -e "  [1] ${BOLD}Apple Accelerate${NC} (Recommended - Native macOS hardware acceleration, default)"
-    echo -e "  [2] ${BOLD}SPOOLES 2.2${NC}      (Classic built-in solver)"
-    echo -e "  [3] ${BOLD}MUMPS 5.x${NC}        (Parallel direct solver via Homebrew)"
-    
-    prompt_read "Select solver configuration [1/2/3, default: 1]: " "1" SOLVER_CHOICE
-    case "$SOLVER_CHOICE" in
-        2)
-            CMAKE_SOLVER_FLAGS="-DCCX_USE_SPOOLES=ON -DCCX_USE_ACCELERATE=OFF"
-            SOLVER_NAME="SPOOLES 2.2"
-            ;;
-        3)
-            CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON -DCCX_USE_ACCELERATE=OFF"
-            SOLVER_NAME="MUMPS 5.x"
-            ;;
-        *)
-            CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=ON"
-            SOLVER_NAME="Apple Accelerate (Native)"
-            ;;
-    esac
+    echo -e "${GREEN}[INFO] macOS Detected:${NC}"
+    echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (Native hardware acceleration, zero external solver dependencies)."
+    echo -e "  * An open-source solver (${BOLD}MUMPS 5.x${NC}) is also available as an option.\n"
+
+    prompt_read "Enable MUMPS 5.x as an additional open-source solver via Homebrew? [y/N]: " "N" ENABLE_MUMPS
+    if [[ "$ENABLE_MUMPS" =~ ^[Yy]$ ]]; then
+        if ! brew list mumps &>/dev/null 2>&1; then
+            echo "Installing MUMPS via Homebrew..."
+            brew install mumps || true
+        fi
+        CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=ON"
+        SOLVER_NAME="Apple Accelerate (Default) + MUMPS 5.x"
+    else
+        CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=ON"
+        SOLVER_NAME="Apple Accelerate (Native)"
+    fi
 
 elif [ "${OS}" = "Linux" ]; then
-    # Check for Intel MKL on x86_64
-    HAS_MKL=false
+    # Ensure MUMPS is installed in all cases on Linux as open-source solver
+    echo -e "${GREEN}[INFO] Linux Detected:${NC}"
+    echo -e "  * Installing ${BOLD}MUMPS 5.x${NC} as the primary open-source multi-threaded direct solver."
+
+    if command -v apt-get &>/dev/null; then
+        dpkg -l | grep -q "libmumps-seq-dev" || sudo apt-get install -y libmumps-seq-dev
+    elif command -v dnf &>/dev/null; then
+        rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel
+    elif command -v pacman &>/dev/null; then
+        pacman -Qi mumps &>/dev/null || sudo pacman -S --needed mumps
+    fi
+
     if [ "${ARCH}" = "x86_64" ]; then
-        if [ -n "$MKLROOT" ] || [ -d "/opt/intel/oneapi/mkl" ] || [ -f "/usr/include/mkl/mkl.h" ]; then
+        # Check for AMD CPU architecture
+        IS_AMD=false
+        if grep -q -i "authenticamd" /proc/cpuinfo 2>/dev/null || (command -v lscpu &>/dev/null && lscpu | grep -q -i "AMD"); then
+            IS_AMD=true
+        fi
+
+        if [ "$IS_AMD" = true ]; then
+            echo -e "\n${BOLD}${CYAN}AMD Zen CPU Architecture Detected (Ryzen/EPYC/Threadripper):${NC}"
+            echo -e "  AMD provides ${BOLD}AOCL-BLIS${NC} (open-source linear algebra tuned specifically for AMD CPUs)."
+            echo -e "  Learn more: ${CYAN}https://www.amd.com/en/developer/aocl.html${NC}"
+            prompt_read "Would you like to install and enable AMD AOCL (BLIS)? [Y/n]: " "Y" USE_AOCL
+            if [[ "$USE_AOCL" =~ ^[Yy]$ ]]; then
+                echo "Installing AMD BLIS/AOCL linear algebra libraries..."
+                if command -v apt-get &>/dev/null; then
+                    sudo apt-get install -y libblis-openmp-dev libflame-dev 2>/dev/null || sudo apt-get install -y libblis-dev 2>/dev/null || true
+                elif command -v dnf &>/dev/null; then
+                    sudo dnf install -y blis-devel libflame-devel 2>/dev/null || true
+                elif command -v pacman &>/dev/null; then
+                    sudo pacman -S --needed blis 2>/dev/null || true
+                fi
+            fi
+        fi
+
+        echo -e "\n${BOLD}${YELLOW}Intel oneMKL PARDISO Solver Option:${NC}"
+        echo -e "  Intel oneMKL is ${BOLD}proprietary (not open-source)${NC}, but generally provides"
+        echo -e "  ${BOLD}higher performance${NC} on Intel and AMD x86_64 CPUs with AVX2/AVX-512 acceleration."
+        echo -e "  Learn more: ${CYAN}https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html${NC}"
+        echo -e "  (MUMPS 5.x remains fully available as open-source Option B in any case).\n"
+
+        # Check if MKL is already present
+        HAS_MKL=false
+        if [ -n "$MKLROOT" ] || [ -d "/opt/intel/oneapi/mkl" ] || [ -f "/usr/include/mkl/mkl.h" ] || [ -f "/usr/include/mkl.h" ]; then
             HAS_MKL=true
         fi
-    fi
 
-    # Check for MUMPS
-    HAS_MUMPS=false
-    if ldconfig -p 2>/dev/null | grep -q "libdmumps" || [ -f "/usr/include/dmumps_c.h" ] || [ -f "/usr/include/mumps_seq/dmumps_c.h" ]; then
-        HAS_MUMPS=true
-    fi
-
-    if [ "$HAS_MKL" = true ]; then
-        echo -e "  [1] ${BOLD}Intel oneMKL PARDISO${NC} (Recommended - Fastest on x86_64 Linux)"
-        echo -e "  [2] ${BOLD}MUMPS 5.x${NC}            (Robust OpenMP direct solver)"
-        echo -e "  [3] ${BOLD}SPOOLES 2.2${NC}          (Classic built-in fallback)"
-        prompt_read "Select solver configuration [1/2/3, default: 1]: " "1" SOLVER_CHOICE
-        case "$SOLVER_CHOICE" in
-            2)
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-                SOLVER_NAME="MUMPS 5.x"
-                ;;
-            3)
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_SPOOLES=ON"
-                SOLVER_NAME="SPOOLES 2.2"
-                ;;
-            *)
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_PARDISO=ON"
-                SOLVER_NAME="Intel oneMKL PARDISO"
-                ;;
-        esac
-    elif [ "$HAS_MUMPS" = true ]; then
-        echo -e "  [1] ${BOLD}MUMPS 5.x${NC}   (Recommended for Linux without MKL, default)"
-        echo -e "  [2] ${BOLD}SPOOLES 2.2${NC} (Classic built-in solver)"
-        prompt_read "Select solver configuration [1/2, default: 1]: " "1" SOLVER_CHOICE
-        case "$SOLVER_CHOICE" in
-            2)
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_SPOOLES=ON"
-                SOLVER_NAME="SPOOLES 2.2"
-                ;;
-            *)
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-                SOLVER_NAME="MUMPS 5.x"
-                ;;
-        esac
-    else
-        echo -e "  [1] ${BOLD}SPOOLES 2.2${NC} (Universal built-in solver, default)"
-        echo -e "  [2] Install & Enable ${BOLD}MUMPS 5.x${NC} (libmumps-seq-dev)"
-        if [ "${ARCH}" = "x86_64" ]; then
-            echo -e "  [3] Install & Enable ${BOLD}Intel oneMKL PARDISO${NC}"
-        fi
-        prompt_read "Select solver configuration [default: 1]: " "1" SOLVER_CHOICE
-        case "$SOLVER_CHOICE" in
-            2)
+        if [ "$HAS_MKL" = true ]; then
+            prompt_read "Found Intel oneMKL on your system. Enable Intel oneMKL PARDISO? [Y/n]: " "Y" USE_MKL
+        else
+            prompt_read "Would you like to install and enable Intel oneMKL PARDISO? [y/N]: " "N" USE_MKL
+            if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
+                echo "Installing Intel oneMKL..."
                 if command -v apt-get &>/dev/null; then
-                    sudo apt-get update && sudo apt-get install -y libmumps-seq-dev
+                    wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+                    echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+                    sudo apt-get update && sudo apt-get install -y intel-oneapi-mkl-devel
                 elif command -v dnf &>/dev/null; then
-                    sudo dnf install -y MUMPS-devel
+                    sudo dnf install -y intel-oneapi-mkl-devel
                 elif command -v pacman &>/dev/null; then
-                    sudo pacman -S --needed mumps
+                    sudo pacman -S --needed intel-oneapi-mkl
                 fi
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-                SOLVER_NAME="MUMPS 5.x"
-                ;;
-            3)
-                echo -e "\n${CYAN}To install Intel oneMKL on Linux:${NC}"
-                echo -e "  Ubuntu/Debian: sudo apt-get install -y intel-oneapi-mkl-devel"
-                echo -e "  Fedora/RHEL:   sudo dnf install -y intel-oneapi-mkl-devel"
-                echo -e "  Arch Linux:    sudo pacman -S intel-oneapi-mkl\n"
-                prompt_read "Proceed with SPOOLES for now? [Y/n] " "Y" PROCEED_SPOOLES
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_SPOOLES=ON"
-                SOLVER_NAME="SPOOLES 2.2"
-                ;;
-            *)
-                CMAKE_SOLVER_FLAGS="-DCCX_USE_SPOOLES=ON"
-                SOLVER_NAME="SPOOLES 2.2"
-                ;;
-        esac
+                HAS_MKL=true
+            fi
+        fi
+
+        if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
+            CMAKE_SOLVER_FLAGS="-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=ON"
+            SOLVER_NAME="Intel oneMKL PARDISO (Default) + MUMPS 5.x + SPOOLES 2.2"
+        else
+            CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
+            SOLVER_NAME="MUMPS 5.x (Open-Source Default) + SPOOLES 2.2"
+        fi
+
+    else
+        # Linux ARM64 (aarch64)
+        echo -e "\n${CYAN}[INFO] Linux ARM64 architecture detected.${NC}"
+        echo -e "  Intel oneMKL is not available on Linux ARM64."
+        echo -e "  Configuring ${BOLD}MUMPS 5.x${NC} as primary multi-threaded solver with ${BOLD}SPOOLES 2.2${NC} as fallback."
+        CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
+        SOLVER_NAME="MUMPS 5.x (Primary) + SPOOLES 2.2"
     fi
 fi
 
-echo -e "Configured Solver: ${BOLD}${GREEN}${SOLVER_NAME}${NC}"
+echo -e "Configured Solver Backends: ${BOLD}${GREEN}${SOLVER_NAME}${NC}"
 
 # -----------------------------------------------------------------------------
 # Compilation & Build
@@ -365,4 +365,10 @@ echo -e "To run a simulation:"
 echo -e "  ${CYAN}ccx input_deck_name${NC}  (without .inp extension)"
 echo -e "  or"
 echo -e "  ${CYAN}CalculiX input_deck_name${NC}"
+echo -e "\n${BOLD}Selecting Solvers in Your Input Decks (*.inp):${NC}"
+echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
+echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX-512)"
+echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
+echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"
+echo -e "\nSee README.md for complete solver benchmarks and documentation."
 echo -e "================================================================\n"

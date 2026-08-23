@@ -18,15 +18,21 @@ This project is an **academic exercise for learning AI agentic programming** by 
 
 The objective is to explore agent-assisted scientific software modernization by making CalculiX CrunchiX (CCX) as **flexible, fast, and accessible across all major operating systems** as possible. We intend to update to pluggable state-of-the-art sparse direct solvers (**Intel oneMKL PARDISO**, **MUMPS 5.x**, and **Apple Accelerate**), modern **CMake** build pipelines, and automated multi-solver verification suites; while strictly preserving the original core mechanical computations.
 
-## Quick Installation (Universal 1-Liner)
+## Quick Installation (Universal 1-Liners)
 
-Install or build CalculiX with automated solver selection across macOS and Linux with a single command:
+Install or build CalculiX with automated solver selection across macOS, Linux, and Windows with a single command:
 
+#### Linux & macOS (Bash):
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 ```
 
-The installer automatically detects your operating system, hardware architecture, and installed linear algebra libraries (Apple Accelerate on macOS, Intel oneMKL PARDISO or MUMPS on Linux, or SPOOLES), builds the binary, and installs it to `~/.local/bin/ccx`.
+#### Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
+```
+
+The installer automatically detects your operating system, hardware architecture, and installed linear algebra libraries (Apple Accelerate on macOS, Intel oneMKL PARDISO or MUMPS on Linux, MUMPS/PARDISO on Windows, or SPOOLES), builds the binary, and installs it to your local path (`~/.local/bin/ccx` on Unix, `%USERPROFILE%\.local\bin\ccx.exe` on Windows).
 
 ---
 
@@ -70,7 +76,7 @@ When no `SOLVER=` parameter is specified in the `.inp` deck, CalculiX selects th
 1. **macOS**: **Apple Accelerate** is enabled by default.
 2. **Linux (x86_64)**: **Intel oneMKL PARDISO** when built with `-DCCX_USE_PARDISO=ON`, else **MUMPS 5.x**, else **SPOOLES 2.2**.
 3. **Linux (ARM / aarch64)**: **MUMPS 5.x**, falling back to **SPOOLES 2.2**.
-4. **Windows**: **Intel oneMKL PARDISO** or **SPOOLES 2.2** (roadmap) .
+4. **Windows**: **MUMPS 5.x** (default via MSYS2), **Intel oneMKL PARDISO** (when oneMKL is installed), or **SPOOLES 2.2**.
 5. **Universal Fallback**: Built-in **SPOOLES 2.2** is always compiled and available across all platforms.
 
 ---
@@ -184,14 +190,26 @@ Intel oneMKL PARDISO provides the fastest solve times with multi-threaded AVX2/A
   brew install cmake gcc arpack
   ```
 
+* **Windows (MSYS2 UCRT64)**:
+  ```bash
+  pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gcc-fortran mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-openblas mingw-w64-ucrt-x86_64-arpack mingw-w64-ucrt-x86_64-mumps
+  ```
+
 ---
 
 ### 2. Configure and Compile
 
-#### Option A: Automated Build & Install Script (Recommended)
-```bash
-./install.sh
-```
+#### Option A: Automated Build & Install Scripts (Recommended)
+
+* **Linux & macOS (Bash)**:
+  ```bash
+  ./install.sh
+  ```
+
+* **Windows (PowerShell)**:
+  ```powershell
+  .\install.ps1
+  ```
 
 #### Option B: Manual CMake Commands
 
