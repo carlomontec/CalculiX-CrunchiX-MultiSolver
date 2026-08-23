@@ -2,9 +2,9 @@ name: CI Multi-Solver Matrix
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, 'fix/**', 'fix_*', 'feat/**' ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, main, 'fix/**', 'fix_*', 'feat/**' ]
   workflow_dispatch:
     inputs:
       full_test_suite:
