@@ -366,9 +366,27 @@ def main():
         except Exception as e:
             print(f"[!] Note: Could not write GitHub Step Summary: {e}")
 
-    # We exit 0 even if there are failures, so the CI remains green for compilation success.
-    # The user will review the step summary for numerical evaluations.
-    sys.exit(0)
+    # Compute overall status across all solvers
+    total_fails = sum(st["FAIL"] + st["ERROR"] + st["TIMEOUT"] for st in stats.values())
+    total_diffs = sum(st["DIFF"] for st in stats.values())
+    total_passes = sum(st["PASS"] for st in stats.values())
+    total_all = sum(len(decks) for _ in active_solvers)
+    overall_pass_rate = (total_passes / total_all * 100) if total_all else 0
+
+    if total_fails > 0:
+        # Exit 2: Execution error / crash (FAIL, TIMEOUT, ERROR)
+        fail_details = ", ".join([f"{s}: {stats[s]['FAIL']} fail" for s in active_solvers if stats[s]['FAIL'] > 0])
+        print(f"::error title=Test Suite Failure (Crashes)::Overall Pass Rate: {overall_pass_rate:.1f}% ({total_passes}/{total_all}). {total_fails} test(s) failed or crashed ({fail_details}).")
+        sys.exit(2)
+    elif total_diffs > 0:
+        # Exit 1: Numerical differences / assertion failure (DIFF only)
+        diff_details = ", ".join([f"{s}: {stats[s]['DIFF']} diff" for s in active_solvers if stats[s]['DIFF'] > 0])
+        print(f"::warning title=Test Suite Notice (Numerical Diffs)::Overall Pass Rate: {overall_pass_rate:.1f}% ({total_passes}/{total_all}). {total_diffs} test(s) had numerical differences ({diff_details}).")
+        sys.exit(1)
+    else:
+        # Exit 0: 100% Pass
+        print(f"::notice title=Test Suite Success::Overall Pass Rate: 100.0% ({total_passes}/{total_all}). All verification tests passed cleanly!")
+        sys.exit(0)
 
 
 if __name__ == "__main__":

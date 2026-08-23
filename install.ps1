@@ -147,7 +147,7 @@ function Invoke-MsysBash($cmd) {
     $env:CHERE_INVOKING = "1"
     & $bashExe -l -c "$cmd"
     if ($LASTEXITCODE -ne 0) {
-        throw "MSYS2 command failed with exit code $LASTEXITCODE: $cmd"
+        throw "MSYS2 command failed with exit code ${LASTEXITCODE}: $cmd"
     }
 }
 
