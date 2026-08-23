@@ -61,11 +61,16 @@ jobs:
   # 2. Linux x86_64 - MUMPS 5.x, Intel oneMKL PARDISO, and Legacy SPOOLES
   # ============================================================================
   linux:
-    name: Linux (${{ matrix.solver_name }})
-    runs-on: ubuntu-24.04
+    name: Linux ${{ matrix.os }} (${{ matrix.solver_name }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        solver: [mumps, pardiso, spooles]
+        exclude:
+          - os: ubuntu-24.04-arm
+            solver: pardiso
         include:
           - solver: mumps
             solver_name: "MUMPS 5.x Open-Source"
