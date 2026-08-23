@@ -323,13 +323,51 @@ def main():
     print("\n" + "=" * 80)
     print(" Solver Aggregate Statistics:")
     print("=" * 80)
+    any_failures = False
     for s in active_solvers.keys():
         st = stats[s]
         total_runs = len(decks)
         pass_rate = (st["PASS"] / total_runs * 100) if total_runs else 0
-        print(f"  * {s:<8}: {st['PASS']:3d} PASS | {st['DIFF']:2d} DIFF | {st['FAIL']:2d} FAIL | {st['TIMEOUT']:2d} TIMEOUT | Cumul Time: {st['TOTAL_TIME']:6.2f}s (Pass Rate: {pass_rate:5.1f}%)")
+        if st["FAIL"] > 0 or st["ERROR"] > 0 or st["TIMEOUT"] > 0:
+            any_failures = True
+        print(f"  * {s:<8}: {st['PASS']:3d} PASS | {st['DIFF']:2d} DIFF | {st['FAIL']:2d} FAIL | {st['TIMEOUT']:2d} TIMEOUT | Cumul Time: {st['TOTAL_TIME']:6.2f}s | Pass Rate: {pass_rate:5.1f}% ({st['PASS']}/{total_runs})")
     print(f"\nTotal Suite Wall-Clock Time: {total_wall:.2f} s across {max_workers} workers")
     print("=" * 80)
+
+    # Write GitHub Step Summary if running in CI
+    step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if step_summary:
+        try:
+            with open(step_summary, "a", encoding="utf-8") as f:
+                f.write(f"### 🧪 CalculiX Verification Results ({', '.join(active_solvers.keys())})\n\n")
+                f.write("| Solver | Passed | Diff | Failed | Timeout | Total Time | Pass Rate |\n")
+                f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n")
+                for s in active_solvers.keys():
+                    st = stats[s]
+                    total_runs = len(decks)
+                    pass_rate = (st["PASS"] / total_runs * 100) if total_runs else 0
+                    badge = "✅" if pass_rate == 100.0 else ("⚠️" if pass_rate >= 90.0 else "❌")
+                    f.write(f"| **{s}** | {st['PASS']} | {st['DIFF']} | {st['FAIL']} | {st['TIMEOUT']} | {st['TOTAL_TIME']:.2f}s | **{badge} {pass_rate:.1f}%** ({st['PASS']}/{total_runs}) |\n")
+                
+                f.write("\n<details><summary><b>Detailed Per-Deck Results</b></summary>\n\n")
+                f.write("| Test Deck | " + " | ".join([f"{s} Status" for s in active_solvers.keys()]) + " |\n")
+                f.write("| :--- | " + " | ".join([":---:" for _ in active_solvers]) + " |\n")
+                for d in decks:
+                    deck_row = f"| `{d}` | "
+                    for s in active_solvers.keys():
+                        res = results[d].get(s)
+                        if res:
+                            icon = "✅" if res["status"] == "PASS" else "❌"
+                            deck_row += f"{icon} {res['status']} ({res['time']:.2f}s) | "
+                        else:
+                            deck_row += "N/A | "
+                    f.write(deck_row + "\n")
+                f.write("\n</details>\n\n")
+        except Exception as e:
+            print(f"[!] Note: Could not write GitHub Step Summary: {e}")
+
+    if any_failures:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

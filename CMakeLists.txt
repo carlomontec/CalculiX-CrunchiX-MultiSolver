@@ -118,6 +118,8 @@ if(CCX_USE_PARDISO)
             NAMES mkl.h mkl_service.h
             PATHS
                 $ENV{MKLROOT}/include
+                "C:/Program Files (x86)/Intel/oneAPI/mkl/latest/include"
+                "C:/Program Files/Intel/oneAPI/mkl/latest/include"
                 /opt/intel/oneapi/mkl/latest/include
                 /usr/include/mkl
         )
@@ -125,6 +127,8 @@ if(CCX_USE_PARDISO)
         set(MKL_LIB_SEARCH_PATHS
             $ENV{MKLROOT}/lib/intel64
             $ENV{MKLROOT}/lib
+            "C:/Program Files (x86)/Intel/oneAPI/mkl/latest/lib/intel64"
+            "C:/Program Files/Intel/oneAPI/mkl/latest/lib/intel64"
             /opt/intel/oneapi/mkl/latest/lib/intel64
             /opt/intel/oneapi/mkl/latest/lib
             /usr/lib/x86_64-linux-gnu
@@ -177,13 +181,14 @@ if(CCX_USE_MUMPS)
 
     if(NOT MUMPS_FOUND_VIA_PKG)
         find_path(MUMPS_INCLUDE_DIR
-            NAMES dmumps_c.h
-            PATH_SUFFIXES mumps_seq mumps
+            NAMES dmumps_c.h smumps_c.h zmumps_c.h cmumps_c.h mumps_c.h
+            PATH_SUFFIXES mumps mumps_seq MUMPS
             PATHS
                 ${CMAKE_CURRENT_SOURCE_DIR}/../mumps/include
                 $ENV{MUMPS_DIR}/include
                 $ENV{MINGW_PREFIX}/include
                 $ENV{MSYSTEM_PREFIX}/include
+                ${CMAKE_PREFIX_PATH}/include
                 /ucrt64/include
                 /mingw64/include
                 C:/msys64/ucrt64/include
@@ -199,6 +204,7 @@ if(CCX_USE_MUMPS)
             $ENV{MUMPS_DIR}/lib
             $ENV{MINGW_PREFIX}/lib
             $ENV{MSYSTEM_PREFIX}/lib
+            ${CMAKE_PREFIX_PATH}/lib
             /ucrt64/lib
             /mingw64/lib
             C:/msys64/ucrt64/lib
@@ -209,7 +215,7 @@ if(CCX_USE_MUMPS)
             /opt/local/lib
         )
 
-        find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps PATHS ${MUMPS_LIB_PATHS})
+        find_library(MUMPS_DMUMPS_LIB NAMES dmumps_seq dmumps libdmumps_seq libdmumps mumps libmumps PATHS ${MUMPS_LIB_PATHS})
         find_library(MUMPS_COMMON_LIB NAMES mumps_common_seq mumps_common libmumps_common_seq libmumps_common PATHS ${MUMPS_LIB_PATHS})
         find_library(MUMPS_PORD_LIB   NAMES pord_seq pord libpord_seq libpord PATHS ${MUMPS_LIB_PATHS})
         find_library(MUMPS_MPISEQ_LIB NAMES mpiseq_seq mpiseq libmpiseq_seq libmpiseq PATHS ${MUMPS_LIB_PATHS})
@@ -242,6 +248,9 @@ if(CCX_USE_MUMPS)
                 list(APPEND EXTRA_LINK_LIBS ${MUMPS_METIS_LIB})
             endif()
         else()
+            message(STATUS "MUMPS search paths: ${MUMPS_LIB_PATHS}")
+            message(STATUS "MUMPS header result: ${MUMPS_INCLUDE_DIR}")
+            message(STATUS "MUMPS lib result: ${MUMPS_DMUMPS_LIB}")
             message(FATAL_ERROR "MUMPS solver requested (CCX_USE_MUMPS=ON) but MUMPS headers or libraries were not found.")
         endif()
     endif()
