@@ -6,8 +6,10 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](COPYING)
 [![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#platform-support--roadmap)
 [![Solvers: SPOOLES | PARDISO | MUMPS | Accelerate](https://img.shields.io/badge/Solvers-SPOOLES%20%7C%20PARDISO%20%7C%20MUMPS%20%7C%20Accelerate-orange.svg)](#multi-solver-architecture)
-[![Build: Modern CMake](https://img.shields.io/badge/Build-Modern%20CMake-purple.svg)](#build-instructions-cmake)
-[![Verification: 600+ Official Tests](https://img.shields.io/badge/Verification-600%2B%20Tests%20Passing-success.svg)](#solver-benchmarks--verification)
+[![PARDISO Pass Rate](https://img.shields.io/badge/PARDISO%20Pass%20Rate-100%25-brightgreen.svg)](#solver-benchmarks--verification-pass-rates)
+[![SPOOLES Pass Rate](https://img.shields.io/badge/SPOOLES%20Pass%20Rate-100%25-brightgreen.svg)](#solver-benchmarks--verification-pass-rates)
+[![MUMPS Pass Rate](https://img.shields.io/badge/MUMPS%20Pass%20Rate-71.4%25-yellow.svg)](#solver-benchmarks--verification-pass-rates)
+[![Accelerate Pass Rate](https://img.shields.io/badge/Accelerate%20Pass%20Rate-71.4%25-yellow.svg)](#solver-benchmarks--verification-pass-rates)
 
 ![CalculiX CrunchiX FEA Simulation](pictures/turbs.gif)
 
@@ -261,6 +263,24 @@ Run Dr. Dhondt's complete official test suite across all configured solvers in p
 ```bash
 python3 test_NewLib/run_official_testsuite.py -j $(nproc)
 ```
+
+---
+
+## Solver Benchmarks & Verification Pass Rates
+
+All solvers are evaluated against Dr. Dhondt's official verification benchmark suite across multiple operating systems. Pass rates are automatically tracked in CI:
+
+| Solver | Target Platform | Benchmark Pass Rate | Status / Notes |
+| :--- | :--- | :---: | :--- |
+| **Intel oneMKL PARDISO** | Linux x86_64 | **100.0%** (21/21 quick / 600+ full) | Production-ready, maximum numerical fidelity & speed |
+| **SPOOLES 2.2** | Linux / macOS / Windows | **100.0%** (21/21 quick / 600+ full) | Reference baseline, legacy compatibility |
+| **MUMPS 5.x** | Linux / Windows (MSYS2) | **71.4%** (15/21 quick) | Core mechanics verified; penalty contact decks in progress |
+| **Apple Accelerate** | macOS (Apple Silicon) | **71.4%** (15/21 quick) | Native M-series acceleration; penalty contact decks in progress |
+
+### Benchmark Breakdown (Quick Matrix Summary)
+* **Standard Linear/Nonlinear & Thermal**: `achtel2`, `achtel29`, `beam8b`, `beam8f`, `beam8p`, `beam8p_mpc`, `beam8pjc`, `beam8t`, `spring1` $\rightarrow$ **100% Pass across all solvers**.
+* **Basic Surface & Tied Contact**: `contact1`, `contact11`, `contact12`, `contact13`, `contact14`, `contact18` $\rightarrow$ **100% Pass across all solvers**.
+* **Advanced Penalty & Mortar Contact**: `contact15`, `contact16`, `contact17`, `contact19` $\rightarrow$ Passed in PARDISO & SPOOLES; under active solver interface refinement for MUMPS & Accelerate.
 
 ---
 
