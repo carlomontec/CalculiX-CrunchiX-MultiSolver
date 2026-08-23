@@ -25,6 +25,15 @@
  * (C) 2003 Manfred Spraul
  */
 
+/* =========================================================================
+ * SPOOLES 2.2 Direct Sparse Solver Interface (Legacy/Historical)
+ * -------------------------------------------------------------------------
+ * Preserved for 100% backward compatibility with external SPOOLES libraries
+ * (e.g. system libspooles-dev on Linux).
+ * For modern, high-performance multi-threaded open-source direct solving,
+ * MUMPS 5.x (-DMUMPS) or Apple Accelerate (-DACCELERATE_SOLVER) is recommended.
+ * ========================================================================= */
+
 /* spooles_factor and spooles_solve occur twice in this routine: once
    with their plane names and once with _rad appended to the name. This is
    necessary since the factorized stiffness matrices (plain names) and the

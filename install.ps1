@@ -195,10 +195,9 @@ if ($isAmd) {
 # -----------------------------------------------------------------------------
 # 4. Solver Backend Selection
 # -----------------------------------------------------------------------------
-Write-Step "Configuring Sparse Direct Solvers on Windows..."
-
+Write-Step "Configuring Sparse Direct Solvers on Windows."
+Write-Host "`nCalculiX Direct Solver Configuration:" -ForegroundColor Cyan
 Write-Host "  * Primary Open-Source Solver: MUMPS 5.x (installed via MSYS2)" -ForegroundColor Green
-Write-Host "  * Built-in Fallback Solver:   SPOOLES 2.2 (compiled in-tree)" -ForegroundColor Green
 
 Write-Host "`nIntel oneMKL PARDISO Solver Option:" -ForegroundColor Yellow
 Write-Host "  Intel oneMKL is proprietary (not open-source), but generally provides"
@@ -209,7 +208,7 @@ Write-Host "  (MUMPS 5.x remains fully available as open-source Option B in any 
 $enableMkl = "N"
 if ($Solver -eq "pardiso") {
     $enableMkl = "Y"
-} elseif ($Solver -eq "mumps" -or $Solver -eq "spooles") {
+} elseif ($Solver -eq "mumps") {
     $enableMkl = "N"
 } else {
     $enableMkl = Prompt-User "Would you like to enable Intel oneMKL PARDISO? (y/N)" "N"
@@ -226,18 +225,18 @@ if ($enableMkl -match "^[Yy]$") {
     
     if ($hasMkl) {
         $cmakeSolverFlags = "-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=ON"
-        $solverDisplayName = "Intel oneMKL PARDISO (Default) + MUMPS 5.x + SPOOLES 2.2"
+        $solverDisplayName = "Intel oneMKL PARDISO + MUMPS 5.x"
     } else {
         Write-Warn "Intel oneMKL was not detected in standard paths or MKLROOT."
         Write-Host "To use oneMKL on Windows, install Intel oneAPI Base Toolkit or oneMKL from:" -ForegroundColor Yellow
         Write-Host "  https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html" -ForegroundColor Cyan
         Write-Host "Falling back to MUMPS 5.x as primary solver for this build." -ForegroundColor Yellow
         $cmakeSolverFlags = "-DCCX_USE_MUMPS=ON"
-        $solverDisplayName = "MUMPS 5.x (Open-Source Default) + SPOOLES 2.2"
+        $solverDisplayName = "MUMPS 5.x (Open-Source Default)"
     }
 } else {
     $cmakeSolverFlags = "-DCCX_USE_MUMPS=ON"
-    $solverDisplayName = "MUMPS 5.x (Open-Source Default) + SPOOLES 2.2"
+    $solverDisplayName = "MUMPS 5.x (Open-Source Default)"
 }
 
 Write-Success "Configured Solver Backends: $solverDisplayName"

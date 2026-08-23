@@ -20,17 +20,18 @@ set(CMAKE_C_STANDARD 99)
 # -----------------------------------------------------------------------------
 # User Configuration Options
 # -----------------------------------------------------------------------------
-option(CCX_USE_SPOOLES "Enable SPOOLES direct sparse solver" ON)
-option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"   OFF)
-option(CCX_USE_MUMPS   "Enable MUMPS direct sparse solver"   OFF)
 if(APPLE)
-    option(CCX_USE_ACCELERATE "Enable Apple Accelerate sparse solver (macOS only)" ON)
+    option(CCX_USE_ACCELERATE "Enable Apple Accelerate sparse solver (macOS default)" ON)
+    option(CCX_USE_MUMPS      "Enable MUMPS direct sparse solver"                    OFF)
 else()
-    option(CCX_USE_ACCELERATE "Enable Apple Accelerate sparse solver (macOS only)" OFF)
+    option(CCX_USE_ACCELERATE "Enable Apple Accelerate sparse solver (macOS only)"    OFF)
+    option(CCX_USE_MUMPS      "Enable MUMPS direct sparse solver (Linux/Win default)" ON)
 endif()
-option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"     ON)
-option(CCX_USE_OPENMP  "Enable OpenMP multithreading"        ON)
-option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"   OFF)
+option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"          OFF)
+option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver (system lib)"   OFF)
+option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
+option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
+option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
 
 # -----------------------------------------------------------------------------
 # Compiler Flags
@@ -362,28 +363,41 @@ if(CCX_USE_ARPACK)
 endif()
 
 # -----------------------------------------------------------------------------
-# SPOOLES Solver
+# SPOOLES Solver (Optional Legacy System Library)
 # -----------------------------------------------------------------------------
 if(CCX_USE_SPOOLES)
     add_compile_definitions(SPOOLES)
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/spooles/CMakeLists.txt")
-        add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/spooles" "${CMAKE_CURRENT_BINARY_DIR}/spooles_build")
-        list(APPEND EXTRA_LINK_LIBS spooles)
-        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/spooles")
-    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/CMakeLists.txt")
-        add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../spooles" "${CMAKE_CURRENT_BINARY_DIR}/spooles_build")
-        list(APPEND EXTRA_LINK_LIBS spooles)
-        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../spooles")
-    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles/spooles.a")
-        list(APPEND EXTRA_LINK_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles/spooles.a")
-        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../spooles")
-    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/spooles.a")
-        list(APPEND EXTRA_LINK_LIBS "${CMAKE_CURRENT_SOURCE_DIR}/../spooles/spooles.a")
-        set(SPOOLES_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../spooles")
+    find_path(SPOOLES_INCLUDE_DIR
+        NAMES misc.h spooles.h
+        PATH_SUFFIXES spooles
+        PATHS
+            $ENV{SPOOLES_DIR}/include
+            $ENV{SPOOLES_DIR}
+            /usr/include
+            /usr/include/spooles
+            /usr/local/include
+            /usr/local/include/spooles
+            /opt/homebrew/include
+    )
+    find_library(SPOOLES_LIB
+        NAMES spooles spoolesMT spooles_MT libspooles
+        PATHS
+            $ENV{SPOOLES_DIR}/lib
+            $ENV{SPOOLES_DIR}
+            /usr/lib
+            /usr/lib/x86_64-linux-gnu
+            /usr/lib/aarch64-linux-gnu
+            /usr/local/lib
+            /opt/homebrew/lib
+    )
+    if(SPOOLES_INCLUDE_DIR AND SPOOLES_LIB)
+        message(STATUS "Found SPOOLES Include: ${SPOOLES_INCLUDE_DIR}")
+        message(STATUS "Found SPOOLES Library: ${SPOOLES_LIB}")
+        list(APPEND EXTRA_LINK_LIBS ${SPOOLES_LIB})
+        include_directories(${SPOOLES_INCLUDE_DIR})
     else()
-        message(FATAL_ERROR "SPOOLES not found in spooles, ../spooles, or ../../spooles")
+        message(FATAL_ERROR "SPOOLES requested (CCX_USE_SPOOLES=ON) but system library not found. Please install libspooles-dev (e.g. sudo apt install libspooles-dev) or use MUMPS (-DCCX_USE_MUMPS=ON) / Accelerate (-DCCX_USE_ACCELERATE=ON).")
     endif()
-    include_directories(${SPOOLES_INCLUDE_DIR})
 endif()
 
 # -----------------------------------------------------------------------------

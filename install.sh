@@ -283,19 +283,41 @@ elif [ "${OS}" = "Linux" ]; then
 
         if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
             CMAKE_SOLVER_FLAGS="-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=ON"
-            SOLVER_NAME="Intel oneMKL PARDISO (Default) + MUMPS 5.x + SPOOLES 2.2"
+            SOLVER_NAME="Intel oneMKL PARDISO + MUMPS 5.x"
         else
             CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-            SOLVER_NAME="MUMPS 5.x (Open-Source Default) + SPOOLES 2.2"
+            SOLVER_NAME="MUMPS 5.x (Open-Source Default)"
+        fi
+
+        prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
+        if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
+            if command -v apt-get &>/dev/null; then
+                sudo apt-get install -y libspooles-dev
+            elif command -v dnf &>/dev/null; then
+                sudo dnf install -y spooles-devel
+            elif command -v pacman &>/dev/null; then
+                sudo pacman -S --needed spooles
+            fi
+            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
+            SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
         fi
 
     else
         # Linux ARM64 (aarch64)
         echo -e "\n${CYAN}[INFO] Linux ARM64 architecture detected.${NC}"
         echo -e "  Intel oneMKL is not available on Linux ARM64."
-        echo -e "  Configuring ${BOLD}MUMPS 5.x${NC} as primary multi-threaded solver with ${BOLD}SPOOLES 2.2${NC} as fallback."
+        echo -e "  Configuring ${BOLD}MUMPS 5.x${NC} as primary open-source multi-threaded direct solver."
         CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-        SOLVER_NAME="MUMPS 5.x (Primary) + SPOOLES 2.2"
+        SOLVER_NAME="MUMPS 5.x (Primary Open-Source)"
+
+        prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
+        if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
+            if command -v apt-get &>/dev/null; then
+                sudo apt-get install -y libspooles-dev
+            fi
+            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
+            SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+        fi
     fi
 fi
 
