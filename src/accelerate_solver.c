@@ -49,6 +49,11 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
 
   if(*neq == 0) return;
 
+  /* Reset and release previous solver instance if called repeatedly (e.g. contact iterations) */
+  if(acc_initialized){
+    accelerate_cleanup(neq, symmetryflag, inputformat);
+  }
+
   if(*symmetryflag == 0){
     printf(" Factoring the system of equations using Apple Accelerate (Symmetric LDLT_TPP)\n");
   }else{
