@@ -17,3 +17,4 @@ test_NewLib/*.frd
 !test/*.frd.ref
 !test/*.net.ref
 !test/*.ref.ref
+test_NewLib/testsuite_results/*
