@@ -126,7 +126,40 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
 
   id.n = (MUMPS_INT)(*neq);
 
-  /* 4. Sparse matrix coordinate format (COO) assembly */
+  /* 3. Configure MUMPS control parameters (Fortran index - 1 in C) */
+  id.icntl[0] = -1;  /* ICNTL(1): Error output stream suppressed (quiet) */
+  id.icntl[1] = -1;  /* ICNTL(2): Diagnostic output stream suppressed */
+  id.icntl[2] = -1;  /* ICNTL(3): Global info output stream suppressed */
+  id.icntl[3] = 0;   /* ICNTL(4): Printing level (0 = quiet) */
+  
+  /* Column permutation (ICNTL(6)): Must be 0 for symmetric matrices to preserve symmetry */
+  id.icntl[5] = getenv("CCX_MUMPS_ICNTL6") ? atoi(getenv("CCX_MUMPS_ICNTL6")) : (*symmetryflag == 0 ? 0 : 7);
+  id.icntl[6] = getenv("CCX_MUMPS_ICNTL7") ? atoi(getenv("CCX_MUMPS_ICNTL7")) : 7;
+  /* Disable automatic scaling by default (0) to avoid numerical drift on reduced diagonal contact DOFs */
+  id.icntl[7] = getenv("CCX_MUMPS_ICNTL8") ? atoi(getenv("CCX_MUMPS_ICNTL8")) : 0;
+  id.icntl[15] = getenv("CCX_MUMPS_ICNTL16") ? atoi(getenv("CCX_MUMPS_ICNTL16")) : (MUMPS_INT)nthread;
+  /* Enable null pivot detection (ICNTL(24) = 1) */
+  id.icntl[23] = 1;
+  
+  if (getenv("CCX_MUMPS_ICNTL13")) id.icntl[12] = atoi(getenv("CCX_MUMPS_ICNTL13"));
+  if (getenv("CCX_MUMPS_ICNTL48")) id.icntl[47] = atoi(getenv("CCX_MUMPS_ICNTL48"));
+
+  /* Pivoting threshold: For symmetric indefinite matrices (SYM=2), default CNTL(1) is 0.0 */
+  if(*symmetryflag == 0){
+    id.cntl[0] = getenv("CCX_MUMPS_CNTL1") ? atof(getenv("CCX_MUMPS_CNTL1")) : 0.0;
+  }
+
+  /* 4. Optional Block Low-Rank (BLR) compression for memory reduction */
+  if(getenv("CCX_MUMPS_BLR")){
+    id.icntl[34] = 1;    /* ICNTL(35): Enable BLR compression */
+    id.icntl[35] = 0;    /* ICNTL(36): BLR variant (0 = default) */
+    id.cntl[1]   = 1e-7; /* CNTL(2): BLR dropping threshold */
+    printf(" MUMPS Block Low-Rank (BLR) compression enabled (epsilon = 1e-7)\n");
+  }
+
+  id.n = *neq;
+
+  /* 5. Sparse matrix coordinate format (COO) assembly */
   if(*symmetryflag == 0){
     nnz = *neq + *nzs;
     if(id.irn == NULL || mumps_prev_nnz != nnz){
@@ -254,13 +287,21 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
 
 void mumps_solve(double *b, ITG *neq, ITG *symmetryflag, ITG *inputformat, ITG *nrhs){
   id.rhs  = b;
-  id.nrhs = (MUMPS_INT)(*nrhs > 0 ? *nrhs : -*nrhs);
+  id.nrhs = (MUMPS_INT)abs(*nrhs);
   id.lrhs = (MUMPS_INT)(*neq);
-  id.icntl[8] = (*nrhs < 0) ? 0 : 1; /* ICNTL(9): 0 for transpose (A^T x = b), 1 for standard (A x = b) */
+
+  /* Handle Adjoint Transpose Solve for Sensitivity Analysis (A^T x = b vs A x = b) */
+  if (*nrhs < 0) {
+    id.icntl[8] = 0; /* ICNTL(9) = 0: solve A^T x = b */
+  } else {
+    id.icntl[8] = 1; /* ICNTL(9) = 1: solve A x = b */
+  }
+
   id.job  = 3; /* Solve / Forward-Backward substitution */
   dmumps_c(&id);
   if(id.infog[0] < 0){
     printf(" *ERROR in MUMPS solve phase: INFOG(1) = %d\n", (int)id.infog[0]);
+    fflush(stdout);
     exit(1);
   }
 }
