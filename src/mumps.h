@@ -34,4 +34,14 @@ void mumps_solve(double *b, ITG *neq, ITG *symmetryflag, ITG *inputformat,
 
 void mumps_cleanup(ITG *neq, ITG *symmetryflag, ITG *inputformat);
 
+void mumps_factor_cp(double *ad, double *au, double *adb, double *aub,
+                     double *sigma, ITG *icol, ITG *irow,
+                     ITG *neq, ITG *nzs, ITG *symmetryflag, ITG *inputformat,
+                     ITG *jq, ITG *nzs3, ITG *iexpl);
+
+void mumps_solve_cp(double *b, ITG *neq, ITG *symmetryflag, ITG *inputformat,
+                    ITG *nrhs);
+
+void mumps_cleanup_cp(ITG *neq, ITG *symmetryflag, ITG *inputformat);
+
 #endif

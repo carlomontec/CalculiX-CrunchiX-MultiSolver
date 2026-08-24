@@ -2,16 +2,21 @@
 # ==============================================================================
 # CalculiX CrunchiX (CCX) Multi-Solver — Universal Installer
 #
-# 1-Liner Usage:
+# DESCRIPTION:
+#   Downloads, configures, and builds CCX with support for multiple sparse 
+#   direct solvers (Apple Accelerate, PARDISO, MUMPS, SPOOLES) depending on 
+#   the detected OS and CPU architecture.
+#
+# 1-LINER USAGE (Defaults to 'main' branch):
 #   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 #
-# Local Usage (from cloned repo):
-#   ./install.sh
-#
-# Supports:
-#   - macOS (Apple Silicon arm64 & Intel x86_64) with native Apple Accelerate
-#   - Linux (x86_64: Ubuntu/Debian, Fedora/RHEL, Arch) with oneMKL PARDISO, MUMPS, SPOOLES
-#   - Linux (aarch64 / ARM64) with MUMPS & SPOOLES
+# EXPERT USAGE (Selecting a specific branch, tag, or commit):
+#   You can bypass the default 'main' branch by exporting CCX_REF or passing flags.
+#   - Via curl:
+#       CCX_REF=fix_accelerate_contact /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
+#   - Via local script:
+#       ./install.sh --ref v2.21
+#       ./install.sh -b fix_accelerate_contact
 # ==============================================================================
 
 set -e
@@ -19,13 +24,34 @@ set -e
 REPO="carlomontec/CalculiX-CrunchiX-MultiSolver"
 GITHUB_REPO_URL="https://github.com/${REPO}.git"
 
+# Default Git reference (branch, tag, or commit)
+CCX_REF="${CCX_REF:-main}"
+
+# Parse optional command-line flags
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -b|--branch|-r|--ref|--tag)
+            CCX_REF="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--ref <branch|tag|commit>]"
+            exit 0
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # Color formatting
 BOLD="\033[1m"
-GREEN="\033[0;32m"
-BLUE="\033[0;34m"
-CYAN="\033[0;36m"
+GREEN="\033[1;32m"
+BLUE="\033[1;34m"
+CYAN="\033[1;36m"
 YELLOW="\033[1;33m"
-RED="\033[0;31m"
+RED="\033[1;31m"
+MAGENTA="\033[1;35m"
 NC="\033[0m" # No Color
 
 # Helper for interactive reading
@@ -52,8 +78,16 @@ prompt_read() {
     eval "$var_name=\"$input_val\""
 }
 
+# ASCII Banner
+echo -e "${BOLD}${CYAN}"
+echo -e "  ____  ____ __  __ "
+echo -e " / ___|/ ___|\ \/ / "
+echo -e "| |   | |     \  /  "
+echo -e "| |___| |___  /  \  "
+echo -e " \____|\____|/_/\_\ "
+echo -e "${NC}"
 echo -e "${BOLD}${BLUE}================================================================${NC}"
-echo -e "${BOLD}${BLUE}   CalculiX CrunchiX (CCX) Multi-Solver — Universal Installer  ${NC}"
+echo -e "${BOLD}${MAGENTA}   CalculiX CrunchiX (CCX) Multi-Solver — Universal Installer  ${NC}"
 echo -e "${BOLD}${BLUE}================================================================${NC}"
 
 # Detect OS and Architecture
@@ -68,11 +102,18 @@ else
     NPROC=$(nproc 2>/dev/null || echo 4)
 fi
 
-# Target install directory
-INSTALL_DIR="${HOME}/.local/bin"
+# -----------------------------------------------------------------------------
+# 1. Target Install Directory Configuration
+# -----------------------------------------------------------------------------
+DEFAULT_INSTALL_DIR="${HOME}/.local/bin"
+echo -e ""
+prompt_read "Where should the binary be installed? [${DEFAULT_INSTALL_DIR}]: " "${DEFAULT_INSTALL_DIR}" INSTALL_DIR
+INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
 mkdir -p "${INSTALL_DIR}"
 
-# Determine working source directory
+# -----------------------------------------------------------------------------
+# 2. Source Directory & Git Checkout Management
+# -----------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || echo "")"
 TEMP_BUILD_DIR=""
 
@@ -85,22 +126,34 @@ trap cleanup EXIT
 
 if [ -f "${SCRIPT_DIR}/CMakeLists.txt" ] && [ -d "${SCRIPT_DIR}/src" ]; then
     SOURCE_DIR="${SCRIPT_DIR}"
-    echo -e "Building from local repository: ${CYAN}${SOURCE_DIR}${NC}"
+    CURRENT_GIT_REF="$(git -C "${SOURCE_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'local')"
+    echo -e "Building from local repository: ${CYAN}${SOURCE_DIR}${NC} (branch/ref: ${BOLD}${GREEN}${CURRENT_GIT_REF}${NC})"
 else
+    echo -e "\n${YELLOW}[TODO: CARLO] Reminder: Update this script to fetch the latest GitHub Release instead of 'main' once official releases are published!${NC}"
+    
     TEMP_BUILD_DIR="$(mktemp -d -t ccx_build_XXXXXX)"
-    echo -e "\n${BOLD}--> Cloning CalculiX-CrunchiX-MultiSolver repository...${NC}"
-    git clone --depth 1 "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx"
+    echo -e "\n${BOLD}${CYAN}--> Cloning CalculiX repository (Ref: ${CCX_REF})...${NC}"
+    
+    if [ "$CCX_REF" = "main" ]; then
+        git clone --depth 1 "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx"
+    else
+        # Try shallow branch/tag clone first; fallback to full clone + checkout if it's a raw commit SHA
+        if ! git clone --depth 1 --branch "${CCX_REF}" "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx" 2>/dev/null; then
+            git clone "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx"
+            git -C "${TEMP_BUILD_DIR}/ccx" checkout "${CCX_REF}"
+        fi
+    fi
+
     SOURCE_DIR="${TEMP_BUILD_DIR}/ccx"
 fi
 
 # -----------------------------------------------------------------------------
-# Dependency Management
+# 3. Dependency Management
 # -----------------------------------------------------------------------------
 check_dependencies() {
-    echo -e "\n${BOLD}--> Checking prerequisites and build tools...${NC}"
+    echo -e "\n${BOLD}${CYAN}--> Checking prerequisites and build tools...${NC}"
 
     if [ "${OS}" = "Darwin" ]; then
-        # macOS Dependency Check
         if ! command -v brew &>/dev/null; then
             if [ -x "/opt/homebrew/bin/brew" ]; then
                 eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -136,7 +189,6 @@ check_dependencies() {
         fi
 
     elif [ "${OS}" = "Linux" ]; then
-        # Linux Dependency Check
         if command -v apt-get &>/dev/null; then
             MISSING_APT=""
             command -v cmake &>/dev/null || MISSING_APT="${MISSING_APT} cmake"
@@ -155,7 +207,6 @@ check_dependencies() {
             else
                 echo -e "${GREEN}[OK] Base Linux build tools found.${NC}"
             fi
-
         elif command -v dnf &>/dev/null; then
             MISSING_DNF=""
             command -v cmake &>/dev/null || MISSING_DNF="${MISSING_DNF} cmake"
@@ -169,7 +220,6 @@ check_dependencies() {
                     sudo dnf install -y ${MISSING_DNF} openblas-devel lapack-devel arpack-devel
                 fi
             fi
-
         elif command -v pacman &>/dev/null; then
             MISSING_PAC=""
             command -v cmake &>/dev/null || MISSING_PAC="${MISSING_PAC} cmake"
@@ -188,58 +238,62 @@ check_dependencies() {
 check_dependencies
 
 # -----------------------------------------------------------------------------
-# Solver Backend Configuration & Dependencies
+# 4. Solver Backend Configuration & Dependencies
 # -----------------------------------------------------------------------------
-echo -e "\n${BOLD}--> Configuring Sparse Direct Solvers...${NC}"
+echo -e "\n${BOLD}${CYAN}--> Configuring Sparse Direct Solvers...${NC}"
 
-CMAKE_SOLVER_FLAGS=""
-SOLVER_NAME=""
+# 1. Initialize ALL solvers to OFF to prevent dirty CMake cache issues
+CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=OFF -DCCX_USE_PARDISO=OFF -DCCX_USE_SPOOLES=OFF"
+SOLVER_NAME="None Selected (Fallback to internal)"
 
 if [ "${OS}" = "Darwin" ]; then
     echo -e "${GREEN}[INFO] macOS Detected:${NC}"
-    echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (Native hardware acceleration, zero external solver dependencies)."
+    echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (Native hardware acceleration, zero external dependencies)."
     echo -e "  * An open-source solver (${BOLD}MUMPS 5.x${NC}) is also available as an option.\n"
 
     prompt_read "Enable MUMPS 5.x as an additional open-source solver via Homebrew? [y/N]: " "N" ENABLE_MUMPS
     if [[ "$ENABLE_MUMPS" =~ ^[Yy]$ ]]; then
         if ! brew list mumps &>/dev/null 2>&1; then
-            echo "Installing MUMPS via Homebrew..."
+            echo -e "${MAGENTA}Installing MUMPS via Homebrew...${NC}"
             brew install mumps || true
         fi
-        CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=ON"
+        CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=ON"
         SOLVER_NAME="Apple Accelerate (Default) + MUMPS 5.x"
     else
-        CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=ON"
+        CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_ACCELERATE=ON"
         SOLVER_NAME="Apple Accelerate (Native)"
     fi
 
 elif [ "${OS}" = "Linux" ]; then
-    # Ensure MUMPS is installed in all cases on Linux as open-source solver
     echo -e "${GREEN}[INFO] Linux Detected:${NC}"
-    echo -e "  * Installing ${BOLD}MUMPS 5.x${NC} as the primary open-source multi-threaded direct solver."
-
-    if command -v apt-get &>/dev/null; then
-        dpkg -l | grep -q "libmumps-seq-dev" || sudo apt-get install -y libmumps-seq-dev
-    elif command -v dnf &>/dev/null; then
-        rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel
-    elif command -v pacman &>/dev/null; then
-        pacman -Qi mumps &>/dev/null || sudo pacman -S --needed mumps
+    
+    # --- ADDED: Now actually asks about MUMPS on Linux ---
+    prompt_read "Enable MUMPS 5.x as an open-source multi-threaded direct solver? [Y/n]: " "Y" USE_MUMPS
+    if [[ "$USE_MUMPS" =~ ^[Yy]$ ]]; then
+        echo -e "${MAGENTA}Installing MUMPS...${NC}"
+        if command -v apt-get &>/dev/null; then
+            dpkg -l | grep -q "libmumps-seq-dev" || sudo apt-get install -y libmumps-seq-dev
+        elif command -v dnf &>/dev/null; then
+            rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel
+        elif command -v pacman &>/dev/null; then
+            pacman -Qi mumps &>/dev/null || sudo pacman -S --needed mumps
+        fi
+        CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_MUMPS=ON"
+        SOLVER_NAME="MUMPS 5.x"
     fi
 
     if [ "${ARCH}" = "x86_64" ]; then
-        # Check for AMD CPU architecture
         IS_AMD=false
         if grep -q -i "authenticamd" /proc/cpuinfo 2>/dev/null || (command -v lscpu &>/dev/null && lscpu | grep -q -i "AMD"); then
             IS_AMD=true
         fi
 
         if [ "$IS_AMD" = true ]; then
-            echo -e "\n${BOLD}${CYAN}AMD Zen CPU Architecture Detected (Ryzen/EPYC/Threadripper):${NC}"
+            echo -e "\n${BOLD}${YELLOW}AMD Zen CPU Architecture Detected (Ryzen/EPYC/Threadripper):${NC}"
             echo -e "  AMD provides ${BOLD}AOCL-BLIS${NC} (open-source linear algebra tuned specifically for AMD CPUs)."
-            echo -e "  Learn more: ${CYAN}https://www.amd.com/en/developer/aocl.html${NC}"
             prompt_read "Would you like to install and enable AMD AOCL (BLIS)? [Y/n]: " "Y" USE_AOCL
             if [[ "$USE_AOCL" =~ ^[Yy]$ ]]; then
-                echo "Installing AMD BLIS/AOCL linear algebra libraries..."
+                echo -e "${MAGENTA}Installing AMD BLIS/AOCL linear algebra libraries...${NC}"
                 if command -v apt-get &>/dev/null; then
                     sudo apt-get install -y libblis-openmp-dev libflame-dev 2>/dev/null || sudo apt-get install -y libblis-dev 2>/dev/null || true
                 elif command -v dnf &>/dev/null; then
@@ -250,13 +304,10 @@ elif [ "${OS}" = "Linux" ]; then
             fi
         fi
 
-        echo -e "\n${BOLD}${YELLOW}Intel oneMKL PARDISO Solver Option:${NC}"
+        echo -e "\n${BOLD}${BLUE}Intel oneMKL PARDISO Solver Option:${NC}"
         echo -e "  Intel oneMKL is ${BOLD}proprietary (not open-source)${NC}, but generally provides"
         echo -e "  ${BOLD}higher performance${NC} on Intel and AMD x86_64 CPUs with AVX2/AVX-512 acceleration."
-        echo -e "  Learn more: ${CYAN}https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html${NC}"
-        echo -e "  (MUMPS 5.x remains fully available as open-source Option B in any case).\n"
-
-        # Check if MKL is already present
+        
         HAS_MKL=false
         if [ -n "$MKLROOT" ] || [ -d "/opt/intel/oneapi/mkl" ] || [ -f "/usr/include/mkl/mkl.h" ] || [ -f "/usr/include/mkl.h" ]; then
             HAS_MKL=true
@@ -267,7 +318,7 @@ elif [ "${OS}" = "Linux" ]; then
         else
             prompt_read "Would you like to install and enable Intel oneMKL PARDISO? [y/N]: " "N" USE_MKL
             if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
-                echo "Installing Intel oneMKL..."
+                echo -e "${MAGENTA}Installing Intel oneMKL...${NC}"
                 if command -v apt-get &>/dev/null; then
                     wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
                     echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
@@ -282,11 +333,12 @@ elif [ "${OS}" = "Linux" ]; then
         fi
 
         if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
-            CMAKE_SOLVER_FLAGS="-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=ON"
-            SOLVER_NAME="Intel oneMKL PARDISO + MUMPS 5.x"
-        else
-            CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-            SOLVER_NAME="MUMPS 5.x (Open-Source Default)"
+            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_PARDISO=ON"
+            if [[ "$USE_MUMPS" =~ ^[Yy]$ ]]; then
+                SOLVER_NAME="Intel oneMKL PARDISO + MUMPS 5.x"
+            else
+                SOLVER_NAME="Intel oneMKL PARDISO"
+            fi
         fi
 
         prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
@@ -299,16 +351,17 @@ elif [ "${OS}" = "Linux" ]; then
                 sudo pacman -S --needed spooles
             fi
             CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
-            SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+            if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
+                SOLVER_NAME="SPOOLES 2.2"
+            else
+                SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+            fi
         fi
 
     else
         # Linux ARM64 (aarch64)
         echo -e "\n${CYAN}[INFO] Linux ARM64 architecture detected.${NC}"
         echo -e "  Intel oneMKL is not available on Linux ARM64."
-        echo -e "  Configuring ${BOLD}MUMPS 5.x${NC} as primary open-source multi-threaded direct solver."
-        CMAKE_SOLVER_FLAGS="-DCCX_USE_MUMPS=ON"
-        SOLVER_NAME="MUMPS 5.x (Primary Open-Source)"
 
         prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
         if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
@@ -316,7 +369,11 @@ elif [ "${OS}" = "Linux" ]; then
                 sudo apt-get install -y libspooles-dev
             fi
             CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
-            SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+            if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
+                SOLVER_NAME="SPOOLES 2.2"
+            else
+                SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+            fi
         fi
     fi
 fi
@@ -324,51 +381,61 @@ fi
 echo -e "Configured Solver Backends: ${BOLD}${GREEN}${SOLVER_NAME}${NC}"
 
 # -----------------------------------------------------------------------------
-# Compilation & Build
+# 5. Compilation & Build
 # -----------------------------------------------------------------------------
-echo -e "\n${BOLD}--> Configuring and building CalculiX (${NPROC} parallel jobs)...${NC}"
+echo -e "\n${BOLD}${CYAN}--> Configuring and building CalculiX (${NPROC} parallel jobs)...${NC}"
+
+
 
 cd "${SOURCE_DIR}"
+
+rm -rf build
+
 cmake -B build ${CMAKE_SOLVER_FLAGS}
 cmake --build build -j"${NPROC}"
 
 # -----------------------------------------------------------------------------
-# Installation
+# 6. Installation
 # -----------------------------------------------------------------------------
-echo -e "\n${BOLD}--> Installing binary to ${INSTALL_DIR}...${NC}"
+echo -e "\n${BOLD}${CYAN}--> Installing binary to ${INSTALL_DIR}...${NC}"
 
 cp "${SOURCE_DIR}/build/CalculiX" "${INSTALL_DIR}/ccx"
-ln -sf "${INSTALL_DIR}/ccx" "${INSTALL_DIR}/CalculiX"
 chmod +x "${INSTALL_DIR}/ccx"
 
 echo -e "${GREEN}[OK] Installed executable: ${INSTALL_DIR}/ccx${NC}"
-echo -e "${GREEN}[OK] Created alias:        ${INSTALL_DIR}/CalculiX${NC}"
 
-# Check PATH
-if [[ ":$PATH:" != *":${INSTALL_DIR}:"* ]]; then
-    echo -e "\n${YELLOW}Note: ${INSTALL_DIR} is not in your current PATH.${NC}"
-    
-    SHELL_RC=""
-    if [ -n "$ZSH_VERSION" ] || [ -f "${HOME}/.zshrc" ]; then
-        SHELL_RC="${HOME}/.zshrc"
-    elif [ -n "$BASH_VERSION" ] || [ -f "${HOME}/.bashrc" ]; then
-        SHELL_RC="${HOME}/.bashrc"
-    fi
+# -----------------------------------------------------------------------------
+# 7. Shell Configuration (Aliases & PATH)
+# -----------------------------------------------------------------------------
+SHELL_RC=""
+if [[ "$SHELL" == *"fish"* ]] || [ -f "${HOME}/.config/fish/config.fish" ]; then
+    SHELL_RC="${HOME}/.config/fish/config.fish"
+elif [[ "$SHELL" == *"zsh"* ]] || [ -n "$ZSH_VERSION" ] || [ -f "${HOME}/.zshrc" ]; then
+    SHELL_RC="${HOME}/.zshrc"
+elif [[ "$SHELL" == *"bash"* ]] || [ -n "$BASH_VERSION" ] || [ -f "${HOME}/.bashrc" ]; then
+    SHELL_RC="${HOME}/.bashrc"
+fi
 
-    if [ -n "$SHELL_RC" ]; then
-        prompt_read "Add ${INSTALL_DIR} to ${SHELL_RC}? [Y/n] " "Y" ADD_PATH
-        if [[ "$ADD_PATH" =~ ^[Yy]$ ]]; then
-            echo -e "\n# CalculiX Executable Path" >> "${SHELL_RC}"
+if [ -n "$SHELL_RC" ]; then
+    echo -e ""
+    prompt_read "Add ${INSTALL_DIR} to PATH and create 'CalculiX' alias in ${SHELL_RC}? [Y/n] " "Y" ADD_ALIAS
+    if [[ "$ADD_ALIAS" =~ ^[Yy]$ ]]; then
+        echo -e "\n# CalculiX Multi-Solver" >> "${SHELL_RC}"
+        if [[ "$SHELL_RC" == *"fish"* ]]; then
+            echo -e "fish_add_path ${INSTALL_DIR}" >> "${SHELL_RC}"
+            echo -e "alias CalculiX 'ccx'" >> "${SHELL_RC}"
+        else
             echo -e "export PATH=\"${INSTALL_DIR}:\$PATH\"" >> "${SHELL_RC}"
-            echo -e "${GREEN}[OK] Added to ${SHELL_RC}. Run 'source ${SHELL_RC}' or open a new terminal.${NC}"
+            echo -e "alias CalculiX='ccx'" >> "${SHELL_RC}"
         fi
+        echo -e "${GREEN}[OK] Added to ${SHELL_RC}. Run 'source ${SHELL_RC}' or open a new terminal.${NC}"
     fi
 fi
 
 # -----------------------------------------------------------------------------
-# Quick Sanity Check
+# 8. Quick Sanity Check
 # -----------------------------------------------------------------------------
-echo -e "\n${BOLD}--> Running quick solver verification...${NC}"
+echo -e "\n${BOLD}${CYAN}--> Running quick solver verification...${NC}"
 if [ -d "${SOURCE_DIR}/test" ] && [ -f "${SOURCE_DIR}/test/achtel2.inp" ]; then
     (
         cd "${SOURCE_DIR}/test"
@@ -380,9 +447,19 @@ if [ -d "${SOURCE_DIR}/test" ] && [ -f "${SOURCE_DIR}/test/achtel2.inp" ]; then
     )
 fi
 
-echo -e "\n${BOLD}${GREEN}================================================================${NC}"
+# -----------------------------------------------------------------------------
+# 9. Source Code Cleanup
+# -----------------------------------------------------------------------------
+if [ -n "$TEMP_BUILD_DIR" ] && [ -d "$TEMP_BUILD_DIR" ]; then
+    echo -e "\n${BOLD}${CYAN}--> Cleaning up temporary build files...${NC}"
+    rm -rf "$TEMP_BUILD_DIR"
+    TEMP_BUILD_DIR=""
+    echo -e "${GREEN}[OK] Temporary source code removed.${NC}"
+fi
+
+echo -e "\n${BOLD}${BLUE}================================================================${NC}"
 echo -e "${BOLD}${GREEN}   CalculiX CrunchiX (CCX) Installed Successfully!              ${NC}"
-echo -e "${BOLD}${GREEN}================================================================${NC}"
+echo -e "${BOLD}${BLUE}================================================================${NC}"
 echo -e "To run a simulation:"
 echo -e "  ${CYAN}ccx input_deck_name${NC}  (without .inp extension)"
 echo -e "  or"
@@ -393,4 +470,4 @@ echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX-512)"
 echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
 echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"
 echo -e "\nSee README.md for complete solver benchmarks and documentation."
-echo -e "================================================================\n"
+echo -e "${BOLD}${BLUE}================================================================${NC}\n"
