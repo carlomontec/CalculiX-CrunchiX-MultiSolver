@@ -15,6 +15,10 @@ endif()
 
 project(CalculiX VERSION 2.23 LANGUAGES C Fortran)
 
+if(APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
+    message(FATAL_ERROR "This macOS development target supports Apple Silicon only (arm64).")
+endif()
+
 set(CMAKE_C_STANDARD 99)
 
 # -----------------------------------------------------------------------------
@@ -95,6 +99,9 @@ endif()
 set(EXTRA_LINK_LIBS)
 
 if(CCX_USE_PARDISO)
+    if(APPLE)
+        message(FATAL_ERROR "Intel oneMKL PARDISO is not supported on the Apple Silicon macOS development target.")
+    endif()
     add_compile_definitions(PARDISO)
     if(CCX_INT64)
         add_compile_definitions(MKL_ILP64)
