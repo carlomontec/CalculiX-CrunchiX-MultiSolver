@@ -19,71 +19,69 @@ A solver modernization of [CalculiX CrunchiX](https://www.dhondt.de/), the open-
 ## Goal
 ![CalculiX CrunchiX FEA Simulation](pictures/turbs.gif)
 
-This work is a didactic exploration of agent-assisted scientific-software development by Carlo Monjaraz-Tec. Almost all the code is AI generated. The original CalculiX implementation and its authors remain credited below.
+This work is a didactic exploration of agent-assisted scientific-software development by Carlo Monjaraz-Tec. Almost all the code that differ from the original CalculiX CrunchiX code is AI generated. The original CalculiX implementation and its authors remain credited below.
 
 ## Project Status
 
 This project now runs CalculiX from a single codebase with four possible sparse solvers:
 
-- **SPOOLES 2.2**, the original CalculiX default solver and compatibility baseline. Outdated and unmantained.
-- **Intel oneMKL PARDISO**, available on supported Linux and Windows configurations. Performant, but not open source.
-- **Apple Accelerate**, native for Apple Silicon macOS.
 - **MUMPS 5.x**, a modern open-source direct solver.
+- **Apple Accelerate**, native for Apple Silicon macOS.
+- **Intel oneMKL PARDISO**, available on supported Linux and Windows configurations. Performant, but not open source.
+- **SPOOLES 2.2**, the original CalculiX default solver and compatibility baseline. Outdated and unmantained.
 
-The integrations use packages from relevant repositories, while macOS MUMPS and SPOOLES builds use pinned source archives. A novelty for the modernization of CalculiX: native Apple Accelerate and MUMPS support now coexist with SPOOLES and PARDISO support.
+The integrations use packages from relevant repositories, while macOS MUMPS and SPOOLES builds use pinned source archives. 
 
 Performance measurements so far show the modern backends improving substantially over SPOOLES, with MUMPS currently providing the strongest overall score. Results can be validated with the official CalculiX test suite.
+
+## Companion Project: CalculiX GraphiX GLFW
+
+This project is designed to work with [CalculiX GraphiX GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW), a modernized CalculiX pre/post-processor with modern 3D rendering and ParaView export support.
 
 ## Solver Backends
 
 | Backend | Linux | macOS | Windows | Role |
 |:---|:---:|:---:|:---:|:---|
-| **MUMPS 5.x** | System package | Vendored archive | System/MSYS2 package | Primary modern open-source candidate |
+| **MUMPS 5.x (recommended)** | System package | Vendored archive | System/MSYS2 package | Primary modern open-source candidate |
 | **Apple Accelerate** | No | Native framework | No | macOS sparse solver |
-| **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
 | **Intel oneMKL PARDISO** | Optional | No | Optional | High-performance oneMKL backend |
+| **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
 
 On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives: [MUMPS vendor package](third_party/mumps/README.md),  [SPOOLES vendor package](third_party/spooles/README.md)
 
 
-## Quick install for Linux and MacOS (Recommended)
+## Quick install for Linux, MacOS and Windows (Recommended)
 
-Use the automated installer by running this snippet in the terminal:
-
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
-```
-After installation, the `ccx` executable is ready to use from the directory you selected. If you accept the shell-configuration prompt, that directory is added to your `PATH` and the `CalculiX` alias is created as well.
-
-Or build manually with CMake. Detailed prerequisites, platform instructions, solver configurations, and troubleshooting are in [INSTALL.md](INSTALL.md).
+Run this snippet in the terminal:
 
 ```bash
-cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON
-cmake --build build_mumps --parallel
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/master/install.sh)"
 ```
+After installation, the `ccx` executable is ready to use from the directory you selected. If you accept the shell-configuration prompt, that directory is added to your `PATH` and the `CalculiX` alias is created as well. See [INSTALL.md](INSTALL.md) for more details in installation with different solvers.
 
-The resulting executable is `build_mumps/CalculiX`.
+#### Quick install for Windows (PowerShell)
+For Windows users, use the automated PowerShell installer. It will automatically detect or install MSYS2 and the required MinGW-w64 toolchains. Open a standard **Windows PowerShell** prompt and paste this entire block:
+
+```powershell
+# 1. Download the script into memory (using the master branch)
+$script = irm [https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/master/install.ps1](https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/master/install.ps1)
+
+# 2. Save it to disk with forced UTF-8 encoding (prevents Windows parsing errors)
+$script | Out-File -FilePath install.ps1 -Encoding utf8
+
+# 3. Temporarily allow script execution for this session and run it
+Set-ExecutionPolicy Bypass -Scope Process -Force
+.\install.ps1
+```
 
 ## Repository Guide
 
 - [INSTALL.md](INSTALL.md): prerequisites, automated installation, manual CMake builds, and troubleshooting.
 - [VALIDATION.md](VALIDATION.md): official test-suite validation and result interpretation.
-- [BENCHMARK_ACCELERATE.md](BENCHMARK_ACCELERATE.md): Accelerate design and performance notes.
 - [MODERNIZATION.md](MODERNIZATION.md): architecture and roadmap.
 - [test_NewLib/run_official_testsuite.py](test_NewLib/run_official_testsuite.py): full correctness comparison runner.
 - [test_NewLib/benchmark_solvers.py](test_NewLib/benchmark_solvers.py): focused performance benchmark.
-- [third_party/mumps/README.md](third_party/mumps/README.md): vendored MUMPS source and build notes.
-- [third_party/spooles/README.md](third_party/spooles/README.md): vendored SPOOLES source and provenance.
 
-## Companion Tools
-
-This project is designed to work with [CalculiX GraphiX GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW), a modernized CalculiX pre/post-processor with OpenGL and ParaView export support.
-
-## Platforms
-
-- Linux x86_64 and ARM64
-- macOS on Apple Silicon only
-- Windows through MSYS2/MinGW-w64 and portable CMake configurations
 
 ## Attribution and License
 
