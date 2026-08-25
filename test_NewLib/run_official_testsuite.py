@@ -43,6 +43,36 @@ import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
+# Terminal colors are disabled automatically for redirected output and CI logs.
+USE_COLOR = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+COLORS = {
+    "green": "\033[32m",
+    "yellow": "\033[33m",
+    "red": "\033[31m",
+    "cyan": "\033[36m",
+    "bold": "\033[1m",
+    "reset": "\033[0m",
+}
+
+
+def colorize(text, color):
+    if not USE_COLOR:
+        return text
+    return f"{COLORS[color]}{text}{COLORS['reset']}"
+
+
+def color_status(status):
+    color = {
+        "PASS": "green",
+        "DIFF": "yellow",
+        "UNVERIFIED": "yellow",
+        "FAIL": "red",
+        "ERROR": "red",
+        "TIMEOUT": "red",
+    }.get(status)
+    return colorize(status, color) if color else status
+
+
 # Matplotlib integration for reports
 try:
     import matplotlib
@@ -56,8 +86,8 @@ except ImportError:
 # Path & Environment Initialization
 # =============================================================================
 
-# Always assume the current working directory is the base for build folders
-CCX_DIR = Path.cwd()
+# Resolve the repository from this script so invocation is independent of cwd.
+CCX_DIR = Path(__file__).resolve().parent.parent
 TEST_DIR = CCX_DIR / "test"
 
 # Available Solver Binaries
@@ -114,7 +144,7 @@ def get_viable_solvers():
     arch = platform.machine().lower()
 
     if sys_os == "Darwin":
-        return ["MUMPS", "ACCELERATE"]
+        return ["SPOOLES", "MUMPS", "ACCELERATE"]
     elif sys_os == "Linux":
         if arch in ("x86_64", "amd64"):
             return ["SPOOLES", "MUMPS", "PARDISO"]
@@ -157,15 +187,18 @@ def check_solver_libraries(solvers, sys_os):
                 if not found and (list(Path("/usr/lib").glob("**/*mumps*")) or list(Path("/usr/include").glob("**/*mumps*"))):
                     found = True
                     
-        elif solver == "SPOOLES" and sys_os == "Linux":
-            try:
-                res = subprocess.run(["ldconfig", "-p"], capture_output=True, text=True)
-                if "spooles" in res.stdout.lower():
+        elif solver == "SPOOLES":
+            if sys_os == "Darwin":
+                found = (CCX_DIR / "build_spooles" / EXE_NAME).is_file()
+            elif sys_os == "Linux":
+                try:
+                    res = subprocess.run(["ldconfig", "-p"], capture_output=True, text=True)
+                    if "spooles" in res.stdout.lower():
+                        found = True
+                except Exception:
+                    pass
+                if not found and (list(Path("/usr/lib").glob("**/*spooles*")) or list(Path("/usr/include").glob("**/*spooles*"))):
                     found = True
-            except Exception:
-                pass
-            if not found and (list(Path("/usr/lib").glob("**/*spooles*")) or list(Path("/usr/include").glob("**/*spooles*"))):
-                found = True
                 
         elif solver == "PARDISO" and sys_os == "Linux":
             if os.environ.get("MKLROOT") or Path("/opt/intel/oneapi/mkl").exists():
@@ -181,7 +214,7 @@ def check_solver_libraries(solvers, sys_os):
             found = True 
 
         if not found:
-            print(f"[!] Info: System libraries for '{solver}' were not detected. Tests for this solver may fail or fall back to defaults.")
+            print(colorize(f"[!] Info: System libraries for '{solver}' were not detected. Tests for this solver may fail or fall back to defaults.", "yellow"))
 
 
 def ensure_test_suite():
@@ -215,11 +248,12 @@ def ensure_test_suite():
 
 
 def find_test_decks(patterns=None):
-    """Discover usable official .inp decks and report hard-coded SPOOLES decks."""
+    """Discover decks and exclude unavailable generated-file dependencies."""
     if not TEST_DIR.exists():
         return [], []
     decks = []
     excluded_spooles = []
+    excluded_missing_files = []
     for f in sorted(TEST_DIR.glob("*.inp")):
         deck_name = f.stem
         if deck_name in EXCLUDED_DECKS or f.name.endswith(".rfn.inp"):
@@ -235,8 +269,32 @@ def find_test_decks(patterns=None):
         if re.search(r"(?:^|,)\s*SOLVER\s*=\s*SPOOLES\b", input_text, re.IGNORECASE | re.MULTILINE):
             excluded_spooles.append(deck_name)
             continue
+        required_files = []
+        if re.search(r"^\s*\*VIEWFACTOR\s*,\s*READ\b", input_text, re.IGNORECASE | re.MULTILINE):
+            required_files.append(f"{deck_name}.vwf")
+        if re.search(r"^\s*\*RESTART\s*,\s*READ\b", input_text, re.IGNORECASE | re.MULTILINE):
+            required_files.append(f"{deck_name}.rin")
+        missing_files = [name for name in required_files if not (TEST_DIR / name).is_file()]
+        if missing_files:
+            excluded_missing_files.append((deck_name, missing_files))
+            continue
         decks.append(deck_name)
-    return decks, excluded_spooles
+    return decks, excluded_spooles, excluded_missing_files
+
+
+def run_checker(command, cwd, timeout):
+    """Run an output checker without allowing it to hang the test suite."""
+    try:
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        return None
 
 
 def run_single_test(task):
@@ -253,14 +311,20 @@ def run_single_test(task):
     with tempfile.TemporaryDirectory(prefix=f"ccx_{solver_name}_{deck}_") as sandbox:
         sandbox_path = Path(sandbox)
 
-        # 1. Symlink all files from test/ into sandbox so inputs/includes work seamlessly
+        # Copy test inputs into the sandbox so solver output cannot modify test/.
         for item in TEST_DIR.iterdir():
             if item.is_file():
                 dest = sandbox_path / item.name
                 try:
-                    os.symlink(item, dest)
-                except OSError:
                     shutil.copy2(item, dest)
+                except OSError as exc:
+                    return {
+                        "deck": deck,
+                        "solver": solver_name,
+                        "status": "ERROR",
+                        "time": 0.0,
+                        "detail": f"Input copy failed: {exc}",
+                    }
 
         # Execute the solver-specific binary without changing the input deck.
         cmd = [str(bin_path), deck]
@@ -317,26 +381,50 @@ def run_single_test(task):
         frd_test = sandbox_path / f"{deck}.frd"
 
         dat_res = ""
+        if dat_ref.exists() and not dat_test.exists():
+            return {
+                "deck": deck,
+                "solver": solver_name,
+                "status": "UNVERIFIED",
+                "time": elapsed,
+                "detail": f"Missing output {dat_test.name}",
+            }
         if dat_ref.exists() and dat_test.exists():
-            cp = subprocess.run(
-                ["perl", str(TEST_DIR / "datcheck.pl"), deck],
-                cwd=sandbox_path,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-            )
+            cp = run_checker(["perl", str(TEST_DIR / "datcheck.pl"), deck], sandbox_path, timeout)
+            if cp is None:
+                return {"deck": deck, "solver": solver_name, "status": "UNVERIFIED", "time": elapsed, "detail": "DAT checker timeout"}
             dat_res = cp.stdout.strip()
+            if cp.returncode != 0 and "deviation in file" not in dat_res:
+                return {
+                    "deck": deck,
+                    "solver": solver_name,
+                    "status": "UNVERIFIED",
+                    "time": elapsed,
+                    "detail": f"DAT checker failed (exit {cp.returncode})",
+                }
 
         frd_res = ""
+        if frd_ref.exists() and not frd_test.exists():
+            return {
+                "deck": deck,
+                "solver": solver_name,
+                "status": "UNVERIFIED",
+                "time": elapsed,
+                "detail": f"Missing output {frd_test.name}",
+            }
         if frd_ref.exists() and frd_test.exists():
-            cp = subprocess.run(
-                ["perl", str(TEST_DIR / "frdcheck.pl"), deck],
-                cwd=sandbox_path,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-            )
+            cp = run_checker(["perl", str(TEST_DIR / "frdcheck.pl"), deck], sandbox_path, timeout)
+            if cp is None:
+                return {"deck": deck, "solver": solver_name, "status": "UNVERIFIED", "time": elapsed, "detail": "FRD checker timeout"}
             frd_res = cp.stdout.strip()
+            if cp.returncode != 0 and "deviation in file" not in frd_res:
+                return {
+                    "deck": deck,
+                    "solver": solver_name,
+                    "status": "UNVERIFIED",
+                    "time": elapsed,
+                    "detail": f"FRD checker failed (exit {cp.returncode})",
+                }
 
         if "deviation in file" in dat_res:
             status = "DIFF"
@@ -521,16 +609,16 @@ def save_reports(decks, active_solvers, results, stats, output_dir, timestamp_fo
 
         # Overall Status Matrix
         f.write("## 📋 Solver Aggregate Matrix\n\n")
-        f.write("| Solver | Pass | Diff | Fail | Timeout | Error | Pass Rate (%) | Total Time (s) |\n")
-        f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
+        f.write("| Solver | Pass | Diff | Fail | Unverified | Timeout | Error | Pass Rate (%) | Total Time (s) |\n")
+        f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
 
         for s in active_solvers:
             st = stats[s]
             pass_rate = (st["PASS"] / total_decks * 100.0) if total_decks > 0 else 0.0
             badge = "🟢" if pass_rate >= 98.0 else ("🟡" if pass_rate >= 90.0 else "🔴")
             f.write(
-                f"| **{s}** | {st['PASS']} | {st['DIFF']} | {st['FAIL']} | {st['TIMEOUT']} | "
-                f"{st['ERROR']} | {badge} **{pass_rate:.1f}%** | {st['TOTAL_TIME']:.2f}s |\n"
+                f"| **{s}** | {st['PASS']} | {st['DIFF']} | {st['FAIL']} | {st.get('UNVERIFIED', 0)} | "
+                f"{st['TIMEOUT']} | {st['ERROR']} | {badge} **{pass_rate:.1f}%** | {st['TOTAL_TIME']:.2f}s |\n"
             )
 
         # Baseline Comparison Breakdown
@@ -685,10 +773,11 @@ def save_reports(decks, active_solvers, results, stats, output_dir, timestamp_fo
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_file = output_dir / "results.csv"
     md_file = output_dir / "summary.md"
+    solver_names = list(active_solvers)
 
     # 1. Write Semicolon-Delimited CSV
     fieldnames = ["Deck"]
-    for s in active_solvers:
+    for s in solver_names:
         fieldnames.extend([f"{s}_Status", f"{s}_Time_s", f"{s}_Detail"])
 
     with open(csv_file, "w", newline="", encoding="utf-8") as f:
@@ -696,7 +785,7 @@ def save_reports(decks, active_solvers, results, stats, output_dir, timestamp_fo
         writer.writerow(fieldnames)
         for d in decks:
             row = [d]
-            for s in active_solvers:
+            for s in solver_names:
                 res = results[d].get(s, {})
                 row.append(res.get("status", "N/A"))
                 row.append(f"{res.get('time', 0.0):.2f}" if "time" in res else "N/A")
@@ -813,20 +902,24 @@ def main():
     parser.add_argument("--max-workers", type=int, default=None, help="Max concurrent workers (default: physical_cores // threads_per_job)")
     parser.add_argument("--timeout", type=int, default=60, help="Per-test timeout in seconds (default: 60s)")
     parser.add_argument("--limit", type=int, default=None, help="Limit total number of decks to test")
-    parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory base (default: ./testsuite_results)")
+    parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory base (default: sibling of repository)")
     parser.add_argument("--custom-bin", type=str, default=None, help="Add a user-supplied CCX binary as the CUSTOM solver")
     args = parser.parse_args()
 
     ensure_test_suite()
 
-    decks, excluded_spooles = find_test_decks(args.pattern)
+    decks, excluded_spooles, excluded_missing_files = find_test_decks(args.pattern)
     if excluded_spooles:
-        print(
+        print(colorize(
             f"[!] Excluded {len(excluded_spooles)} test deck(s) with hard-coded "
-            f"SPOOLES solver: {', '.join(excluded_spooles)}"
-        )
+            f"SPOOLES solver: {', '.join(excluded_spooles)}", "yellow"
+        ))
     else:
         print("[*] No test decks with a hard-coded SPOOLES solver were found.")
+    if excluded_missing_files:
+        print(colorize(f"[!] Excluded {len(excluded_missing_files)} test deck(s) with missing auxiliary files:", "yellow"))
+        for deck_name, missing_files in excluded_missing_files:
+            print(colorize(f"    {deck_name}: {', '.join(missing_files)}", "yellow"))
     if args.limit:
         decks = decks[:args.limit]
 
@@ -845,7 +938,7 @@ def main():
             if s in viable_solvers:
                 target_solvers.append(s)
             else:
-                print(f"[!] Warning: Solver '{s}' is not supported on this platform ({platform.system()} {platform.machine()}). Dropping from run.")
+                print(colorize(f"[!] Warning: Solver '{s}' is not supported on this platform ({platform.system()} {platform.machine()}). Dropping from run.", "yellow"))
     
     if not target_solvers:
         print("[-] No viable solvers selected for this OS/Architecture. Exiting.")
@@ -863,11 +956,12 @@ def main():
         strict_bin_path = CCX_DIR / f"build_{s.lower()}" / EXE_NAME
             
         if not strict_bin_path.is_file() or not os.access(strict_bin_path, os.X_OK):
-            print(
+            print(colorize(
                 f"[-] Solver '{s}' binary is missing or not executable: "
                 f"{strict_bin_path}\n"
-                f"    Build it with: cmake --build {CCX_DIR / f'build_{s.lower()}'}"
-            )
+                f"    Build it with: cmake --build {CCX_DIR / f'build_{s.lower()}'}, "
+                "red"
+            ))
             sys.exit(1)
 
         active_solvers[s] = {**cfg, "bin": strict_bin_path}
@@ -882,7 +976,7 @@ def main():
             elif path_command:
                 custom_bin_path = Path(path_command)
         if not custom_bin_path.is_file() or not os.access(custom_bin_path, os.X_OK):
-            print(f"[-] CUSTOM binary is missing or not executable: {custom_bin_path}")
+            print(colorize(f"[-] CUSTOM binary is missing or not executable: {custom_bin_path}", "red"))
             sys.exit(1)
         active_solvers["CUSTOM"] = {
             **SOLVER_CONFIGS["CUSTOM"],
@@ -928,8 +1022,14 @@ def main():
             results[deck][sname] = res
             completed_count += 1
 
-            status_icon = "✓" if res["status"] == "PASS" else "✗"
-            print(f"[{completed_count:4d}/{total_tasks:4d}] {sname:<8} {deck:<25} -> {status_icon} {res['status']:<6} ({res['time']:5.2f}s) {res['detail']}")
+            status_icon = {"PASS": "✓", "DIFF": "~", "UNVERIFIED": "?"}.get(res["status"], "✗")
+            result_line = (
+                f"[{completed_count:4d}/{total_tasks:4d}] "
+                f"{sname:<10} {deck:<32} "
+                f"{status_icon} {res['status']:<11} {res['time']:6.2f}s  {res['detail']}"
+            )
+            result_color = {"PASS": "green", "DIFF": "yellow", "UNVERIFIED": "yellow"}.get(res["status"], "red")
+            print(colorize(result_line, result_color))
 
     total_wall = time.perf_counter() - t_start
 
@@ -938,14 +1038,14 @@ def main():
     print(" Official Test Suite Summary Matrix")
     print("=" * 80)
 
-    header = f"{'Test Deck':<28}" + "".join([f"{s:>16}" for s in active_solvers.keys()])
+    header = f"{'Test Deck':<32}" + "".join([f"{s:>18}" for s in active_solvers.keys()])
     print(header)
     print("-" * len(header))
 
-    stats = {s: {"PASS": 0, "DIFF": 0, "FAIL": 0, "TIMEOUT": 0, "ERROR": 0, "TOTAL_TIME": 0.0} for s in active_solvers}
+    stats = {s: {"PASS": 0, "DIFF": 0, "FAIL": 0, "TIMEOUT": 0, "ERROR": 0, "UNVERIFIED": 0, "TOTAL_TIME": 0.0} for s in active_solvers}
 
     for d in decks:
-        row = f"{d:<28}"
+        row = f"{d:<32}"
         for s in active_solvers.keys():
             res = results[d].get(s)
             if res:
@@ -966,7 +1066,9 @@ def main():
         st = stats[s]
         total_runs = len(decks)
         pass_rate = (st["PASS"] / total_runs * 100) if total_runs else 0
-        print(f"  * {s:<8}: {st['PASS']:3d} PASS | {st['DIFF']:2d} DIFF | {st['FAIL']:2d} FAIL | {st['TIMEOUT']:2d} TIMEOUT | Cumul Time: {st['TOTAL_TIME']:6.2f}s | Pass Rate: {pass_rate:5.1f}% ({st['PASS']}/{total_runs})")
+        summary_line = f"  * {s:<10}: {st['PASS']:3d} PASS | {st['DIFF']:2d} DIFF | {st['FAIL']:2d} FAIL | {st['UNVERIFIED']:2d} UNVERIFIED | {st['TIMEOUT']:2d} TIMEOUT | Cumul Time: {st['TOTAL_TIME']:6.2f}s | Pass Rate: {pass_rate:5.1f}% ({st['PASS']}/{total_runs})"
+        summary_color = "green" if st["PASS"] == total_runs else "yellow" if st["PASS"] else "red"
+        print(colorize(summary_line, summary_color))
     print(f"\nTotal Suite Wall-Clock Time: {total_wall:.2f} s across {max_workers} workers")
     print("=" * 80)
 
@@ -977,7 +1079,7 @@ def main():
     timestamp_folder = now.strftime("%Y_%m_%d_%H_%M")
     timestamp_formatted = now.strftime("%Y-%m-%d %H:%M:%S")
 
-    base_results_dir = Path(args.output_dir) if args.output_dir else (CCX_DIR / "testsuite_results")
+    base_results_dir = Path(args.output_dir) if args.output_dir else (CCX_DIR.parent / f"{CCX_DIR.name}_testsuite_results")
     run_output_dir = base_results_dir / timestamp_folder
 
     csv_path, md_path, plot_path = save_reports(
@@ -1003,7 +1105,7 @@ def main():
                 diagnostics.write(res["stdout"].rstrip() + "\n")
 
         print("=" * 80)
-        print(f" ❌ Failure diagnostics saved to: {diagnostics_file}")
+        print(colorize(f" ❌ Failure diagnostics saved to: {diagnostics_file}", "red"))
         print("=" * 80 + "\n")
 
     # GitHub CI Step Summary integration
@@ -1017,7 +1119,7 @@ def main():
             print(f"[!] Note: Could not write GitHub Step Summary: {e}")
 
     # Exit code determination
-    total_fails = sum(st["FAIL"] + st["ERROR"] + st["TIMEOUT"] for st in stats.values())
+    total_fails = sum(st["FAIL"] + st["ERROR"] + st["TIMEOUT"] + st.get("UNVERIFIED", 0) for st in stats.values())
     total_diffs = sum(st["DIFF"] for st in stats.values())
     total_passes = sum(st["PASS"] for st in stats.values())
     total_all = sum(len(decks) for _ in active_solvers)
