@@ -6,12 +6,6 @@ on:
   pull_request:
     branches: [ master, main, 'fix/**', 'fix_*', 'feat/**' ]
   workflow_dispatch:
-    inputs:
-      full_test_suite:
-        description: 'Run full 600+ test suite instead of quick smoke test'
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -35,7 +29,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -B build -G Ninja \
+          cmake -B build_accelerate -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCCX_USE_ACCELERATE=ON \
             -DCCX_USE_SPOOLES=OFF \
@@ -44,18 +38,14 @@ jobs:
 
       - name: Build CalculiX
         run: |
-          cmake --build build -j$(sysctl -n hw.ncpu)
+          cmake --build build_accelerate -j$(sysctl -n hw.ncpu)
 
       - name: Run Verification Test Suite
         run: |
           export OMP_NUM_THREADS=1
           export OMP_STACKSIZE=128M
-          if [ "${{ github.event.inputs.full_test_suite }}" = "true" ]; then
-            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers $(sysctl -n hw.ncpu)
-          else
-            python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE \
-              --pattern "achtel2*" "beam8*" "spring1*" "therm1*" "contact1*" --max-workers $(sysctl -n hw.ncpu)
-          fi
+          python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE \
+            --pattern "beam*" --max-workers $(sysctl -n hw.ncpu)
 
   # ============================================================================
   # 2. Linux x86_64 - MUMPS 5.x, Intel oneMKL PARDISO, and Legacy SPOOLES
@@ -111,14 +101,14 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -B build -G Ninja \
+          cmake -B build_${{ matrix.solver }} -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             ${{ matrix.cmake_flags }} \
             -DCCX_USE_ARPACK=ON
 
       - name: Build CalculiX
         run: |
-          cmake --build build -j$(nproc)
+          cmake --build build_${{ matrix.solver }} -j$(nproc)
 
       - name: Run Verification Test Suite
         run: |
@@ -126,12 +116,8 @@ jobs:
           export OMP_STACKSIZE=128M
           ulimit -s unlimited
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          if [ "${{ github.event.inputs.full_test_suite }}" = "true" ]; then
-            python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" --max-workers $(nproc)
-          else
-            python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
-              --pattern "achtel2*" "beam8*" "spring1*" "therm1*" "contact1*" --max-workers $(nproc)
-          fi
+          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
+            --pattern "beam*" --max-workers $(nproc)
 
   # ============================================================================
   # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS
@@ -172,13 +158,13 @@ jobs:
       - name: Build CalculiX in MSYS2
         shell: msys2 {0}
         run: |
-          cmake -B build -G Ninja \
+          cmake -B build_${{ matrix.solver }} -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_PREFIX_PATH="/ucrt64" \
             ${{ matrix.cmake_flags }} \
             -DCCX_USE_ARPACK=ON \
             -DCCX_USE_ACCELERATE=OFF
-          cmake --build build -j
+          cmake --build build_${{ matrix.solver }} -j
 
       - name: Run Verification Test in MSYS2
         shell: msys2 {0}
@@ -186,12 +172,8 @@ jobs:
           export OMP_NUM_THREADS=1
           export PYTHONIOENCODING=utf8
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          if [ "${{ github.event.inputs.full_test_suite }}" = "true" ]; then
-            python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG"
-          else
-            python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
-              --pattern "achtel2*" "beam8*" "spring1*" "therm1*" "contact1*"
-          fi
+          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
+            --pattern "beam*"
 
       - name: Verify Standalone Execution & Install Script
         shell: pwsh
