@@ -8,10 +8,10 @@ A solver modernization of [CalculiX CrunchiX](https://www.dhondt.de/), the open-
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](COPYING)
 [![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#platform-support--roadmap)
 [![Solvers: SPOOLES | PARDISO | MUMPS | Accelerate](https://img.shields.io/badge/Solvers-SPOOLES%20%7C%20PARDISO%20%7C%20MUMPS%20%7C%20Accelerate-orange.svg)](#multi-solver-architecture)
-[![PARDISO Pass Rate](https://img.shields.io/badge/PARDISO%20Pass%20Rate-100%25-brightgreen.svg)](#solver-benchmarks--verification-pass-rates)
-[![SPOOLES Pass Rate](https://img.shields.io/badge/SPOOLES%20Pass%20Rate-100%25-brightgreen.svg)](#solver-benchmarks--verification-pass-rates)
-[![MUMPS Pass Rate](https://img.shields.io/badge/MUMPS%20Pass%20Rate-71.4%25-yellow.svg)](#solver-benchmarks--verification-pass-rates)
-[![Accelerate Pass Rate](https://img.shields.io/badge/Accelerate%20Pass%20Rate-71.4%25-yellow.svg)](#solver-benchmarks--verification-pass-rates)
+[![PARDISO Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/pardiso.json)](#solver-benchmarks--verification-pass-rates)
+[![SPOOLES Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles.json)](#solver-benchmarks--verification-pass-rates)
+[![MUMPS Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps.json)](#solver-benchmarks--verification-pass-rates)
+[![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#solver-benchmarks--verification-pass-rates)
 
 ![CalculiX CrunchiX FEA Simulation](pictures/turbs.gif)
 
