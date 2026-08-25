@@ -1,0 +1,56 @@
+#
+# Makefile.inc.macos -- Apple Accelerate / gfortran variant
+# Applied on top of extracted MUMPS 5.9.1 source at build time.
+# Base template: Make.inc/Makefile.inc.generic.SEQ
+#
+
+LPORDDIR = $(topdir)/PORD/lib/
+IPORD    = -I$(topdir)/PORD/include/
+LPORD    = -L$(LPORDDIR) -lpord$(PLAT)
+
+LMETISDIR = /opt/homebrew
+IMETIS    = -I$(LMETISDIR)/include
+LMETIS    = -L$(LMETISDIR)/lib -lmetis
+
+ORDERINGSF  = -Dpord -Dmetis
+ORDERINGSC  = $(ORDERINGSF)
+
+LORDERINGS  = $(LMETIS) $(LPORD)
+IORDERINGSF = $(IMETIS)
+IORDERINGSC = $(IMETIS) $(IPORD)
+
+PLAT    =
+LIBEXT_SHARED  = .dylib
+SONAME = -install_name
+SHARED_OPT = -dynamiclib
+FPIC_OPT = -fPIC
+LIBEXT  = .a
+OUTC    = -o
+OUTF    = -o
+RM      = /bin/rm -f
+CC      = clang
+FC      = gfortran
+FL      = gfortran
+AR      = ar vr
+RANLIB  = ranlib
+
+# Accelerate provides LAPACK too -- leave empty to avoid double-linking.
+LAPACK =
+
+INCSEQ  = -I$(topdir)/libseq
+LIBSEQ  = $(LAPACK) -L$(topdir)/libseq -lmpiseq$(PLAT)
+
+LIBBLAS = -framework Accelerate
+
+LIBOTHERS = -lpthread
+
+# gfortran adds a trailing underscore to symbols; matches Accelerate's Fortran ABI.
+CDEFS = -DAdd_
+
+OPTF    = -O2 -fallow-argument-mismatch -fPIC -fopenmp
+OPTC    = -O2 -I. -fPIC
+OPTL    = -O2 -fopenmp
+
+INCS = $(INCSEQ)
+LIBS = $(LIBSEQ)
+LIBSEQNEEDED = libseqneeded
