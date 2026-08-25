@@ -226,14 +226,21 @@ check_dependencies() {
                 fi
             fi
         elif command -v pacman &>/dev/null; then
+            # Determine the best Arch package manager (AUR helper preferred)
+            ARCH_INSTALLER="sudo pacman -S --needed"
+            if command -v paru &>/dev/null; then
+                ARCH_INSTALLER="paru -S --needed"
+            elif command -v yay &>/dev/null; then
+                ARCH_INSTALLER="yay -S --needed"
+            fi
             MISSING_PAC=""
             command -v cmake &>/dev/null || MISSING_PAC="${MISSING_PAC} cmake"
             command -v gfortran &>/dev/null || MISSING_PAC="${MISSING_PAC} gcc-fortran"
 
             if [ -n "${MISSING_PAC}" ]; then
-                prompt_read "Install required packages via pacman (requires sudo)? [Y/n] " "Y" INSTALL_PKGS
+                prompt_read "Install required packages via pacman/paru/yay (requires sudo)? [Y/n] " "Y" INSTALL_PKGS
                 if [[ "$INSTALL_PKGS" =~ ^[Yy]$ ]]; then
-                    sudo pacman -S --needed base-devel gcc-fortran cmake openblas lapack arpack
+                    $ARCH_INSTALLER base-devel gcc-fortran cmake openblas lapack arpack
                 fi
             fi
         fi
@@ -279,7 +286,14 @@ elif [ "${OS}" = "Linux" ]; then
             rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel || MUMPS_INSTALLED=false
         elif command -v pacman &>/dev/null; then
             # Checks for either mumps or mumps-seq
-            pacman -Qs mumps &>/dev/null || sudo pacman -S --needed mumps-seq || MUMPS_INSTALLED=false
+            # Determine the best Arch package manager (AUR helper preferred)
+            ARCH_INSTALLER="sudo pacman -S --needed"
+            if command -v paru &>/dev/null; then
+                ARCH_INSTALLER="paru -S --needed"
+            elif command -v yay &>/dev/null; then
+                ARCH_INSTALLER="yay -S --needed"
+            fi
+            pacman -Qs mumps &>/dev/null || $ARCH_INSTALLER mumps-seq || MUMPS_INSTALLED=false
         fi
         
         if [ "$MUMPS_INSTALLED" = true ]; then
@@ -358,7 +372,21 @@ elif [ "${OS}" = "Linux" ]; then
             elif command -v dnf &>/dev/null; then
                 sudo dnf install -y spooles-devel || SPOOLES_INSTALLED=false
             elif command -v pacman &>/dev/null; then
-                pacman -Qi spooles &>/dev/null || sudo pacman -S --needed spooles || SPOOLES_INSTALLED=false
+            
+                # Determine the best Arch package manager (AUR helper preferred)
+                ARCH_INSTALLER="sudo pacman -S --needed"
+                if command -v paru &>/dev/null; then
+                    ARCH_INSTALLER="paru -S --needed"
+                elif command -v yay &>/dev/null; then
+                    ARCH_INSTALLER="yay -S --needed"
+                fi
+                    # Use -Qs to catch variations like 'spooles-pic' from AUR
+                pacman -Qs spooles &>/dev/null || $ARCH_INSTALLER spooles || SPOOLES_INSTALLED=false
+            fi
+            
+            # Ultimate Fallback: Check if headers exist on the filesystem anyway
+            if [ "$SPOOLES_INSTALLED" = false ] && [ -d "/usr/include/spooles" ]; then
+                SPOOLES_INSTALLED=true
             fi
             
             if [ "$SPOOLES_INSTALLED" = true ]; then
@@ -385,7 +413,14 @@ elif [ "${OS}" = "Linux" ]; then
             if command -v apt-get &>/dev/null; then
                 sudo apt-get install -y libspooles-dev || SPOOLES_INSTALLED=false
             elif command -v pacman &>/dev/null; then
-                pacman -Qi spooles &>/dev/null || sudo pacman -S --needed spooles || SPOOLES_INSTALLED=false
+                # Determine the best Arch package manager (AUR helper preferred)
+                ARCH_INSTALLER="sudo pacman -S --needed"
+                if command -v paru &>/dev/null; then
+                    ARCH_INSTALLER="paru -S --needed"
+                elif command -v yay &>/dev/null; then
+                    ARCH_INSTALLER="yay -S --needed"
+                fi
+                pacman -Qi spooles &>/dev/null || $ARCH_INSTALLER spooles || SPOOLES_INSTALLED=false
             fi
             
             if [ "$SPOOLES_INSTALLED" = true ]; then

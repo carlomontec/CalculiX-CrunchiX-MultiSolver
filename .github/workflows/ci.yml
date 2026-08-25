@@ -134,13 +134,14 @@ jobs:
           echo "$OUTPUT"
           
           RATE=$(echo "$OUTPUT" | grep -oEi '[0-9.]+%' | tail -n 1)
-          echo "$RATE" > ${SOLVER_FLAG}.txt
+          # Combine OS and solver name to keep ARM and x64 separate!
+          echo "$RATE" > ${{ matrix.os }}-${{ matrix.solver }}.txt
 
       - name: Upload Linux Rate
         uses: actions/upload-artifact@v4
         with:
-          name: rate-${{ matrix.solver }}
-          path: ${SOLVER_FLAG}.txt
+          name: rate-${{ matrix.os }}-${{ matrix.solver }}
+          path: ${{ matrix.os }}-${{ matrix.solver }}.txt
 
   # ============================================================================
   # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS
@@ -217,47 +218,73 @@ jobs:
 
       - name: Read Rates into Environment Variables
         run: |
-          # Create empty files as a fallback so 'cat' never crashes
-          touch ACCELERATE.txt MUMPS.txt SPOOLES.txt PARDISO.txt
+          # Create empty files as a fallback
+          touch ACCELERATE.txt ubuntu-24.04-mumps.txt ubuntu-24.04-arm-mumps.txt ubuntu-24.04-spooles.txt ubuntu-24.04-arm-spooles.txt ubuntu-24.04-pardiso.txt
           
           echo "RATE_ACCELERATE=$(cat ACCELERATE.txt | tr -d '%')" >> $GITHUB_ENV
-          echo "RATE_MUMPS=$(cat MUMPS.txt | tr -d '%')" >> $GITHUB_ENV
-          echo "RATE_SPOOLES=$(cat SPOOLES.txt | tr -d '%')" >> $GITHUB_ENV
-          echo "RATE_PARDISO=$(cat PARDISO.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_MUMPS_X64=$(cat ubuntu-24.04-mumps.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_MUMPS_ARM=$(cat ubuntu-24.04-arm-mumps.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_SPOOLES_X64=$(cat ubuntu-24.04-spooles.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_SPOOLES_ARM=$(cat ubuntu-24.04-arm-spooles.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_PARDISO_X64=$(cat ubuntu-24.04-pardiso.txt | tr -d '%')" >> $GITHUB_ENV
 
       - name: Update Accelerate Badge
         uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
+          gistID: c3df672908389cd64cb1fb8c1133f507
           filename: accelerate.json
-          label: Accelerate
+          label: Accelerate (macOS)
           message: ${{ env.RATE_ACCELERATE }}%
           valColorRange: ${{ env.RATE_ACCELERATE }}
           maxColorRange: 100
           minColorRange: 50
 
-      - name: Update MUMPS Badge
+      - name: Update MUMPS x64 Badge
         uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
-          filename: mumps.json
-          label: MUMPS 5.x
-          message: ${{ env.RATE_MUMPS }}%
-          valColorRange: ${{ env.RATE_MUMPS }}
+          gistID: c3df672908389cd64cb1fb8c1133f507
+          filename: mumps-x64.json
+          label: MUMPS (x64)
+          message: ${{ env.RATE_MUMPS_X64 }}%
+          valColorRange: ${{ env.RATE_MUMPS_X64 }}
           maxColorRange: 100
           minColorRange: 50
 
-      - name: Update SPOOLES Badge
+      - name: Update MUMPS ARM Badge
         uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
-          filename: spooles.json
-          label: SPOOLES 2.2
-          message: ${{ env.RATE_SPOOLES }}%
-          valColorRange: ${{ env.RATE_SPOOLES }}
+          gistID: c3df672908389cd64cb1fb8c1133f507
+          filename: mumps-arm.json
+          label: MUMPS (ARM)
+          message: ${{ env.RATE_MUMPS_ARM }}%
+          valColorRange: ${{ env.RATE_MUMPS_ARM }}
+          maxColorRange: 100
+          minColorRange: 50
+
+      - name: Update SPOOLES x64 Badge
+        uses: Schneegans/dynamic-badges-action@v1.9.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507
+          filename: spooles-x64.json
+          label: SPOOLES (x64)
+          message: ${{ env.RATE_SPOOLES_X64 }}%
+          valColorRange: ${{ env.RATE_SPOOLES_X64 }}
+          maxColorRange: 100
+          minColorRange: 50
+
+      - name: Update SPOOLES ARM Badge
+        uses: Schneegans/dynamic-badges-action@v1.9.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507
+          filename: spooles-arm.json
+          label: SPOOLES (ARM)
+          message: ${{ env.RATE_SPOOLES_ARM }}%
+          valColorRange: ${{ env.RATE_SPOOLES_ARM }}
           maxColorRange: 100
           minColorRange: 50
 
@@ -265,10 +292,10 @@ jobs:
         uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
-          filename: pardiso.json
-          label: oneMKL PARDISO
-          message: ${{ env.RATE_PARDISO }}%
-          valColorRange: ${{ env.RATE_PARDISO }}
+          gistID: c3df672908389cd64cb1fb8c1133f507
+          filename: pardiso-x64.json
+          label: PARDISO (x64)
+          message: ${{ env.RATE_PARDISO_X64 }}%
+          valColorRange: ${{ env.RATE_PARDISO_X64 }}
           maxColorRange: 100
           minColorRange: 50
