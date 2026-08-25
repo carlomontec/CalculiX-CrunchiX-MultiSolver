@@ -44,8 +44,21 @@ jobs:
         run: |
           export OMP_NUM_THREADS=1
           export OMP_STACKSIZE=128M
-          python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE \
-            --pattern "beam*" --max-workers $(sysctl -n hw.ncpu)
+          
+          # We add '|| true' so the CI step doesn't crash if tests fail, 
+          # allowing us to extract the percentage anyway.
+          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --pattern "beam*" --max-workers $(sysctl -n hw.ncpu)) || true
+          echo "$OUTPUT"
+          
+          # Extracts the final percentage from your "Overall Pass Rate: XX.X%" print statements
+          RATE=$(echo "$OUTPUT" | grep -oEi '[0-9.]+%' | tail -n 1)
+          echo "$RATE" > ACCELERATE.txt
+
+      - name: Upload Accelerate Rate
+        uses: actions/upload-artifact@v4
+        with:
+          name: rate-ACCELERATE
+          path: ACCELERATE.txt
 
   # ============================================================================
   # 2. Linux x86_64 - MUMPS 5.x, Intel oneMKL PARDISO, and Legacy SPOOLES
@@ -116,8 +129,18 @@ jobs:
           export OMP_STACKSIZE=128M
           ulimit -s unlimited
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
-             --max-workers $(nproc)
+          
+          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" --max-workers $(nproc)) || true
+          echo "$OUTPUT"
+          
+          RATE=$(echo "$OUTPUT" | grep -oEi '[0-9.]+%' | tail -n 1)
+          echo "$RATE" > ${SOLVER_FLAG}.txt
+
+      - name: Upload Linux Rate
+        uses: actions/upload-artifact@v4
+        with:
+          name: rate-${{ matrix.solver }}
+          path: ${SOLVER_FLAG}.txt
 
   # ============================================================================
   # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS
@@ -179,3 +202,76 @@ jobs:
         shell: pwsh
         run: |
           .\install.ps1 -Solver ${{ matrix.solver }} -NonInteractive
+
+
+  update-badges:
+    name: Update Gist Badges
+    needs: [macos, linux]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Download all rates
+        uses: actions/download-artifact@v4
+        with:
+          pattern: rate-*
+          merge-multiple: true
+
+      - name: Update Accelerate Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
+          filename: accelerate.json
+          label: Accelerate
+          message: ${{ env.RATE }}
+          color: yellow
+          valColorRange: ${{ env.RATE }}
+          maxColorRange: 100
+          minColorRange: 50
+        env:
+          RATE: ${{ run: cat ACCELERATE.txt | tr -d '%' }}
+
+      - name: Update MUMPS Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
+          filename: mumps.json
+          label: MUMPS 5.x
+          message: ${{ env.RATE }}
+          color: yellow
+          valColorRange: ${{ env.RATE }}
+          maxColorRange: 100
+          minColorRange: 50
+        env:
+          RATE: ${{ run: cat MUMPS.txt | tr -d '%' }}
+
+      - name: Update SPOOLES Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
+          filename: spooles.json
+          label: SPOOLES 2.2
+          message: ${{ env.RATE }}
+          color: yellow
+          valColorRange: ${{ env.RATE }}
+          maxColorRange: 100
+          minColorRange: 50
+        env:
+          RATE: ${{ run: cat SPOOLES.txt | tr -d '%' }}
+
+      - name: Update PARDISO Badge
+        uses: Schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
+          filename: pardiso.json
+          label: oneMKL PARDISO
+          message: ${{ env.RATE }}
+          color: yellow
+          valColorRange: ${{ env.RATE }}
+          maxColorRange: 100
+          minColorRange: 50
+        env:
+          RATE: ${{ run: cat PARDISO.txt | tr -d '%' }}
