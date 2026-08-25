@@ -47,7 +47,7 @@ jobs:
           
           # We add '|| true' so the CI step doesn't crash if tests fail, 
           # allowing us to extract the percentage anyway.
-          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --pattern "beam*" --max-workers $(sysctl -n hw.ncpu)) || true
+          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE  --max-workers $(sysctl -n hw.ncpu)) || true
           echo "$OUTPUT"
           
           # Extracts the final percentage from your "Overall Pass Rate: XX.X%" print statements
@@ -195,8 +195,7 @@ jobs:
           export OMP_NUM_THREADS=1
           export PYTHONIOENCODING=utf8
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
-            --pattern "beam*"
+          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" 
 
       - name: Verify Standalone Execution & Install Script
         shell: pwsh
@@ -218,13 +217,16 @@ jobs:
 
       - name: Read Rates into Environment Variables
         run: |
+          # Create empty files as a fallback so 'cat' never crashes
+          touch ACCELERATE.txt MUMPS.txt SPOOLES.txt PARDISO.txt
+          
           echo "RATE_ACCELERATE=$(cat ACCELERATE.txt | tr -d '%')" >> $GITHUB_ENV
           echo "RATE_MUMPS=$(cat MUMPS.txt | tr -d '%')" >> $GITHUB_ENV
           echo "RATE_SPOOLES=$(cat SPOOLES.txt | tr -d '%')" >> $GITHUB_ENV
           echo "RATE_PARDISO=$(cat PARDISO.txt | tr -d '%')" >> $GITHUB_ENV
 
       - name: Update Accelerate Badge
-        uses: Schneegans/dynamic-badges-action@v1.7.0
+        uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
@@ -236,7 +238,7 @@ jobs:
           minColorRange: 50
 
       - name: Update MUMPS Badge
-        uses: Schneegans/dynamic-badges-action@v1.7.0
+        uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
@@ -248,7 +250,7 @@ jobs:
           minColorRange: 50
 
       - name: Update SPOOLES Badge
-        uses: Schneegans/dynamic-badges-action@v1.7.0
+        uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
@@ -260,7 +262,7 @@ jobs:
           minColorRange: 50
 
       - name: Update PARDISO Badge
-        uses: Schneegans/dynamic-badges-action@v1.7.0
+        uses: Schneegans/dynamic-badges-action@v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
