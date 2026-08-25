@@ -216,6 +216,13 @@ jobs:
           pattern: rate-*
           merge-multiple: true
 
+      - name: Read Rates into Environment Variables
+        run: |
+          echo "RATE_ACCELERATE=$(cat ACCELERATE.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_MUMPS=$(cat MUMPS.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_SPOOLES=$(cat SPOOLES.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_PARDISO=$(cat PARDISO.txt | tr -d '%')" >> $GITHUB_ENV
+
       - name: Update Accelerate Badge
         uses: Schneegans/dynamic-badges-action@v1.7.0
         with:
@@ -223,13 +230,10 @@ jobs:
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
           filename: accelerate.json
           label: Accelerate
-          message: ${{ env.RATE }}
-          color: yellow
-          valColorRange: ${{ env.RATE }}
+          message: ${{ env.RATE_ACCELERATE }}%
+          valColorRange: ${{ env.RATE_ACCELERATE }}
           maxColorRange: 100
           minColorRange: 50
-        env:
-          RATE: ${{ run: cat ACCELERATE.txt | tr -d '%' }}
 
       - name: Update MUMPS Badge
         uses: Schneegans/dynamic-badges-action@v1.7.0
@@ -238,13 +242,10 @@ jobs:
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
           filename: mumps.json
           label: MUMPS 5.x
-          message: ${{ env.RATE }}
-          color: yellow
-          valColorRange: ${{ env.RATE }}
+          message: ${{ env.RATE_MUMPS }}%
+          valColorRange: ${{ env.RATE_MUMPS }}
           maxColorRange: 100
           minColorRange: 50
-        env:
-          RATE: ${{ run: cat MUMPS.txt | tr -d '%' }}
 
       - name: Update SPOOLES Badge
         uses: Schneegans/dynamic-badges-action@v1.7.0
@@ -253,13 +254,10 @@ jobs:
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
           filename: spooles.json
           label: SPOOLES 2.2
-          message: ${{ env.RATE }}
-          color: yellow
-          valColorRange: ${{ env.RATE }}
+          message: ${{ env.RATE_SPOOLES }}%
+          valColorRange: ${{ env.RATE_SPOOLES }}
           maxColorRange: 100
           minColorRange: 50
-        env:
-          RATE: ${{ run: cat SPOOLES.txt | tr -d '%' }}
 
       - name: Update PARDISO Badge
         uses: Schneegans/dynamic-badges-action@v1.7.0
@@ -268,10 +266,7 @@ jobs:
           gistID: c3df672908389cd64cb1fb8c1133f507 # <-- Replace with your actual Gist ID
           filename: pardiso.json
           label: oneMKL PARDISO
-          message: ${{ env.RATE }}
-          color: yellow
-          valColorRange: ${{ env.RATE }}
+          message: ${{ env.RATE_PARDISO }}%
+          valColorRange: ${{ env.RATE_PARDISO }}
           maxColorRange: 100
           minColorRange: 50
-        env:
-          RATE: ${{ run: cat PARDISO.txt | tr -d '%' }}
