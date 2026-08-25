@@ -18,3 +18,10 @@ test_NewLib/*.frd
 !test/*.net.ref
 !test/*.ref.ref
 test_NewLib/testsuite_results/*
+
+
+# third_party/mumps/.gitignore
+*.o
+*.a
+*.so
+*.mod
