@@ -77,7 +77,7 @@ def ensure_mesh(deck_name, cgx_bin):
                 return False
             print(f"[*] Generating mesh via CGX batch mode ({fbl_file.name})...")
             res = subprocess.run(
-                [str(cgx_bin), "-b", str(fbl_file.name)],
+                [str(cgx_bin), "-bg", str(fbl_file.name)],
                 cwd=TEST_DIR,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,

@@ -12,7 +12,7 @@ line l4 p4 p1 16
 surf s0 l1 l2 l3 l4
 
 # Sweep along Z into 3D body (length 100, 80 divisions)
-swep all all tra 0 0 100 80
+swep all all tra 0 0 2000 1600
 
 # 20-node hexahedral quadratic elements (C3D20)
 elty all he20
