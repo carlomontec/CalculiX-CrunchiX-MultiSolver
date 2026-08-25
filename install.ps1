@@ -1,5 +1,5 @@
 # ==============================================================================
-# CalculiX CrunchiX (CCX) Multi-Solver — Windows PowerShell Universal Installer
+# CalculiX CrunchiX (CCX) Multi-Solver - Windows PowerShell Universal Installer
 #
 # 1-Liner Usage (from PowerShell as User):
 #   irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
@@ -62,7 +62,7 @@ function Prompt-User($promptMsg, $defaultVal = "Y") {
     return $val
 }
 
-Write-Header "CalculiX CrunchiX (CCX) Multi-Solver — Windows Installer"
+Write-Header "CalculiX CrunchiX (CCX) Multi-Solver - Windows Installer"
 
 # -----------------------------------------------------------------------------
 # 1. Architecture Check
@@ -157,6 +157,7 @@ function Invoke-MsysBash($cmd) {
 Write-Step "Checking MinGW-w64 (UCRT64) build tools & libraries..."
 
 $requiredPackages = @(
+    "git", 
     "mingw-w64-ucrt-x86_64-gcc",
     "mingw-w64-ucrt-x86_64-gcc-fortran",
     "mingw-w64-ucrt-x86_64-cmake",
@@ -218,14 +219,22 @@ $cmakeSolverFlags = ""
 $solverDisplayName = ""
 
 if ($enableMkl -match "^[Yy]$") {
-    # Check if Intel oneMKL exists
-    $hasMkl = ($env:MKLROOT -ne $null) -or 
-              (Test-Path "C:\Program Files (x86)\Intel\oneAPI\mkl") -or 
-              (Test-Path "$msysRoot\ucrt64\include\mkl.h")
+    $defaultMklPath = "C:\Program Files (x86)\Intel\oneAPI\mkl\latest"
+    
+    # Auto-set the environment variable if the folder exists but the var is missing
+    if (($env:MKLROOT -eq $null) -and (Test-Path $defaultMklPath)) {
+        Write-Host "Auto-configuring MKLROOT environment variable..." -ForegroundColor Cyan
+        [Environment]::SetEnvironmentVariable("MKLROOT", $defaultMklPath, [EnvironmentVariableTarget]::User)
+        $env:MKLROOT = $defaultMklPath
+    }
+
+    # Now check if we successfully have MKL
+    $hasMkl = ($env:MKLROOT -ne $null) -or (Test-Path "$msysRoot\ucrt64\include\mkl.h")
     
     if ($hasMkl) {
         $cmakeSolverFlags = "-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=ON"
         $solverDisplayName = "Intel oneMKL PARDISO + MUMPS 5.x"
+        Write-Success "Intel oneMKL successfully detected and configured!"
     } else {
         Write-Warn "Intel oneMKL was not detected in standard paths or MKLROOT."
         Write-Host "To use oneMKL on Windows, install Intel oneAPI Base Toolkit or oneMKL from:" -ForegroundColor Yellow
@@ -234,6 +243,13 @@ if ($enableMkl -match "^[Yy]$") {
         $cmakeSolverFlags = "-DCCX_USE_MUMPS=ON"
         $solverDisplayName = "MUMPS 5.x (Open-Source Default)"
     }
+
+    # Give the user time to read the MKL status before compiling
+    if (-not $NonInteractive) {
+        Write-Host ""
+        Read-Host "Press Enter to continue..."
+    }
+
 } else {
     $cmakeSolverFlags = "-DCCX_USE_MUMPS=ON"
     $solverDisplayName = "MUMPS 5.x (Open-Source Default)"
@@ -269,7 +285,11 @@ $sourceDirMsys = $sourceDirMsys.Substring(0,1).ToLower() + $sourceDirMsys.Substr
 # -----------------------------------------------------------------------------
 Write-Step "Configuring and compiling CalculiX CrunchiX with Ninja..."
 
-$buildCmd = "cd '$sourceDirMsys' && rm -rf build && cmake -B build -G Ninja $cmakeSolverFlags && cmake --build build"
+# Convert Windows path to POSIX forward slashes for MSYS2/CMake
+$mklRootPosix = $env:MKLROOT -replace "\\", "/"
+
+# Export the variable directly inside the MSYS2 subshell
+$buildCmd = "export MKLROOT='$mklRootPosix' && cd '$sourceDirMsys' && rm -rf build && cmake -B build -G Ninja $cmakeSolverFlags && cmake --build build"
 Invoke-MsysBash $buildCmd
 
 $builtExe = "$sourceDir\build\CalculiX.exe"
@@ -369,3 +389,4 @@ Write-Host "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX-51
 Write-Host "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)" -ForegroundColor White
 Write-Host "`nSee README.md for complete solver benchmarks and documentation." -ForegroundColor Gray
 Write-Host "================================================================`n" -ForegroundColor Cyan
+
