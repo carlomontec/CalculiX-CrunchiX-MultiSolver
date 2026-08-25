@@ -95,6 +95,11 @@ OS="$(uname -s)"
 ARCH="$(uname -m)"
 echo -e "Detected Platform: ${BOLD}${GREEN}${OS} (${ARCH})${NC}"
 
+if [ "${OS}" = "Darwin" ] && [ "${ARCH}" != "arm64" ]; then
+    echo -e "${RED}This project currently supports Apple Silicon macOS only (arm64).${NC}"
+    exit 1
+fi
+
 # Determine number of build jobs
 if [ "${OS}" = "Darwin" ]; then
     NPROC=$(sysctl -n hw.ncpu 2>/dev/null || echo 4)

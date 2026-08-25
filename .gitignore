@@ -25,3 +25,7 @@ test_NewLib/testsuite_results/*
 *.a
 *.so
 *.mod
+test_NewLib/all.msh
+test_NewLib/benchmark_solvers.py
+test_NewLib/NFIX.nam
+test_NewLib/NTIP.nam
