@@ -251,14 +251,10 @@ if [ "${OS}" = "Darwin" ]; then
     echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (Native hardware acceleration, zero external dependencies)."
     echo -e "  * An open-source solver (${BOLD}MUMPS 5.x${NC}) is also available as an option.\n"
 
-    prompt_read "Enable MUMPS 5.x as an additional open-source solver via Homebrew? [y/N]: " "N" ENABLE_MUMPS
+    prompt_read "Also build MUMPS 5.x as an additional open-source solver? [y/N]: " "N" ENABLE_MUMPS
     if [[ "$ENABLE_MUMPS" =~ ^[Yy]$ ]]; then
-        if ! brew list mumps &>/dev/null 2>&1; then
-            echo -e "${MAGENTA}Installing MUMPS via Homebrew...${NC}"
-            brew install mumps || true
-        fi
         CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=ON"
-        SOLVER_NAME="Apple Accelerate (Default) + MUMPS 5.x"
+        SOLVER_NAME="Apple Accelerate (Default) + vendored MUMPS 5.x"
     else
         CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_ACCELERATE=ON"
         SOLVER_NAME="Apple Accelerate (Native)"

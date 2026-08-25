@@ -167,6 +167,94 @@ endif()
 # -----------------------------------------------------------------------------
 # MUMPS 5.x Solver
 # -----------------------------------------------------------------------------
+
+
+# Vendored MUMPS (macOS) — build from third_party/mumps at configure time
+# EXPERIMENTAL BLOCK START
+if(APPLE)
+    option(CCX_MUMPS_VENDORED "Build MUMPS from vendored third_party source (macOS)" ON)
+else()
+    option(CCX_MUMPS_VENDORED "Build MUMPS from vendored third_party source" OFF)
+endif()
+
+if(CCX_MUMPS_VENDORED AND NOT APPLE)
+    message(WARNING "CCX_MUMPS_VENDORED is normally macOS-only; system MUMPS on Linux/Windows is untouched by design.")
+endif()
+
+if(CCX_USE_MUMPS AND CCX_MUMPS_VENDORED)
+    set(MUMPS_VENDOR_DIR ${CMAKE_SOURCE_DIR}/third_party/mumps)
+    set(MUMPS_TARBALL     ${MUMPS_VENDOR_DIR}/MUMPS_5.9.1.tar.gz)
+    set(MUMPS_INC_TEMPLATE ${MUMPS_VENDOR_DIR}/Makefile.inc.macos)
+    set(MUMPS_BUILD_DIR   ${CMAKE_BINARY_DIR}/mumps-build)
+    set(MUMPS_SRC_DIR     ${MUMPS_BUILD_DIR}/MUMPS_5.9.1)
+    set(MUMPS_INSTALL_DIR ${CMAKE_BINARY_DIR}/mumps-install)
+    set(MUMPS_STAMP       ${MUMPS_INSTALL_DIR}/lib/libdmumps.a)
+
+    if(NOT EXISTS ${MUMPS_TARBALL})
+        message(FATAL_ERROR "CCX_MUMPS_VENDORED=ON but ${MUMPS_TARBALL} not found.")
+    endif()
+
+    if(NOT EXISTS ${MUMPS_STAMP})
+        message(STATUS "Vendored MUMPS not yet built — building now (one-time, may take a minute)...")
+
+        file(MAKE_DIRECTORY ${MUMPS_BUILD_DIR})
+        execute_process(
+            COMMAND ${CMAKE_COMMAND} -E tar xzf ${MUMPS_TARBALL}
+            WORKING_DIRECTORY ${MUMPS_BUILD_DIR}
+            RESULT_VARIABLE _mumps_extract_rc
+        )
+        if(NOT _mumps_extract_rc EQUAL 0)
+            message(FATAL_ERROR "Failed to extract vendored MUMPS tarball.")
+        endif()
+
+        file(COPY ${MUMPS_INC_TEMPLATE} DESTINATION ${MUMPS_SRC_DIR})
+        file(RENAME ${MUMPS_SRC_DIR}/Makefile.inc.macos ${MUMPS_SRC_DIR}/Makefile.inc)
+
+        include(ProcessorCount)
+        ProcessorCount(_mumps_nproc)
+        if(_mumps_nproc EQUAL 0)
+            set(_mumps_nproc 4)
+        endif()
+
+        execute_process(
+            COMMAND make d -j${_mumps_nproc}
+            WORKING_DIRECTORY ${MUMPS_SRC_DIR}
+            RESULT_VARIABLE _mumps_build_rc
+            OUTPUT_VARIABLE _mumps_build_out
+            ERROR_VARIABLE _mumps_build_err
+        )
+        if(NOT _mumps_build_rc EQUAL 0)
+            message(FATAL_ERROR "Vendored MUMPS build failed:\n${_mumps_build_out}\n${_mumps_build_err}")
+        endif()
+
+        file(MAKE_DIRECTORY ${MUMPS_INSTALL_DIR}/lib ${MUMPS_INSTALL_DIR}/include)
+        file(COPY
+            ${MUMPS_SRC_DIR}/lib/libdmumps.a
+            ${MUMPS_SRC_DIR}/lib/libmumps_common.a
+            ${MUMPS_SRC_DIR}/PORD/lib/libpord.a
+            ${MUMPS_SRC_DIR}/libseq/libmpiseq.a
+            DESTINATION ${MUMPS_INSTALL_DIR}/lib
+        )
+        file(GLOB _mumps_headers ${MUMPS_SRC_DIR}/include/*.h)
+        file(COPY ${_mumps_headers} ${MUMPS_SRC_DIR}/libseq/mpif.h
+             DESTINATION ${MUMPS_INSTALL_DIR}/include)
+
+        message(STATUS "Vendored MUMPS built -> ${MUMPS_INSTALL_DIR}")
+    else()
+        message(STATUS "Vendored MUMPS already built, reusing ${MUMPS_INSTALL_DIR}")
+    endif()
+
+    set(MUMPS_DIR ${MUMPS_INSTALL_DIR})
+    set(ENV{MUMPS_DIR} ${MUMPS_INSTALL_DIR})
+    unset(MUMPS_INCLUDE_DIR CACHE)
+    foreach(_mumps_lib_var
+        MUMPS_DMUMPS_LIB MUMPS_COMMON_LIB MUMPS_PORD_LIB MUMPS_MPISEQ_LIB
+        MUMPS_ESMUMPS_LIB MUMPS_SCOTCH_LIB MUMPS_METIS_LIB)
+        unset(${_mumps_lib_var} CACHE)
+    endforeach()
+endif()
+# EXPERIMENTAL BLOCK END
+#########################################################
 if(CCX_USE_MUMPS)
     add_compile_definitions(MUMPS)
 

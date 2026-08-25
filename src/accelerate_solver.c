@@ -29,9 +29,67 @@
 static SparseMatrix_Double acc_A;
 static SparseOpaqueFactorization_Double acc_factorization;
 static ITG acc_initialized = 0;
+static ITG acc_prev_neq = 0;
+static ITG acc_prev_nnz = 0;
+static ITG acc_prev_sym = -1;
+static ITG acc_prev_inputformat = -1;
 static int *coo_rows = NULL;
 static int *coo_cols = NULL;
 static double *coo_vals = NULL;
+static long *csc_col_starts = NULL;
+static int *csc_row_indices = NULL;
+static double *csc_values = NULL;
+
+/* Thread/env configuration only needs to happen once per process, not
+   once per accelerate_factor() call. */
+static ITG acc_env_configured = 0;
+static ITG acc_nthread = 1;
+
+static void accelerate_configure_env(void) {
+  char *env;
+
+  if(acc_env_configured) return;
+
+  env = getenv("CCX_NPROC_EQUATION_SOLVER");
+  if(env){
+    acc_nthread = atoi(env);
+  }else{
+    env = getenv("OMP_NUM_THREADS");
+    if(env){ acc_nthread = atoi(env); }
+  }
+  if(acc_nthread < 1) acc_nthread = 1;
+
+  if(!getenv("VECLIB_MAXIMUM_THREADS")){
+    char th_buf[32];
+    snprintf(th_buf, sizeof(th_buf), "%d", (int)acc_nthread);
+    setenv("VECLIB_MAXIMUM_THREADS", th_buf, 0);
+  }
+
+  acc_env_configured = 1;
+}
+
+void accelerate_cleanup(ITG *neq, ITG *symmetryflag, ITG *inputformat) {
+  if(acc_initialized){
+    if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
+      SparseCleanup(acc_factorization);
+    }
+    if(acc_prev_sym != 0){
+      SparseCleanup(acc_A);
+    }
+    acc_initialized = 0;
+    acc_prev_neq = 0;
+    acc_prev_nnz = 0;
+    acc_prev_sym = -1;
+    acc_prev_inputformat = -1;
+  }
+
+  if(coo_rows) { SFREE(coo_rows); coo_rows = NULL; }
+  if(coo_cols) { SFREE(coo_cols); coo_cols = NULL; }
+  if(coo_vals) { SFREE(coo_vals); coo_vals = NULL; }
+  if(csc_col_starts)  { SFREE(csc_col_starts); csc_col_starts = NULL; }
+  if(csc_row_indices) { SFREE(csc_row_indices); csc_row_indices = NULL; }
+  if(csc_values)      { SFREE(csc_values); csc_values = NULL; }
+}
 
 void accelerate_factor(double *ad, double *au, double *adb, double *aub,
                        double *sigma, ITG *icol, ITG *irow,
@@ -39,18 +97,18 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
                        ITG *jq, ITG *nzs3) {
 
   ITG i, j, k, l;
-  ITG nnz;
+  ITG nnz = 0;
   char *env;
-  ITG nthread = 1;
   SparseAttributes_t attributes;
   SparseFactorization_t fact_type;
   SparseSymbolicFactorOptions sfoptions;
   SparseNumericFactorOptions nfoptions;
+  ITG acc_A_built = 0;
 
   if(*neq == 0) return;
 
-  /* Reset and release previous solver instance if called repeatedly (e.g. contact iterations) */
-  if(acc_initialized){
+  /* If symmetry or dimensions changed, perform full cleanup */
+  if(acc_initialized && (acc_prev_sym != *symmetryflag || acc_prev_neq != *neq || acc_prev_inputformat != *inputformat)){
     accelerate_cleanup(neq, symmetryflag, inputformat);
   }
 
@@ -60,34 +118,30 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     printf(" Factoring the system of equations using Apple Accelerate (Unsymmetric QR)\n");
   }
 
-  /* 1. Configure thread count for vecLib / Accelerate */
-  env = getenv("CCX_NPROC_EQUATION_SOLVER");
-  if(env){
-    nthread = atoi(env);
-  }else{
-    env = getenv("OMP_NUM_THREADS");
-    if(env){ nthread = atoi(env); }
-  }
-  if(nthread < 1) nthread = 1;
-  
-  /* If VECLIB_MAXIMUM_THREADS is not explicitly set, configure from CCX/OMP */
-  if(!getenv("VECLIB_MAXIMUM_THREADS")){
-    char th_buf[32];
-    snprintf(th_buf, sizeof(th_buf), "%d", (int)nthread);
-    setenv("VECLIB_MAXIMUM_THREADS", th_buf, 0);
-  }
-  printf(" number of threads = %d\n\n", (int)nthread);
+  /* 1. Configure thread count for vecLib / Accelerate (once per process) */
+  accelerate_configure_env();
+  printf(" number of threads = %d\n\n", (int)acc_nthread);
 
-  /* 2. Build 0-based Coordinate (COO) representation from CCX 1-based format */
+  /* 2. Assemble matrix format */
   if(*symmetryflag == 0){
     /*
      * Symmetric matrix: Lower triangular part.
      * CCX stores subdiagonal entries column by column in au, diagonal in ad.
-     * Factorization: SparseFactorizationLDLTTPP (LDL^T with Threshold Partial Pivoting)
-     * Rationale: Robust against indefinite systems from contact, Lagrange multipliers,
-     * MPCs, or negative eigenvalue shifts (K - sigma*M), while running fully parallel on Apple Silicon.
+     * Default: Fast parallel SparseFactorizationLDLT with automatic fallback to
+     * SparseFactorizationLDLTTPP if indefinite pivots are detected.
      */
-    fact_type = SparseFactorizationLDLTTPP;
+    fact_type = SparseFactorizationLDLT;
+    env = getenv("CCX_ACCELERATE_FACT");
+    if(env){
+      if(strcmp(env, "CHOLESKY") == 0 || strcmp(env, "cholesky") == 0){
+        fact_type = SparseFactorizationCholesky;
+      }else if(strcmp(env, "LDLTTPP") == 0 || strcmp(env, "ldlttpp") == 0){
+        fact_type = SparseFactorizationLDLTTPP;
+      }else if(strcmp(env, "LDLT") == 0 || strcmp(env, "ldlt") == 0){
+        fact_type = SparseFactorizationLDLT;
+      }
+    }
+
     attributes = (SparseAttributes_t){
       .transpose = false,
       .triangle = SparseLowerTriangle,
@@ -97,32 +151,63 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     };
 
     nnz = *neq + *nzs;
-    NNEW(coo_rows, int, nnz);
-    NNEW(coo_cols, int, nnz);
-    NNEW(coo_vals, double, nnz);
+    if(csc_col_starts == NULL || acc_prev_nnz != nnz || acc_prev_neq != *neq){
+      if(csc_col_starts)  SFREE(csc_col_starts);
+      if(csc_row_indices) SFREE(csc_row_indices);
+      if(csc_values)      SFREE(csc_values);
+      NNEW(csc_col_starts, long, *neq + 1);
+      NNEW(csc_row_indices, int, nnz);
+      NNEW(csc_values, double, nnz);
+      acc_prev_nnz = nnz;
+    }
 
+    csc_col_starts[0] = 0;
     k = 0;
     l = 0;
     for(i = 0; i < *neq; i++){
+      /* Diagonal entry (i, i) */
+      csc_row_indices[k] = (int)i;
+      csc_values[k] = (*sigma == 0.) ? ad[i] : (ad[i] - (*sigma)*adb[i]);
+      k++;
+
+      /* Subdiagonal entries */
       for(j = 0; j < icol[i]; j++){
-        coo_rows[k] = (int)(irow[l] - 1); /* 1-based to 0-based */
-        coo_cols[k] = (int)i;
-        coo_vals[k] = (*sigma == 0.) ? au[l] : (au[l] - (*sigma)*aub[l]);
+        csc_row_indices[k] = (int)(irow[l] - 1);
+        csc_values[k] = (*sigma == 0.) ? au[l] : (au[l] - (*sigma)*aub[l]);
         k++;
         l++;
       }
-      /* Diagonal entry */
-      coo_rows[k] = (int)i;
-      coo_cols[k] = (int)i;
-      coo_vals[k] = (*sigma == 0.) ? ad[i] : (ad[i] - (*sigma)*adb[i]);
-      k++;
+      csc_col_starts[i+1] = (long)k;
     }
+
+    acc_A = (SparseMatrix_Double){
+      .structure = (SparseMatrixStructure){
+        .rowCount = (int)(*neq),
+        .columnCount = (int)(*neq),
+        .columnStarts = csc_col_starts,
+        .rowIndices = csc_row_indices,
+        .attributes = attributes,
+        .blockSize = 1
+      },
+      .data = csc_values
+    };
+
+    /* Fast In-Place Numeric Refactorization for Symmetric Systems */
+    if(acc_initialized){
+      SparseRefactor(acc_A, &acc_factorization);
+      if(acc_factorization.status == SparseStatusOK){
+        return;
+      }
+      if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
+        SparseCleanup(acc_factorization);
+      }
+      acc_initialized = 0;
+    }
+
   }else{
     /*
      * Unsymmetric matrix.
      * Factorization: SparseFactorizationQR
-     * Rationale: QR decomposition guarantees unconditionally stable solution without
-     * breakdown for general unsymmetric systems (e.g. CFD or non-associated plasticity).
      */
     fact_type = SparseFactorizationQR;
     attributes = (SparseAttributes_t){
@@ -136,9 +221,15 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     if(*inputformat == 3){
       /* General unsymmetric format */
       nnz = *neq + *nzs;
-      NNEW(coo_rows, int, nnz);
-      NNEW(coo_cols, int, nnz);
-      NNEW(coo_vals, double, nnz);
+      if(coo_rows == NULL || acc_prev_nnz != nnz){
+        if(coo_rows) SFREE(coo_rows);
+        if(coo_cols) SFREE(coo_cols);
+        if(coo_vals) SFREE(coo_vals);
+        NNEW(coo_rows, int, nnz);
+        NNEW(coo_cols, int, nnz);
+        NNEW(coo_vals, double, nnz);
+        acc_prev_nnz = nnz;
+      }
 
       k = 0;
       ITG k2 = 0;
@@ -161,9 +252,15 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     }else{
       /* Structurally symmetric, numerically asymmetric (inputformat == 1) */
       nnz = *neq + 2*(*nzs);
-      NNEW(coo_rows, int, nnz);
-      NNEW(coo_cols, int, nnz);
-      NNEW(coo_vals, double, nnz);
+      if(coo_rows == NULL || acc_prev_nnz != nnz){
+        if(coo_rows) SFREE(coo_rows);
+        if(coo_cols) SFREE(coo_cols);
+        if(coo_vals) SFREE(coo_vals);
+        NNEW(coo_rows, int, nnz);
+        NNEW(coo_cols, int, nnz);
+        NNEW(coo_vals, double, nnz);
+        acc_prev_nnz = nnz;
+      }
 
       k = 0;
       ITG idx = 0;
@@ -195,13 +292,32 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
       }
       nnz = idx;
     }
+
+    /* Fast In-Place Numeric Refactorization for Unsymmetric Systems */
+    if(acc_initialized){
+      SparseCleanup(acc_A);
+      acc_A = SparseConvertFromCoordinate((int)(*neq), (int)(*neq), (long)nnz, 1,
+                                          attributes, coo_rows, coo_cols, coo_vals);
+      acc_A_built = 1;
+      SparseRefactor(acc_A, &acc_factorization);
+      if(acc_factorization.status == SparseStatusOK){
+        return;
+      }
+      if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
+        SparseCleanup(acc_factorization);
+      }
+      acc_initialized = 0;
+    }
+
+    /* Only (re)build acc_A here if it wasn't already built by the refactor
+       attempt above - avoids converting the same COO data twice. */
+    if(!acc_A_built){
+      acc_A = SparseConvertFromCoordinate((int)(*neq), (int)(*neq), (long)nnz, 1,
+                                          attributes, coo_rows, coo_cols, coo_vals);
+    }
   }
 
-  /* 3. Convert COO to Apple Accelerate internal Compressed Sparse Column (CSC) */
-  acc_A = SparseConvertFromCoordinate((int)(*neq), (int)(*neq), (long)nnz, 1,
-                                      attributes, coo_rows, coo_cols, coo_vals);
-
-  /* 4. Configure symbolic and numeric factorization options */
+  /* 5. Configure symbolic and numeric factorization options */
   /* Adaptive ordering: Metis nested dissection for 3D continuum meshes (neq >= 5000), AMD for small models */
   SparseOrder_t ord = (*neq >= 5000) ? SparseOrderMetis : SparseOrderAMD;
   env = getenv("CCX_ACCELERATE_ORDER");
@@ -231,14 +347,25 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     .zeroTolerance = 1e-15
   };
 
-  /* 5. Compute Symbolic and Numerical Factorization */
+  /* 6. Compute Full Symbolic and Numerical Factorization */
   acc_factorization = SparseFactor(fact_type, acc_A, sfoptions, nfoptions);
+  if(acc_factorization.status < 0 && fact_type != SparseFactorizationLDLTTPP && *symmetryflag == 0){
+    /* Fallback to robust threshold pivoting LDL^T for indefinite systems */
+    if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
+      SparseCleanup(acc_factorization);
+    }
+    fact_type = SparseFactorizationLDLTTPP;
+    acc_factorization = SparseFactor(fact_type, acc_A, sfoptions, nfoptions);
+  }
   if(acc_factorization.status < 0){
     printf(" *ERROR in Apple Accelerate factorization: status = %d\n", (int)acc_factorization.status);
     exit(1);
   }
 
   acc_initialized = 1;
+  acc_prev_neq = *neq;
+  acc_prev_sym = *symmetryflag;
+  acc_prev_inputformat = *inputformat;
 }
 
 void accelerate_solve(double *b, ITG *neq, ITG *symmetryflag, ITG *inputformat, ITG *nrhs) {
@@ -262,20 +389,6 @@ void accelerate_solve(double *b, ITG *neq, ITG *symmetryflag, ITG *inputformat, 
   SparseSolve(acc_factorization, XB);
 }
 
-void accelerate_cleanup(ITG *neq, ITG *symmetryflag, ITG *inputformat) {
-  if(acc_initialized){
-    if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
-      SparseCleanup(acc_factorization);
-    }
-    SparseCleanup(acc_A);
-    acc_initialized = 0;
-  }
-
-  if(coo_rows){ SFREE(coo_rows); coo_rows = NULL; }
-  if(coo_cols){ SFREE(coo_cols); coo_cols = NULL; }
-  if(coo_vals){ SFREE(coo_vals); coo_vals = NULL; }
-}
-
 void accelerate_main(double *ad, double *au, double *adb, double *aub,
                      double *sigma, double *b, ITG *icol, ITG *irow,
                      ITG *neq, ITG *nzs, ITG *symmetryflag, ITG *inputformat,
@@ -288,7 +401,13 @@ void accelerate_main(double *ad, double *au, double *adb, double *aub,
 
   accelerate_solve(b, neq, symmetryflag, inputformat, nrhs);
 
-  accelerate_cleanup(neq, symmetryflag, inputformat);
+  /* No cleanup here. accelerate_factor() already detects a genuine change
+     in problem shape (neq / symmetryflag / inputformat) on the *next* call
+     and cleans up + refactors from scratch then. Unconditionally cleaning
+     up after every solve, as before, discarded the cached factorization
+     and forced a full symbolic + numeric refactorization on every call,
+     even across Newton iterations or multiple RHS solves against the same
+     unchanged matrix. */
 }
 
 #endif /* ACCELERATE_SOLVER */

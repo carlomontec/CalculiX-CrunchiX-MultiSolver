@@ -40,7 +40,6 @@
 #ifdef MUMPS
 #include "mumps.h"
 #endif
-
 static char *sideload1,*covered1=NULL;
 
 static ITG *kontri1,*nloadtr1,*idist=NULL,*ntrit1,*mi1,*jqrad1,
@@ -630,7 +629,10 @@ void radflowload(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,double *adrad,
        (*iemchange==1)||
        ((*iit==0)&&(abs(*nmethod)==1))){
 
-#if defined(PASTIX)
+#if defined(ACCELERATE_SOLVER)
+	/* Radiation is solved independently below so it cannot overwrite the
+	   Accelerate factorization state of the structural system. */
+#elif defined(PASTIX)
       // not symmetric
       ITG symmetry = 1;
       pastix_factor_main_cp(adrad,aurad,adbrad,aubrad,&sigma,icolrad,
@@ -664,7 +666,37 @@ void radflowload(ITG *itg,ITG *ieg,ITG *ntg,ITG *ntr,double *adrad,
 
     /* solving the system of equations */
 
-#if defined(PASTIX)
+#if defined(ACCELERATE_SOLVER)
+    ITG nrhs = 1;
+    ITG info = 0;
+    ITG i, j, k;
+    double *rad_dense = NULL;
+    ITG *rad_ipiv = NULL;
+
+    NNEW(rad_dense,double,(*ntr)*(*ntr));
+    NNEW(rad_ipiv,ITG,*ntr);
+    for(i=0;i<*ntr;i++) rad_dense[i + i*(*ntr)] = adrad[i];
+    k = 0;
+    for(i=0;i<*ntr;i++) {
+      for(j=0;j<icolrad[i];j++) {
+	rad_dense[(irowrad[k]-1) + i*(*ntr)] = aurad[k];
+	k++;
+      }
+    }
+    for(i=0;i<*ntr;i++) {
+      for(j=jqrad[i]-1;j<jqrad[i+1]-1;j++) {
+	rad_dense[i + (irowrad[j]-1)*(*ntr)] = aurad[j+(*nzsrad)];
+      }
+    }
+    FORTRAN(dgesv,(ntr,&nrhs,rad_dense,ntr,rad_ipiv,bcr,ntr,&info));
+    SFREE(rad_dense);
+    SFREE(rad_ipiv);
+    if(info!=0) {
+      printf(" *ERROR in radflowload: Accelerate radiation solve failed, info=%d\n\n",
+	     (int)info);
+      FORTRAN(stop,());
+    }
+#elif defined(PASTIX)
     ITG symmetry = 1;
     ITG nrhs = 1;
     pastix_solve_cp(bcr,ntr,&symmetry,&nrhs);
