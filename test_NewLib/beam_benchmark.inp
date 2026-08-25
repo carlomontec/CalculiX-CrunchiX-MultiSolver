@@ -1,6 +1,8 @@
 ** ------------------------------------------------------------
-** CalculiX Cantilever Beam Benchmark
-** Generated via CGX: 12,466 Nodes (37,398 DOFs), 2,560 C3D20 Elements
+** CalculiX Steel Cantilever Beam Benchmark
+** Generated via CGX (cantilever_final.fbd): 20x20mm cross-section,
+** 300mm long (L/h=15), C3D20, mesh 4x4x60 elements.
+** Fixed at z=0. Pressure load (0.2 MPa, downward) on top face y=20.
 ** ------------------------------------------------------------
 *INCLUDE, INPUT=all.msh
 *INCLUDE, INPUT=NFIX.nam
@@ -17,8 +19,8 @@ NNFIX, 1, 3, 0.0
 
 *STEP
 *STATIC
-*CLOAD
-NNTIP, 2, 10.0
+*DLOAD
+*INCLUDE, INPUT=TOP.dlo
 
 *NODE FILE
 U

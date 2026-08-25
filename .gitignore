@@ -29,3 +29,5 @@ test_NewLib/all.msh
 test_NewLib/benchmark_solvers.py
 test_NewLib/NFIX.nam
 test_NewLib/NTIP.nam
+.aider*
+comparison_solvers.csv

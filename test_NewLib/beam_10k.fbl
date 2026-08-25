@@ -1,31 +1,33 @@
-# CGX Script: ~15k Node 3D Cantilever Solid Beam Benchmark
 pnt p1 0 0 0
-pnt p2 2 0 0
-pnt p3 2 2 0
-pnt p4 0 2 0
+pnt p2 20 0 0
+pnt p3 20 20 0
+pnt p4 0 20 0
 
-line l1 p1 p2 16
-line l2 p2 p3 16
-line l3 p3 p4 16
-line l4 p4 p1 16
+line l1 p1 p2 8
+line l2 p2 p3 8
+line l3 p3 p4 8
+line l4 p4 p1 8
 
-surf s0 l1 l2 l3 l4
+surf s0 blend l1 l2 l3 l4
 
-# Sweep along Z into 3D body (length 100, 80 divisions)
-swep all all tra 0 0 2000 1600
+seta src s s0
+swep src swp tra 0 0 300 120
 
-# 20-node hexahedral quadratic elements (C3D20)
 elty all he20
 mesh all
 
-# Boundary sets
 seta FIX s s0
 seta NFIX n FIX
+
 seta TIP s A001
 seta NTIP n TIP
 
-# Export Abaqus/CalculiX format
+seta TOP s A004
+comp TOP e
+comp TOP f
+
 send all abq
-send NFIX abq nam
-send NTIP abq nam
+send NFIX abq names
+send NTIP abq names
+send TOP abq pres 0.2
 quit
