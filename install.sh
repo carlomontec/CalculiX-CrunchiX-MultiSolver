@@ -268,19 +268,26 @@ if [ "${OS}" = "Darwin" ]; then
 elif [ "${OS}" = "Linux" ]; then
     echo -e "${GREEN}[INFO] Linux Detected:${NC}"
     
-    # --- ADDED: Now actually asks about MUMPS on Linux ---
+    # --- MUMPS ---
     prompt_read "Enable MUMPS 5.x as an open-source multi-threaded direct solver? [Y/n]: " "Y" USE_MUMPS
     if [[ "$USE_MUMPS" =~ ^[Yy]$ ]]; then
         echo -e "${MAGENTA}Installing MUMPS...${NC}"
+        MUMPS_INSTALLED=true
         if command -v apt-get &>/dev/null; then
-            dpkg -l | grep -q "libmumps-seq-dev" || sudo apt-get install -y libmumps-seq-dev
+            dpkg -l | grep -q "libmumps-seq-dev" || sudo apt-get install -y libmumps-seq-dev || MUMPS_INSTALLED=false
         elif command -v dnf &>/dev/null; then
-            rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel
+            rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel || MUMPS_INSTALLED=false
         elif command -v pacman &>/dev/null; then
-            pacman -Qi mumps &>/dev/null || sudo pacman -S --needed mumps
+            # Checks for either mumps or mumps-seq
+            pacman -Qs mumps &>/dev/null || sudo pacman -S --needed mumps-seq || MUMPS_INSTALLED=false
         fi
-        CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_MUMPS=ON"
-        SOLVER_NAME="MUMPS 5.x"
+        
+        if [ "$MUMPS_INSTALLED" = true ]; then
+            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_MUMPS=ON"
+            SOLVER_NAME="MUMPS 5.x"
+        else
+            echo -e "${YELLOW}Warning: 'mumps' could not be installed (likely requires AUR on Arch: e.g., yay -S mumps). Skipping MUMPS.${NC}"
+        fi
     fi
 
     if [ "${ARCH}" = "x86_64" ]; then
@@ -323,11 +330,11 @@ elif [ "${OS}" = "Linux" ]; then
                 if command -v apt-get &>/dev/null; then
                     wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
                     echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-                    sudo apt-get update && sudo apt-get install -y intel-oneapi-mkl-devel
+                    sudo apt-get update && sudo apt-get install -y intel-oneapi-mkl-devel || true
                 elif command -v dnf &>/dev/null; then
-                    sudo dnf install -y intel-oneapi-mkl-devel
+                    sudo dnf install -y intel-oneapi-mkl-devel || true
                 elif command -v pacman &>/dev/null; then
-                    sudo pacman -S --needed intel-oneapi-mkl
+                    sudo pacman -S --needed intel-oneapi-mkl || echo -e "${YELLOW}Warning: 'intel-oneapi-mkl' may require AUR on Arch.${NC}"
                 fi
                 HAS_MKL=true
             fi
@@ -335,27 +342,34 @@ elif [ "${OS}" = "Linux" ]; then
 
         if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
             CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_PARDISO=ON"
-            if [[ "$USE_MUMPS" =~ ^[Yy]$ ]]; then
+            if [[ "$SOLVER_NAME" == "MUMPS 5.x" ]]; then
                 SOLVER_NAME="Intel oneMKL PARDISO + MUMPS 5.x"
             else
                 SOLVER_NAME="Intel oneMKL PARDISO"
             fi
         fi
 
+        # --- SPOOLES (x86_64) ---
         prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
         if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
+            SPOOLES_INSTALLED=true
             if command -v apt-get &>/dev/null; then
-                sudo apt-get install -y libspooles-dev
+                sudo apt-get install -y libspooles-dev || SPOOLES_INSTALLED=false
             elif command -v dnf &>/dev/null; then
-                sudo dnf install -y spooles-devel
+                sudo dnf install -y spooles-devel || SPOOLES_INSTALLED=false
             elif command -v pacman &>/dev/null; then
-                sudo pacman -S --needed spooles
+                pacman -Qi spooles &>/dev/null || sudo pacman -S --needed spooles || SPOOLES_INSTALLED=false
             fi
-            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
-            if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
-                SOLVER_NAME="SPOOLES 2.2"
+            
+            if [ "$SPOOLES_INSTALLED" = true ]; then
+                CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
+                if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
+                    SOLVER_NAME="SPOOLES 2.2"
+                else
+                    SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+                fi
             else
-                SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+                echo -e "${YELLOW}Warning: 'spooles' could not be installed (likely requires AUR on Arch: e.g., yay -S spooles). Skipping SPOOLES.${NC}"
             fi
         fi
 
@@ -364,16 +378,25 @@ elif [ "${OS}" = "Linux" ]; then
         echo -e "\n${CYAN}[INFO] Linux ARM64 architecture detected.${NC}"
         echo -e "  Intel oneMKL is not available on Linux ARM64."
 
+        # --- SPOOLES (ARM64) ---
         prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
         if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
+            SPOOLES_INSTALLED=true
             if command -v apt-get &>/dev/null; then
-                sudo apt-get install -y libspooles-dev
+                sudo apt-get install -y libspooles-dev || SPOOLES_INSTALLED=false
+            elif command -v pacman &>/dev/null; then
+                pacman -Qi spooles &>/dev/null || sudo pacman -S --needed spooles || SPOOLES_INSTALLED=false
             fi
-            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
-            if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
-                SOLVER_NAME="SPOOLES 2.2"
+            
+            if [ "$SPOOLES_INSTALLED" = true ]; then
+                CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
+                if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
+                    SOLVER_NAME="SPOOLES 2.2"
+                else
+                    SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+                fi
             else
-                SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
+                echo -e "${YELLOW}Warning: 'spooles' could not be installed (likely requires AUR on Arch). Skipping SPOOLES.${NC}"
             fi
         fi
     fi

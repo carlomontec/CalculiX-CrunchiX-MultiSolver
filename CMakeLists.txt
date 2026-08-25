@@ -312,6 +312,9 @@ if(CCX_USE_MUMPS)
             C:/msys64/ucrt64/lib
             C:/msys64/mingw64/lib
             /usr/lib
+            /usr/lib64
+            /usr/lib/x86_64-linux-gnu
+            /usr/lib/aarch64-linux-gnu
             /usr/local/lib
             /opt/homebrew/lib
             /opt/local/lib
