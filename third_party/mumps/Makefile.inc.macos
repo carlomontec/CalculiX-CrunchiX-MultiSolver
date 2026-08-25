@@ -31,7 +31,7 @@ RM      = /bin/rm -f
 CC      = clang
 FC      = gfortran
 FL      = gfortran
-AR      = ar vr
+AR      = ar vr 
 RANLIB  = ranlib
 
 # Accelerate provides LAPACK too -- leave empty to avoid double-linking.

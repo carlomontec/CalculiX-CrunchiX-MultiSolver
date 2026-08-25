@@ -11,7 +11,7 @@ DESCRIPTION:
       - Automatically downloads the test suite if not found locally.
       - Runs test decks concurrently across multiple CPU threads.
       - Sandboxes every test in an isolated temporary directory to prevent I/O collisions.
-      - Forces the requested solver into the `.inp` step definitions to prevent silent fallbacks.
+            - Uses a separate solver-specific build binary to prevent silent fallbacks.
       - Generates clean, emoji-free CSV exports for NumPy/Excel analysis.
       - Produces Markdown reports and Matplotlib charts comparing accuracy and speedup
         (Uses SPOOLES as the baseline if included in the test execution list).
@@ -24,7 +24,7 @@ DESCRIPTION:
 LOCAL USAGE (From inside cloned repository):
   ./run_verification.py --solvers ALL --threads-per-job 4
   ./run_verification.py --pattern "beam*" --solvers MUMPS PARDISO
-  ./run_verification.py --custom-bin /usr/local/bin/ccx
+    ./run_verification.py --solvers MUMPS --custom-bin /usr/local/bin/ccx
 -------------------------------------------------------------------------------
 """
 
@@ -34,6 +34,7 @@ import datetime
 import fnmatch
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -83,6 +84,10 @@ SOLVER_CONFIGS = {
     "ACCELERATE": {
         "env": {},
         "description": "Apple Accelerate Sparse Direct Solver",
+    },
+    "CUSTOM": {
+        "env": {},
+        "description": "User-supplied CalculiX binary",
     },
 }
 
@@ -210,10 +215,11 @@ def ensure_test_suite():
 
 
 def find_test_decks(patterns=None):
-    """Discover all official .inp decks in test/ directory."""
+    """Discover usable official .inp decks and report hard-coded SPOOLES decks."""
     if not TEST_DIR.exists():
-        return []
+        return [], []
     decks = []
+    excluded_spooles = []
     for f in sorted(TEST_DIR.glob("*.inp")):
         deck_name = f.stem
         if deck_name in EXCLUDED_DECKS or f.name.endswith(".rfn.inp"):
@@ -222,8 +228,15 @@ def find_test_decks(patterns=None):
             matched = any(fnmatch.fnmatch(deck_name, p) or fnmatch.fnmatch(f.name, p) for p in patterns)
             if not matched:
                 continue
+        try:
+            input_text = f.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            input_text = ""
+        if re.search(r"(?:^|,)\s*SOLVER\s*=\s*SPOOLES\b", input_text, re.IGNORECASE | re.MULTILINE):
+            excluded_spooles.append(deck_name)
+            continue
         decks.append(deck_name)
-    return decks
+    return decks, excluded_spooles
 
 
 def run_single_test(task):
@@ -249,31 +262,7 @@ def run_single_test(task):
                 except OSError:
                     shutil.copy2(item, dest)
 
-        # 2. Force the solver selection via string injection in the .inp file
-        inp_file = sandbox_path / f"{deck}.inp"
-        if inp_file.exists():
-            if inp_file.is_symlink():
-                inp_file.unlink()
-                shutil.copy2(TEST_DIR / f"{deck}.inp", inp_file)
-            
-            with open(inp_file, "r", encoding="utf-8", errors="ignore") as f:
-                lines = f.readlines()
-            
-            step_cards = ["*STATIC", "*FREQUENCY", "*DYNAMIC", "*BUCKLE", "*HEAT TRANSFER", "*COUPLED TEMPERATURE-DISPLACEMENT"]
-            
-            with open(inp_file, "w", encoding="utf-8") as f:
-                for line in lines:
-                    upper_line = line.upper().strip()
-                    matched_card = next((card for card in step_cards if upper_line.startswith(card)), None)
-                    
-                    if matched_card:
-                        parts = [p.strip() for p in line.split(",") if not p.upper().strip().startswith("SOLVER")]
-                        parts.append(f"SOLVER={solver_name}")
-                        line = ", ".join(parts) + "\n"
-                        
-                    f.write(line)
-
-        # 3. Execute the binary
+        # Execute the solver-specific binary without changing the input deck.
         cmd = [str(bin_path), deck]
         t0 = time.perf_counter()
         try:
@@ -825,12 +814,19 @@ def main():
     parser.add_argument("--timeout", type=int, default=60, help="Per-test timeout in seconds (default: 60s)")
     parser.add_argument("--limit", type=int, default=None, help="Limit total number of decks to test")
     parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory base (default: ./testsuite_results)")
-    parser.add_argument("--custom-bin", type=str, default=None, help="Path to a specific CCX binary to test (overrides solver-specific builds)")
+    parser.add_argument("--custom-bin", type=str, default=None, help="Add a user-supplied CCX binary as the CUSTOM solver")
     args = parser.parse_args()
 
     ensure_test_suite()
 
-    decks = find_test_decks(args.pattern)
+    decks, excluded_spooles = find_test_decks(args.pattern)
+    if excluded_spooles:
+        print(
+            f"[!] Excluded {len(excluded_spooles)} test deck(s) with hard-coded "
+            f"SPOOLES solver: {', '.join(excluded_spooles)}"
+        )
+    else:
+        print("[*] No test decks with a hard-coded SPOOLES solver were found.")
     if args.limit:
         decks = decks[:args.limit]
 
@@ -858,19 +854,40 @@ def main():
     # 2. Check underlying OS libraries (Warnings only)
     check_solver_libraries(target_solvers, platform.system())
 
-    # 3. Strict binary assignment
+    # 3. Strict binary assignment. Each solver is tested only with its own
+    # build_<solver>/CalculiX executable; there is no fallback binary.
     active_solvers = {}
     for s in target_solvers:
         cfg = SOLVER_CONFIGS[s]
-        
-        if args.custom_bin:
-            strict_bin_path = Path(args.custom_bin)
-            if not strict_bin_path.is_absolute() and shutil.which(args.custom_bin):
-                strict_bin_path = Path(shutil.which(args.custom_bin))
-        else:
-            strict_bin_path = CCX_DIR / f"build_{s.lower()}" / EXE_NAME
+
+        strict_bin_path = CCX_DIR / f"build_{s.lower()}" / EXE_NAME
             
+        if not strict_bin_path.is_file() or not os.access(strict_bin_path, os.X_OK):
+            print(
+                f"[-] Solver '{s}' binary is missing or not executable: "
+                f"{strict_bin_path}\n"
+                f"    Build it with: cmake --build {CCX_DIR / f'build_{s.lower()}'}"
+            )
+            sys.exit(1)
+
         active_solvers[s] = {**cfg, "bin": strict_bin_path}
+
+    if args.custom_bin:
+        custom_bin_path = Path(args.custom_bin)
+        if not custom_bin_path.is_absolute():
+            repo_relative_path = CCX_DIR / custom_bin_path
+            path_command = shutil.which(args.custom_bin)
+            if repo_relative_path.is_file():
+                custom_bin_path = repo_relative_path
+            elif path_command:
+                custom_bin_path = Path(path_command)
+        if not custom_bin_path.is_file() or not os.access(custom_bin_path, os.X_OK):
+            print(f"[-] CUSTOM binary is missing or not executable: {custom_bin_path}")
+            sys.exit(1)
+        active_solvers["CUSTOM"] = {
+            **SOLVER_CONFIGS["CUSTOM"],
+            "bin": custom_bin_path,
+        }
 
     # Concurrency calculations
     cpu_count = os.cpu_count() or 4
@@ -885,6 +902,9 @@ def main():
     print(f" Threads / Job    : {threads_per_job}")
     print(f" Parallel Workers : {max_workers} concurrent processes")
     print(f" Total Runs       : {len(decks) * len(active_solvers)} test executions")
+    print(" Solver Binaries  :")
+    for solver_name, solver_info in active_solvers.items():
+        print(f"   {solver_name:<10}: {solver_info['bin'].resolve()}")
     print("=" * 80 + "\n")
 
     # Build task list
@@ -960,11 +980,8 @@ def main():
     base_results_dir = Path(args.output_dir) if args.output_dir else (CCX_DIR / "testsuite_results")
     run_output_dir = base_results_dir / timestamp_folder
 
-    # Explicitly set SPOOLES as the baseline if it's in the run
-    baseline_solver = "SPOOLES" if "SPOOLES" in active_solvers else None
-
     csv_path, md_path, plot_path = save_reports(
-        decks, active_solvers.keys(), results, stats, run_output_dir, timestamp_formatted, baseline_solver
+        decks, active_solvers.keys(), results, stats, run_output_dir, timestamp_formatted
     )
 
     print(f"\n[+] Results generated successfully in {run_output_dir}:")
@@ -977,14 +994,16 @@ def main():
     # Diagnostics for failures
     failures = [(d, s, res) for d in decks for s, res in results[d].items() if res.get("status") == "FAIL" and res.get("stdout")]
     if failures:
+        diagnostics_file = run_output_dir / "failure_diagnostics.txt"
+        with diagnostics_file.open("w", encoding="utf-8") as diagnostics:
+            diagnostics.write("CalculiX Official Test Suite Failure Diagnostics\n")
+            diagnostics.write("=" * 80 + "\n")
+            for d, s, res in failures:
+                diagnostics.write(f"\n--- [{s}] {d} ({res['detail']}) ---\n")
+                diagnostics.write(res["stdout"].rstrip() + "\n")
+
         print("=" * 80)
-        print(" ❌ Diagnostic Output for Failed Test Executions:")
-        print("=" * 80)
-        for d, s, res in failures:
-            print(f"\n--- [{s}] {d} ({res['detail']}) ---")
-            lines = res["stdout"].strip().splitlines()
-            tail_lines = lines[-40:] if len(lines) > 40 else lines
-            print("\n".join(tail_lines))
+        print(f" ❌ Failure diagnostics saved to: {diagnostics_file}")
         print("=" * 80 + "\n")
 
     # GitHub CI Step Summary integration
