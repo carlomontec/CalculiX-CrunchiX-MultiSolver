@@ -117,7 +117,7 @@ jobs:
           ulimit -s unlimited
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
           python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
-            --pattern "beam*" --max-workers $(nproc)
+             --max-workers $(nproc)
 
   # ============================================================================
   # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS
