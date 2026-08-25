@@ -23,12 +23,14 @@ set(CMAKE_C_STANDARD 99)
 if(APPLE)
     option(CCX_USE_ACCELERATE "Enable Apple Accelerate sparse solver (macOS default)" ON)
     option(CCX_USE_MUMPS      "Enable MUMPS direct sparse solver"                    OFF)
+    option(CCX_SPOOLES_VENDORED "Build SPOOLES from vendored source (macOS)"         ON)
 else()
     option(CCX_USE_ACCELERATE "Enable Apple Accelerate sparse solver (macOS only)"    OFF)
     option(CCX_USE_MUMPS      "Enable MUMPS direct sparse solver (Linux/Win default)" ON)
+    option(CCX_SPOOLES_VENDORED "Build SPOOLES from vendored source"                  OFF)
 endif()
 option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"          OFF)
-option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver (system lib)"   OFF)
+option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver"                OFF)
 option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
@@ -479,40 +481,75 @@ if(CCX_USE_ARPACK)
 endif()
 
 # -----------------------------------------------------------------------------
-# SPOOLES Solver (Optional Legacy System Library)
+# SPOOLES Solver (Vendored on macOS, system library elsewhere)
 # -----------------------------------------------------------------------------
 if(CCX_USE_SPOOLES)
     add_compile_definitions(SPOOLES)
-    find_path(SPOOLES_INCLUDE_DIR
-        NAMES misc.h spooles.h
-        PATH_SUFFIXES spooles
-        PATHS
-            $ENV{SPOOLES_DIR}/include
-            $ENV{SPOOLES_DIR}
-            /usr/include
-            /usr/include/spooles
-            /usr/local/include
-            /usr/local/include/spooles
-            /opt/homebrew/include
-    )
-    find_library(SPOOLES_LIB
-        NAMES spooles spoolesMT spooles_MT libspooles
-        PATHS
-            $ENV{SPOOLES_DIR}/lib
-            $ENV{SPOOLES_DIR}
-            /usr/lib
-            /usr/lib/x86_64-linux-gnu
-            /usr/lib/aarch64-linux-gnu
-            /usr/local/lib
-            /opt/homebrew/lib
-    )
-    if(SPOOLES_INCLUDE_DIR AND SPOOLES_LIB)
-        message(STATUS "Found SPOOLES Include: ${SPOOLES_INCLUDE_DIR}")
-        message(STATUS "Found SPOOLES Library: ${SPOOLES_LIB}")
-        list(APPEND EXTRA_LINK_LIBS ${SPOOLES_LIB})
-        include_directories(${SPOOLES_INCLUDE_DIR})
+    if(CCX_SPOOLES_VENDORED AND APPLE)
+        set(SPOOLES_VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/spooles)
+        set(SPOOLES_TARBALL ${SPOOLES_VENDOR_DIR}/SPOOLES_2.2.tar.gz)
+        set(SPOOLES_BUILD_DIR ${CMAKE_BINARY_DIR}/spooles-source)
+        set(SPOOLES_SOURCE_DIR ${SPOOLES_BUILD_DIR}/spooles)
+
+        if(NOT EXISTS "${SPOOLES_TARBALL}")
+            message(FATAL_ERROR "CCX_SPOOLES_VENDORED=ON but ${SPOOLES_TARBALL} is missing.")
+        endif()
+
+        if(NOT EXISTS "${SPOOLES_SOURCE_DIR}/CMakeLists.txt")
+            message(STATUS "Vendored SPOOLES not yet extracted -- extracting source archive...")
+            file(MAKE_DIRECTORY ${SPOOLES_BUILD_DIR})
+            execute_process(
+                COMMAND ${CMAKE_COMMAND} -E tar xzf ${SPOOLES_TARBALL}
+                WORKING_DIRECTORY ${SPOOLES_BUILD_DIR}
+                RESULT_VARIABLE _spooles_extract_rc
+                OUTPUT_VARIABLE _spooles_extract_out
+                ERROR_VARIABLE _spooles_extract_err
+            )
+            if(NOT _spooles_extract_rc EQUAL 0)
+                message(FATAL_ERROR "Failed to extract vendored SPOOLES archive:\n${_spooles_extract_out}\n${_spooles_extract_err}")
+            endif()
+        endif()
+
+        if(NOT EXISTS "${SPOOLES_SOURCE_DIR}/CMakeLists.txt")
+            message(FATAL_ERROR "Extracted SPOOLES archive does not contain its CMakeLists.txt.")
+        endif()
+
+        add_subdirectory("${SPOOLES_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/spooles-build")
+        list(APPEND EXTRA_LINK_LIBS spooles)
+        set(SPOOLES_INCLUDE_DIR "${SPOOLES_SOURCE_DIR}")
+        message(STATUS "Using vendored SPOOLES 2.2 archive: ${SPOOLES_TARBALL}")
     else()
-        message(FATAL_ERROR "SPOOLES requested (CCX_USE_SPOOLES=ON) but system library not found. Please install libspooles-dev (e.g. sudo apt install libspooles-dev) or use MUMPS (-DCCX_USE_MUMPS=ON) / Accelerate (-DCCX_USE_ACCELERATE=ON).")
+        find_path(SPOOLES_INCLUDE_DIR
+            NAMES misc.h spooles.h
+            PATH_SUFFIXES spooles
+            PATHS
+                $ENV{SPOOLES_DIR}/include
+                $ENV{SPOOLES_DIR}
+                /usr/include
+                /usr/include/spooles
+                /usr/local/include
+                /usr/local/include/spooles
+                /opt/homebrew/include
+        )
+        find_library(SPOOLES_LIB
+            NAMES spooles spoolesMT spooles_MT libspooles
+            PATHS
+                $ENV{SPOOLES_DIR}/lib
+                $ENV{SPOOLES_DIR}
+                /usr/lib
+                /usr/lib/x86_64-linux-gnu
+                /usr/lib/aarch64-linux-gnu
+                /usr/local/lib
+                /opt/homebrew/lib
+        )
+        if(SPOOLES_INCLUDE_DIR AND SPOOLES_LIB)
+            message(STATUS "Found SPOOLES Include: ${SPOOLES_INCLUDE_DIR}")
+            message(STATUS "Found SPOOLES Library: ${SPOOLES_LIB}")
+            list(APPEND EXTRA_LINK_LIBS ${SPOOLES_LIB})
+            include_directories(${SPOOLES_INCLUDE_DIR})
+        else()
+            message(FATAL_ERROR "SPOOLES requested (CCX_USE_SPOOLES=ON) but system library not found. Please install libspooles-dev (e.g. sudo apt install libspooles-dev) or use MUMPS (-DCCX_USE_MUMPS=ON) / Accelerate (-DCCX_USE_ACCELERATE=ON).")
+        endif()
     endif()
 endif()
 
