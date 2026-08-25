@@ -954,13 +954,14 @@ def main():
         cfg = SOLVER_CONFIGS[s]
 
         strict_bin_path = CCX_DIR / f"build_{s.lower()}" / EXE_NAME
+        build_dir = CCX_DIR / f"build_{s.lower()}"
             
         if not strict_bin_path.is_file() or not os.access(strict_bin_path, os.X_OK):
             print(colorize(
                 f"[-] Solver '{s}' binary is missing or not executable: "
                 f"{strict_bin_path}\n"
-                f"    Build it with: cmake --build {CCX_DIR / f'build_{s.lower()}'}, "
-                "red"
+                f"    Build it with: cmake --build {build_dir}",
+                "red",
             ))
             sys.exit(1)
 
