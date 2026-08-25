@@ -3,9 +3,18 @@
 A solver modernization of [CalculiX CrunchiX](https://www.dhondt.de/), the open-source finite-element solver created by Dr. Guido Dhondt. The project preserves the original CalculiX numerical code with a more options for solver backends, and mult-platform. Singe codebase should run in Linux, MacOS, and Windows (planned).
 
 
-[![CI](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml/badge.svg)](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#platforms)
+
+[![CI Multi-Solver Matrix](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml/badge.svg)](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](COPYING)
+[![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#platform-support--roadmap)
+[![Solvers: SPOOLES | PARDISO | MUMPS | Accelerate](https://img.shields.io/badge/Solvers-SPOOLES%20%7C%20PARDISO%20%7C%20MUMPS%20%7C%20Accelerate-orange.svg)](#multi-solver-architecture)
+[![PARDISO Pass Rate](https://img.shields.io/badge/PARDISO%20Pass%20Rate-100%25-brightgreen.svg)](#solver-benchmarks--verification-pass-rates)
+[![SPOOLES Pass Rate](https://img.shields.io/badge/SPOOLES%20Pass%20Rate-100%25-brightgreen.svg)](#solver-benchmarks--verification-pass-rates)
+[![MUMPS Pass Rate](https://img.shields.io/badge/MUMPS%20Pass%20Rate-71.4%25-yellow.svg)](#solver-benchmarks--verification-pass-rates)
+[![Accelerate Pass Rate](https://img.shields.io/badge/Accelerate%20Pass%20Rate-71.4%25-yellow.svg)](#solver-benchmarks--verification-pass-rates)
+
+![CalculiX CrunchiX FEA Simulation](pictures/turbs.gif)
+
 
 ## Goal
 
