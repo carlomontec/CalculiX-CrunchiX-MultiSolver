@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CalculiX.h"
+#include "json_export.h"
 #ifdef SPOOLES
 #include "spooles.h"
 #endif
@@ -834,6 +835,9 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
   SFREE(aub);SFREE(adb);SFREE(au);SFREE(ad);SFREE(b);
 
   FORTRAN(writebv,(d,&nev));
+  if(json_is_active()){
+    json_export_buckling(d, nev);
+  }
 
   /* calculating the displacements and the stresses and storing */
   /* the results in frd format for each valid eigenmode */
