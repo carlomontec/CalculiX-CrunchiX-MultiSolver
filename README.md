@@ -30,6 +30,8 @@ This project now runs CalculiX from a single codebase with four possible sparse 
 - **Intel oneMKL PARDISO**, available on supported Linux and Windows configurations. Performant, but not open source.
 - **SPOOLES 2.2**, the original CalculiX default solver and compatibility baseline. Outdated and unmantained.
 
+Beyond direct linear solvers, eigenvalue problems (used for `*FREQUENCY` modal analysis, `*MODAL DYNAMIC`, and `*BUCKLE`) are solved via **`arpack-ng`**, an actively maintained and updated version of ARPACK that replaces the unmaintained 1990s ARPACK 96 source archive with modern compiler support, bug fixes, and thread safety.
+
 The integrations use packages from relevant repositories, while macOS MUMPS and SPOOLES builds use pinned source archives. 
 
 Performance measurements so far show the modern backends improving substantially over SPOOLES, with MUMPS currently providing the strongest overall score. Results can be validated with the official CalculiX test suite.
@@ -40,6 +42,8 @@ This project is designed to work with [CalculiX GraphiX GLFW](https://github.com
 
 ## Solver Backends
 
+### Linear Equation Solvers
+
 | Backend | Linux | macOS | Windows | Role |
 |:---|:---:|:---:|:---:|:---|
 | **MUMPS 5.x (recommended)** | System package | Vendored archive | System/MSYS2 package | Primary modern open-source candidate |
@@ -48,6 +52,12 @@ This project is designed to work with [CalculiX GraphiX GLFW](https://github.com
 | **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
 
 On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives: [MUMPS vendor package](third_party/mumps/README.md),  [SPOOLES vendor package](third_party/spooles/README.md)
+
+### Eigenvalue Solver (Modal Analysis & Buckling)
+
+| Solver | Distribution | Platform Support | Role |
+|:---|:---|:---:|:---|
+| **arpack-ng** | System package (`arpack` / `libarpack2-dev`) | Linux, macOS, Windows | Maintained Arnoldi eigenvalue solver for modal dynamics, frequency, and buckling analysis. Replaces legacy ARPACK 96. |
 
 
 ## Quick install for Linux, MacOS and Windows (Recommended)
