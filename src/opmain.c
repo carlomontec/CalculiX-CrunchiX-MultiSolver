@@ -19,141 +19,90 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <pthread.h>
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
 #include "CalculiX.h"
 
-static ITG *jq1,*irow1,num_cpus,*n1;
+/*
+ * opmain: Matrix-vector multiplication y = A * x for real sparse symmetric matrices
+ *
+ * Parallelization Note for CalculiX:
+ * Because the sparse matrix A is stored in lower-triangular format (ad = diagonal,
+ * au = subdiagonal entries), column j accesses row i > j and adds contributions
+ * to both y(j) and y(i).
+ *
+ * To enable thread-safe parallelization across column intervals [na, nb] without
+ * atomic locks, each thread computes partial products into a thread-private slice
+ * in yy, followed by a fast parallel reduction into the output array y.
+ *
+ * This implementation uses OpenMP's persistent thread team (#pragma omp parallel)
+ * instead of repeated pthread_create / pthread_join calls, eliminating OS thread
+ * creation/teardown overhead during iterative eigenvalue extraction.
+ */
 
-static double *x1,*yy=NULL,*ad1,*au1,*yy1;
+void opmain(ITG *n, double *x, double *y, double *ad, double *au, ITG *jq, ITG *irow){
 
-void opmain(ITG *n,double *x,double *y,double *ad,double*au,ITG *jq,ITG *irow){
+  ITG n_val = *n;
+  if(n_val <= 0) return;
 
-  ITG sys_cpus,*ithread=NULL,i;
-  char *env,*envloc,*envsys;
-
-  num_cpus = 0;
-  sys_cpus=0;
-
-  /* explicit user declaration prevails */
-
-  envsys=getenv("NUMBER_OF_CPUS");
-  if(envsys){
-    sys_cpus=atoi(envsys);
-    if(sys_cpus<0) sys_cpus=0;
+#if defined(_OPENMP)
+  ITG num_threads = 1;
+  #pragma omp parallel
+  {
+    #pragma omp single
+    num_threads = omp_get_num_threads();
   }
 
-  /* automatic detection of available number of processors */
+  if(num_threads > n_val) num_threads = n_val;
 
-  if(sys_cpus==0){
-    sys_cpus = getSystemCPUs();
-    if(sys_cpus<1) sys_cpus=1;
+  /* Serial path: direct in-place computation with zero allocation overhead */
+  if(num_threads <= 1){
+    ITG na = 1, nb = n_val;
+    FORTRAN(op,(x, y, ad, au, jq, irow, &na, &nb));
+    return;
   }
 
-  /* local declaration prevails, if strictly positive */
+  /* Multithreaded path: persistent OpenMP thread team with parallel reduction */
+  double *yy = NULL;
+  NNEW(yy, double, (long long)num_threads * n_val);
 
-  envloc = getenv("CCX_NPROC_RESULTS");
-  if(envloc){
-    num_cpus=atoi(envloc);
-    if(num_cpus<0){
-      num_cpus=0;
-    }else if(num_cpus>sys_cpus){
-      num_cpus=sys_cpus;
+  #pragma omp parallel
+  {
+    ITG tid = omp_get_thread_num();
+    ITG idelta = (ITG)ceil(n_val / (double)num_threads);
+    ITG na = tid * idelta + 1;
+    ITG nb = (tid + 1) * idelta;
+    if(nb > n_val) nb = n_val;
+
+    if(na <= nb){
+      long long indexf = (long long)tid * n_val;
+      FORTRAN(op,(x, &yy[indexf], ad, au, jq, irow, &na, &nb));
     }
 
-  }
+    #pragma omp barrier
 
-  /* else global declaration, if any, applies */
+    /* Parallel reduction across thread slices into output vector y */
+    ITG r_na = tid * idelta;
+    ITG r_nb = (tid + 1) * idelta;
+    if(r_nb > n_val) r_nb = n_val;
 
-  env = getenv("OMP_NUM_THREADS");
-  if(num_cpus==0){
-    if (env)
-      num_cpus = atoi(env);
-    if (num_cpus < 1) {
-      num_cpus=1;
-    }else if(num_cpus>sys_cpus){
-      num_cpus=sys_cpus;
-    }
-  }
-
-  // next line is to be inserted in a similar way for all other parallel parts
-
-  if(*n<num_cpus) num_cpus=*n;
-
-  pthread_t tid[num_cpus];
-  
-  /* calculating the product of the matrix given by ad,au with vector x */
-
-  /* allocating memory for the solution vector yy */
-
-  NNEW(yy,double,num_cpus**n);
-
-  x1=x;ad1=ad;au1=au;jq1=jq;irow1=irow;n1=n;
-
-  /* create threads and wait */
-	
-  NNEW(ithread,ITG,num_cpus);
-  for(i=0; i<num_cpus; i++)  {
-    ithread[i]=i;
-    pthread_create(&tid[i], NULL, (void *)opmt, (void *)&ithread[i]);
-  }
-  for(i=0; i<num_cpus; i++)  pthread_join(tid[i], NULL);
-
-  SFREE(ithread);
-
-  yy1=y;n1=n;
-  
-  /* collecting results: create threads and wait */
-	
-  NNEW(ithread,ITG,num_cpus);
-  for(i=0; i<num_cpus; i++)  {
-    ithread[i]=i;
-    pthread_create(&tid[i], NULL, (void *)opcollect, (void *)&ithread[i]);
-  }
-  for(i=0; i<num_cpus; i++)  pthread_join(tid[i], NULL);
-
-  SFREE(ithread);SFREE(yy);
-	
-}
-
-/* subroutine for multithreading of op */
-
-void *opmt(ITG *i){
-
-  ITG indexf,idelta,na,nb;
-
-  indexf=*i**n1;
-
-  idelta=(ITG)ceil(*n1/(double)num_cpus);
-  na=*i*idelta+1;
-  nb=(*i+1)*idelta;
-  if(nb>*n1) nb=*n1;
-
-  FORTRAN(op,(x1,&yy[indexf],ad1,au1,jq1,irow1,&na,&nb));
-
-  return NULL;
-}
-
-/* collecting the results */
-
-void *opcollect(ITG *i){
-
-  ITG idelta,na,nb,j,k,index;
-
-  idelta=(ITG)ceil(*n1/(double)num_cpus);
-  na=*i*idelta;
-  nb=(*i+1)*idelta;
-  if(nb>*n1) nb=*n1;
-
-  for(j=na;j<nb;j++){
-    yy1[j]=yy[j];
-  }
-  for(k=1;k<num_cpus;k++){
-    index=k**n1;
-    for(j=na;j<nb;j++){
-      yy1[j]+=yy[j+index];
+    for(ITG j = r_na; j < r_nb; j++){
+      double sum = yy[j];
+      for(ITG k = 1; k < num_threads; k++){
+        sum += yy[j + (long long)k * n_val];
+      }
+      y[j] = sum;
     }
   }
 
-  return NULL;
+  SFREE(yy);
+
+#else
+  /* Serial fallback when OpenMP is not enabled */
+  ITG na = 1, nb = n_val;
+  FORTRAN(op,(x, y, ad, au, jq, irow, &na, &nb));
+#endif
+
 }
 

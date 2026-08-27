@@ -13,13 +13,15 @@ if(APPLE AND NOT CMAKE_OSX_SYSROOT)
     endif()
 endif()
 
-project(CalculiX VERSION 2.23 LANGUAGES C Fortran)
+project(CalculiX VERSION 2.23 LANGUAGES C CXX Fortran)
 
 if(APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
     message(FATAL_ERROR "This macOS development target supports Apple Silicon only (arm64).")
 endif()
 
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -----------------------------------------------------------------------------
 # User Configuration Options
@@ -34,9 +36,9 @@ else()
     option(CCX_SPOOLES_VENDORED "Build SPOOLES from vendored source"                  OFF)
 endif()
 option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"          OFF)
-option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver"                OFF)
-option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
-option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
+option(CCX_USE_SPECTRA "Enable Spectra C++ eigenvalue solver (modern default)" ON)
+option(CCX_USE_ARPACK  "Enable legacy ARPACK eigenvalue solver"                 OFF)
+option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                        ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
 
 # -----------------------------------------------------------------------------
@@ -455,9 +457,46 @@ if(NOT CCX_USE_PARDISO)
 endif()
 
 # -----------------------------------------------------------------------------
-# ARPACK
+# Spectra C++ Eigensolver & Eigen3
 # -----------------------------------------------------------------------------
-if(CCX_USE_ARPACK)
+if(CCX_USE_SPECTRA)
+    add_compile_definitions(SPECTRA_SOLVER)
+    if(CCX_USE_PARDISO)
+        add_compile_definitions(EIGEN_USE_MKL_ALL)
+    endif()
+
+    set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
+    set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "" FORCE)
+    set(SPECTRA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(SPECTRA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+    include(FetchContent)
+    FetchContent_Declare(
+        eigen
+        GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+        GIT_TAG 3.4.0
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_Declare(
+        spectra
+        GIT_REPOSITORY https://github.com/yixuan/spectra.git
+        GIT_TAG v1.0.1
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(eigen spectra)
+    include_directories(
+        ${eigen_SOURCE_DIR}
+        ${spectra_SOURCE_DIR}/include
+    )
+    message(STATUS "Spectra C++ eigensolver enabled (Eigen: ${eigen_SOURCE_DIR}, Spectra: ${spectra_SOURCE_DIR})")
+endif()
+
+# -----------------------------------------------------------------------------
+# ARPACK (Legacy / Alternative Eigenvalue Solver)
+# -----------------------------------------------------------------------------
+if(CCX_USE_ARPACK AND NOT CCX_USE_SPECTRA)
     add_compile_definitions(ARPACK)
     find_package(PkgConfig QUIET)
     if(PKG_CONFIG_FOUND)
@@ -594,6 +633,10 @@ foreach(C_FILE ${C_LIST})
         list(APPEND CCX_SOURCES "src/${C_FILE}")
     endif()
 endforeach()
+
+if(CCX_USE_SPECTRA)
+    list(APPEND CCX_SOURCES "src/spectra_solver.cpp")
+endif()
 
 list(LENGTH CCX_SOURCES CCX_SOURCES_COUNT)
 message(STATUS "Discovered ${CCX_SOURCES_COUNT} source files from Makefile.inc")

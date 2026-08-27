@@ -15,13 +15,16 @@
 /*     along with this program; if not, write to the Free Software       */
 /*     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.         */
 
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
 
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include "CalculiX.h"
+#ifdef SPECTRA_SOLVER
+#include "spectra_solver.h"
+#endif
 #ifdef SPOOLES
 #include "spooles.h"
 #endif
@@ -716,6 +719,37 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
   
     printf(" Calculating the eigenvalues and the eigenmodes\n\n");
 
+#ifdef SPECTRA_SOLVER
+    if(nasym==0){
+      NNEW(d,double,nev);
+      NNEW(z,double,(long long)ncv*neq[1]);
+      NNEW(temp_array,double,neq[1]);
+
+      ITG status = spectra_solve_freq_sym(
+          neq[1], nev, ncv, sigma, tol, mxiter,
+          *isolver, symmetryflag, inputformat, nrhs,
+          adb, aub, jq, irow, d, z
+      );
+
+      if(status != 0){
+        printf(" *ERROR in spectra_solve_freq_sym: status=%" ITGFORMAT "\n\n", status);
+      }
+
+      FORTRAN(writeev,(d,&nev,&fmin,&fmax));
+    }
+#ifdef ARPACK
+    else{
+#else
+    else{
+      printf(" *ERROR: Asymmetric eigenvalue problems require ARPACK (Phase 2 feature for Spectra).\n\n");
+      FORTRAN(stop,());
+    }
+#endif
+#endif
+#if defined(ARPACK) && !defined(SPECTRA_SOLVER)
+    {
+#endif
+#if defined(ARPACK)
     ido=0;
     ldz=neq[1];
     iparam[0]=1;
@@ -932,6 +966,10 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
     if(info!=0){
       printf(" *ERROR in d[n,s]eupd: info=%" ITGFORMAT "\n",info);
     }         
+#if defined(SPECTRA_SOLVER) || (defined(ARPACK) && !defined(SPECTRA_SOLVER))
+    }
+#endif
+#endif         
 
     /* check the normalization of the eigenmodes */
     
