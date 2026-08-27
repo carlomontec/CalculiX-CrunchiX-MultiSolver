@@ -21,7 +21,7 @@ CalculiX CrunchiX (CCX) is a 470,000-line finite element solver developed by Dr.
 | **Intel oneMKL PARDISO** | Active | Multi-threaded direct sparse solver for Linux/Windows (`-DCCX_USE_PARDISO=ON` or `src/Makefile.pardiso`). |
 | **MUMPS 5.x** | Active (Primary Candidate) | Modern direct sparse solver with OpenMP, Out-of-Core, and Block Low-Rank (BLR) memory reduction. Linux/Windows use system packages; macOS builds the pinned vendor archive. |
 | **PaStiX** | Exists in source | High-performance direct solver with GPU acceleration support (`-DPASTIX_GPU`). |
-| **ARPACK** | Active | Arnoldi eigenvalue solver for modal dynamic, frequency, and buckling analysis. |
+| **arpack-ng** | Active | Upstream-maintained Arnoldi eigenvalue solver for modal dynamic, frequency, and buckling analysis. Replaces legacy ARPACK 96. |
 
 ---
 
