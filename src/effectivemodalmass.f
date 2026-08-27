@@ -172,7 +172,8 @@
       write(5,*)
       write(5,'(a7,6(2x,e14.7))') '       ',
      &  (fraction(j),j=1,6)
-      write(5,*)
+      call json_export_modal_mass_f(nev,part,toteffmass,effmodmass,
+     &  fraction)
 !
       return
       end
