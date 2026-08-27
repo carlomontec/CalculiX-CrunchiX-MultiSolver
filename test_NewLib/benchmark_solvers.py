@@ -225,7 +225,6 @@ def run_solver(solver_name, bin_path, deck_name, is_modal, threads, custom_env):
     env["OMP_NUM_THREADS"] = str(threads)
     env["MKL_NUM_THREADS"] = str(threads)
     env["CCX_NPROC_EQUATION_SOLVER"] = str(threads)
-    env["VECLIB_MAXIMUM_THREADS"] = str(threads)
     env.update(custom_env)
 
     cmd = [str(bin_path), deck_name]
@@ -274,7 +273,7 @@ def run_solver(solver_name, bin_path, deck_name, is_modal, threads, custom_env):
 
 def main():
     parser = argparse.ArgumentParser(description="CalculiX Solver Benchmark Suite (Static & Modal)")
-    parser.add_argument("--threads", nargs="+", type=int, default=[1, 2, 4, 6], help="Thread counts to evaluate")
+    parser.add_argument("--threads", nargs="+", type=int, default=[1, 2, 4], help="Thread counts to evaluate")
     parser.add_argument("--solvers", nargs="+", choices=["ACCELERATE", "MUMPS", "SPOOLES", "PARDISO", "ALL"], default=["ACCELERATE", "SPOOLES"])
     parser.add_argument("--markdown", action="store_true", help="Output results in Markdown format")
     args = parser.parse_args()

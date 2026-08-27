@@ -31,3 +31,6 @@ test_NewLib/NFIX.nam
 test_NewLib/NTIP.nam
 .aider*
 comparison_solvers.csv
+test_NewLib/TOP.dlo
+.vscode/
+build*/

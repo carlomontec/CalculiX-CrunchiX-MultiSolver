@@ -15,7 +15,7 @@
 /*     along with this program; if not, write to the Free Software       */
 /*     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.         */
 
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
 
 #include <stdio.h>
 #include <math.h>
@@ -57,9 +57,10 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
 		     ITG *irandomtype,double *randomval,ITG *irobustdesign,
 		     ITG *ndesibou,
 		     ITG *nodedesibou,ITG *nodedesiinvbou){
-	               
-  /* generating the random field for robust assessment */
-
+#if !defined(ARPACK)
+  printf(" *ERROR in randomfieldmain: Random fields without ARPACK are planned for Phase 2.\n\n");
+  FORTRAN(stop,());
+#else
   char bmat[2]="I", which[3]="SA", howmny[2]="A",*objectset=NULL,*orname=NULL;
   
   ITG nzss,nzsd,*mast1=NULL,*irows=NULL,*icols=NULL,*jqs=NULL,*ipointer=NULL,
@@ -479,10 +480,15 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
 
     RENEW(zz,double,(long long)ncv**ndesi);
      
+#if defined(ARPACK)
     lworkl=ncv*(8+ncv);
     RENEW(workl,double,lworkl);
     FORTRAN(dsaupd,(&ido,bmat,ndesi,which,&nev,&tol,resid,&ncv,zz,&ldz,
 		    iparam,ipntr,workd,workl,&lworkl,&info));
+#else
+    printf(" *ERROR in randomfieldmain: random fields without ARPACK are planned for Phase 2.\n\n");
+    FORTRAN(stop,());
+#endif
 
     while((ido==-1)||(ido==1)||(ido==2)){
       if(ido==-1){
@@ -745,6 +751,7 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
   SFREE(irows);SFREE(icols);SFREE(jqs);SFREE(au);SFREE(ad);
   SFREE(adb);SFREE(aub);SFREE(d);SFREE(zz);SFREE(randval);
   SFREE(randfield);SFREE(acvector);SFREE(acscalar);
+#endif
        
   return;
   

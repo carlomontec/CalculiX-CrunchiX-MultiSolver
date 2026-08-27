@@ -15,7 +15,7 @@
 /*     along with this program; if not, write to the Free Software       */
 /*     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.         */
 
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
 
 #include <stdio.h>
 #include <math.h>
@@ -80,7 +80,10 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
 	      double *prop,char *orname,char *typeboun,double *t0g,
 	      double *t1g,ITG *mcs,ITG *istep,ITG *imastload,
 	      double *pmastload){
-  
+#if !defined(ARPACK)
+  printf(" *ERROR in arpackbu: Buckling analysis without ARPACK is planned for Phase 2.\n\n");
+  FORTRAN(stop,());
+#else
   char bmat[2]="G",which[3]="LM",howmny[2]="A",fneig[132]="",
     description[13]="            ",*tieset=NULL;
 
@@ -637,8 +640,13 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
     NNEW(workd,double,3*neq[0]);
     NNEW(workl,double,lworkl);
 
+#if defined(ARPACK)
     FORTRAN(dsaupd,(&ido,bmat,&neq[0],which,&nev,&tol,resid,&ncv,z,&dz,iparam,ipntr,workd,
 		    workl,&lworkl,&info));
+#else
+    printf(" *ERROR in arpackbu: buckling analysis without ARPACK is planned for Phase 2.\n\n");
+    FORTRAN(stop,());
+#endif
 
     NNEW(temp_array,double,neq[0]);
 
@@ -935,6 +943,7 @@ void arpackbu(double *co, ITG *nk, ITG *kon, ITG *ipkon, char *lakon,
   if(strcmp1(&filab[522],"ENER")==0) SFREE(enern);
 
   SFREE(iponoel);
+#endif
   
   return;
 }

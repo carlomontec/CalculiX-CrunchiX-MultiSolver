@@ -1460,7 +1460,7 @@ void CalculiXstep(int argc,char argv[][133],ITG **nelemloadp,double **xloadp,
       /* FREQUENCY ANALYSIS */
       
       if((mcs==0)||(cs[1]<0)){
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
 	  
 	mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
 	mpcinfo[3]=maxlenmpc;
@@ -1489,13 +1489,13 @@ void CalculiXstep(int argc,char argv[][133],ITG **nelemloadp,double **xloadp,
 	for(i=0;i<3;i++){nzsprevstep[i]=nzs[i];}
 
 #else
-	printf(" *ERROR in CalculiX: the ARPACK library is not linked\n\n");
+	printf(" *ERROR in CalculiX: neither ARPACK nor Spectra eigensolver is linked\n\n");
 	FORTRAN(stop,());
 #endif
 
       }else{
 
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
 
 	mpcinfo[0]=memmpc_;mpcinfo[1]=mpcfree;mpcinfo[2]=icascade;
 	mpcinfo[3]=maxlenmpc;
@@ -1525,14 +1525,14 @@ void CalculiXstep(int argc,char argv[][133],ITG **nelemloadp,double **xloadp,
 	for(i=0;i<3;i++){nzsprevstep[i]=nzs[i];}
 
 #else
-	printf(" *ERROR in CalculiX: the ARPACK library is not linked\n\n");
+	printf(" *ERROR in CalculiX: neither ARPACK nor Spectra eigensolver is linked\n\n");
 	FORTRAN(stop,());
 #endif
 
       }
     }else if(*nmethod==3){
     
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
       arpackbu(co,nk,kon,ipkon,lakon,ne,nodeboun,ndirboun,xboun,nboun,
 	       ipompc,nodempc,coefmpc,labmpc,&nmpc,nodeforc,ndirforc,xforc,
 	       &nforc,
@@ -1549,7 +1549,7 @@ void CalculiXstep(int argc,char argv[][133],ITG **nelemloadp,double **xloadp,
 	       ibody,xbody,&nbody,thicke,jobnamec,&nmat,ielprop,prop,
 	       orname,typeboun,t0g,t1g,&mcs,&istep,imastload,pmastload);
 #else
-      printf(" *ERROR in CalculiX: the ARPACK library is not linked\n\n");
+      printf(" *ERROR in CalculiX: neither ARPACK nor Spectra eigensolver is linked\n\n");
       FORTRAN(stop,());
 #endif
     }

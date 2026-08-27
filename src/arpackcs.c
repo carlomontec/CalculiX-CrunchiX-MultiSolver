@@ -15,7 +15,7 @@
 /*     along with this program; if not, write to the Free Software       */
 /*     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.         */
 
-#ifdef ARPACK
+#if defined(ARPACK) || defined(SPECTRA_SOLVER)
 
 #include <stdio.h>
 #include <math.h>
@@ -83,9 +83,10 @@ void arpackcs(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 	      ITG *nmat,char *typeboun,ITG *ielprop,double *prop,
 	      char *orname,ITG *inewton,double *t0g,double *t1g,
 	      double *alpha,ITG *imastload,double *pmastload){
-
-  /* calls the Arnoldi Package (ARPACK) for cyclic symmetry calculations */
-  
+#if !defined(ARPACK)
+  printf(" *ERROR in arpackcs: Cyclic symmetry without ARPACK is planned for Phase 2.\n\n");
+  FORTRAN(stop,());
+#else
   char bmat[2]="G", which[3]="LM", howmny[2]="A",*lakont=NULL,
     description[13]="            ",fneig[132]="",filabcp[9]="        ",
     lakonl[2]=" \0",*lakon=NULL,jobnamef[396]="",*turdir=NULL;
@@ -815,6 +816,7 @@ void arpackcs(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
       NNEW(z,double,(long long)ncv*neq[1]);
       NNEW(workd,double,3*neq[1]);
 	
+#if defined(ARPACK)
       if(nasym==1){
 	lworkl=3*ncv*(2+ncv);
 	NNEW(workl,double,lworkl);
@@ -826,6 +828,10 @@ void arpackcs(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
 	FORTRAN(dsaupd,(&ido,bmat,&neq[1],which,&nev,&tol,resid,&ncv,z,&ldz,
 			iparam,ipntr,workd,workl,&lworkl,&info));
       }
+#else
+      printf(" *ERROR in arpackcs: Cyclic symmetry without ARPACK is planned for Phase 2.\n\n");
+      FORTRAN(stop,());
+#endif
 	
       NNEW(temp_array,double,neq[1]);
 	
@@ -2780,6 +2786,7 @@ void arpackcs(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
   *islavsurfp=islavsurf;*pslavsurfp=pslavsurf;*clearinip=clearini;
 
   SFREE(iponoel);
+#endif
   
   return;
 }
