@@ -65,7 +65,7 @@ On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives:
 Run this snippet in the terminal:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/master/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 ```
 After installation, the `ccx` executable is ready to use from the directory you selected. If you accept the shell-configuration prompt, that directory is added to your `PATH` and the `CalculiX` alias is created as well. See [INSTALL.md](INSTALL.md) for more details in installation with different solvers.
 
@@ -73,8 +73,8 @@ After installation, the `ccx` executable is ready to use from the directory you 
 For Windows users, use the automated PowerShell installer. It will automatically detect or install MSYS2 and the required MinGW-w64 toolchains. Open a standard **Windows PowerShell** prompt and paste this entire block:
 
 ```powershell
-# 1. Download the script into memory (using the master branch)
-$script = irm [https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/master/install.ps1](https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/master/install.ps1)
+# 1. Download the script into memory (using the main branch)
+$script = irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1
 
 # 2. Save it to disk with forced UTF-8 encoding (prevents Windows parsing errors)
 $script | Out-File -FilePath install.ps1 -Encoding utf8

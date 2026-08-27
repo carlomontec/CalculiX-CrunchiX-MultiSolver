@@ -2,9 +2,9 @@ name: CI Multi-Solver Matrix
 
 on:
   push:
-    branches: [ master, main, 'fix/**', 'fix_*', 'feat/**' ]
+    branches: [ main, 'fix/**', 'fix_*', 'feat/**' ]
   pull_request:
-    branches: [ master, main, 'fix/**', 'fix_*', 'feat/**' ]
+    branches: [ main, 'fix/**', 'fix_*', 'feat/**' ]
   workflow_dispatch:
 
 concurrency:
@@ -208,7 +208,7 @@ jobs:
     name: Update Gist Badges
     needs: [macos, linux]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Download all rates
         uses: actions/download-artifact@v4
