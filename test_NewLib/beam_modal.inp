@@ -1,0 +1,30 @@
+** ------------------------------------------------------------
+** CalculiX Steel Cantilever Beam Modal Benchmark (10 Modes)
+** Uses the same mesh & BCs as beam_benchmark.
+** 20x20mm cross-section, 300mm long, C3D20 elements.
+** Fixed at z=0 (NNFIX).
+** ------------------------------------------------------------
+*INCLUDE, INPUT=all.msh
+*INCLUDE, INPUT=NFIX.nam
+*INCLUDE, INPUT=NTIP.nam
+
+*MATERIAL, NAME=STEEL
+*ELASTIC
+210000.0, 0.3
+*DENSITY
+7.85e-9
+
+*SOLID SECTION, ELSET=Eall, MATERIAL=STEEL
+
+*BOUNDARY
+NNFIX, 1, 3, 0.0
+
+*STEP
+*FREQUENCY
+10
+
+*NODE FILE
+U
+*EL FILE
+S
+*END STEP

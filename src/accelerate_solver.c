@@ -19,6 +19,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #ifndef __CLAPACK_H
 #define __CLAPACK_H
 #endif
@@ -47,8 +50,15 @@ static ITG acc_nthread = 1;
 
 static void accelerate_configure_env(void) {
   char *env;
+  int pcores = 0;
+  size_t size = sizeof(pcores);
 
   if(acc_env_configured) return;
+
+  /* Query physical Performance core count on Apple Silicon (e.g. M1/M2/M3/M4) */
+  if(sysctlbyname("hw.perflevel0.logicalcpu", &pcores, &size, NULL, 0) != 0 || pcores <= 0){
+    pcores = 0;
+  }
 
   env = getenv("CCX_NPROC_EQUATION_SOLVER");
   if(env){
@@ -57,13 +67,19 @@ static void accelerate_configure_env(void) {
     env = getenv("OMP_NUM_THREADS");
     if(env){ acc_nthread = atoi(env); }
   }
-  if(acc_nthread < 1) acc_nthread = 1;
-
-  if(!getenv("VECLIB_MAXIMUM_THREADS")){
-    char th_buf[32];
-    snprintf(th_buf, sizeof(th_buf), "%d", (int)acc_nthread);
-    setenv("VECLIB_MAXIMUM_THREADS", th_buf, 0);
+  if(acc_nthread < 1){
+    acc_nthread = (pcores > 0) ? pcores : 1;
   }
+
+  /* Cap thread count at physical P-cores to prevent severe barrier synchronization
+     latency when worker threads spill onto lower-clocked Efficiency cores */
+  if(pcores > 0 && acc_nthread > pcores && !getenv("CCX_ACCELERATE_ALLOW_ECORES")){
+    acc_nthread = pcores;
+  }
+
+  char th_buf[32];
+  snprintf(th_buf, sizeof(th_buf), "%d", (int)acc_nthread);
+  setenv("VECLIB_MAXIMUM_THREADS", th_buf, 1);
 
   acc_env_configured = 1;
 }
@@ -112,25 +128,18 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     accelerate_cleanup(neq, symmetryflag, inputformat);
   }
 
-  if(*symmetryflag == 0){
-    printf(" Factoring the system of equations using Apple Accelerate (Symmetric LDLT_TPP)\n");
-  }else{
-    printf(" Factoring the system of equations using Apple Accelerate (Unsymmetric QR)\n");
-  }
-
   /* 1. Configure thread count for vecLib / Accelerate (once per process) */
   accelerate_configure_env();
-  printf(" number of threads = %d\n\n", (int)acc_nthread);
 
   /* 2. Assemble matrix format */
   if(*symmetryflag == 0){
     /*
      * Symmetric matrix: Lower triangular part.
      * CCX stores subdiagonal entries column by column in au, diagonal in ad.
-     * Default: Fast parallel SparseFactorizationLDLT with automatic fallback to
-     * SparseFactorizationLDLTTPP if indefinite pivots are detected.
+     * Default: Fast parallel SparseFactorizationCholesky (LL^T) for SPD matrices,
+     * with automatic multi-tier fallback to LDLT and LDLTTPP if indefinite pivots occur.
      */
-    fact_type = SparseFactorizationLDLT;
+    fact_type = SparseFactorizationCholesky;
     env = getenv("CCX_ACCELERATE_FACT");
     if(env){
       if(strcmp(env, "CHOLESKY") == 0 || strcmp(env, "cholesky") == 0){
@@ -347,20 +356,44 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
     .zeroTolerance = 1e-15
   };
 
-  /* 6. Compute Full Symbolic and Numerical Factorization */
+  /* 6. Compute Full Symbolic and Numerical Factorization with 3-Tier Fallback */
   acc_factorization = SparseFactor(fact_type, acc_A, sfoptions, nfoptions);
-  if(acc_factorization.status < 0 && fact_type != SparseFactorizationLDLTTPP && *symmetryflag == 0){
-    /* Fallback to robust threshold pivoting LDL^T for indefinite systems */
+
+  /* Tier 1 -> Tier 2 Fallback: Cholesky (LL^T) -> LDLT */
+  if(acc_factorization.status < 0 && fact_type == SparseFactorizationCholesky && *symmetryflag == 0){
+    if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
+      SparseCleanup(acc_factorization);
+    }
+    fact_type = SparseFactorizationLDLT;
+    nfoptions.scalingMethod = SparseScalingDefault;
+    acc_factorization = SparseFactor(fact_type, acc_A, sfoptions, nfoptions);
+  }
+
+  /* Tier 2 -> Tier 3 Fallback: LDLT -> LDLTTPP (Threshold Partial Pivoting) */
+  if(acc_factorization.status < 0 && fact_type == SparseFactorizationLDLT && *symmetryflag == 0){
     if(acc_factorization.status >= 0 || acc_factorization.numericFactorization != NULL){
       SparseCleanup(acc_factorization);
     }
     fact_type = SparseFactorizationLDLTTPP;
+    nfoptions.scalingMethod = SparseScalingDefault;
     acc_factorization = SparseFactor(fact_type, acc_A, sfoptions, nfoptions);
   }
+
   if(acc_factorization.status < 0){
     printf(" *ERROR in Apple Accelerate factorization: status = %d\n", (int)acc_factorization.status);
     exit(1);
   }
+
+  const char *fact_name = "Unsymmetric QR";
+  if(*symmetryflag == 0){
+    if(fact_type == SparseFactorizationCholesky) fact_name = "Symmetric Cholesky (LL^T)";
+    else if(fact_type == SparseFactorizationLDLT) fact_name = "Symmetric LDLT";
+    else if(fact_type == SparseFactorizationLDLTTPP) fact_name = "Symmetric LDLT_TPP";
+    else fact_name = "Symmetric";
+  }
+  const char *ord_name = (ord == SparseOrderMetis) ? "METIS" : ((ord == SparseOrderAMD) ? "AMD" : "Default");
+  printf(" Factoring the system of equations using Apple Accelerate (%s, %s ordering)\n", fact_name, ord_name);
+  printf(" number of threads = %d\n\n", (int)acc_nthread);
 
   acc_initialized = 1;
   acc_prev_neq = *neq;

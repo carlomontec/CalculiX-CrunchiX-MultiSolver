@@ -3,15 +3,15 @@ pnt p2 20 0 0
 pnt p3 20 20 0
 pnt p4 0 20 0
 
-line l1 p1 p2 8
-line l2 p2 p3 8
-line l3 p3 p4 8
-line l4 p4 p1 8
+line l1 p1 p2 24
+line l2 p2 p3 24
+line l3 p3 p4 24
+line l4 p4 p1 24
 
 surf s0 blend l1 l2 l3 l4
 
 seta src s s0
-swep src swp tra 0 0 300 120
+swep src swp tra 0 0 300 400
 
 elty all he20
 mesh all
