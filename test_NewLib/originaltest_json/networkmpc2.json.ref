@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "networkmpc2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.064931
+    },
+    "mesh_statistics": {
+      "nodes": 10,
+      "elements": 6,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

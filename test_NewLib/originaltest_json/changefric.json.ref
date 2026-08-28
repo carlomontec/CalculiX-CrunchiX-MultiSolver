@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "jobname": "changefric",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 3.162287
+    },
+    "mesh_statistics": {
+      "nodes": 16,
+      "elements": 2,
+      "equations": 33
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 3,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 4,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 5,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

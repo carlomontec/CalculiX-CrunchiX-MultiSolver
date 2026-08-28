@@ -1,0 +1,2991 @@
+{
+  "meta": {
+    "jobname": "beamnldye2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.196632
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 231
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 4.4095209643e-08,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.829906658e-24,
+                  -2.1375160816e-23,
+                  2.451521206e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 8.8190419286e-08,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.3975293735e-22,
+                  -1.7104990424e-21,
+                  9.5042648333e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 1.3228562893e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.3611348164e-21,
+                  -9.5940729376e-21,
+                  0.00020268077489
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 1.7638083857e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.8169187971e-20,
+                  -3.4043437686e-20,
+                  0.00033476080865
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 2.2047604821e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.235256197e-20,
+                  -8.2037091512e-20,
+                  0.00047839481962
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 2.6457125786e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -7.0914558344e-20,
+                  -1.3453652169e-19,
+                  0.00062303641836
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 7,
+          "step_time": 3.086664675e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.0327126421e-19,
+                  -1.7476761157e-19,
+                  0.00076171726821
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 8,
+          "step_time": 3.5276167714e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.462221553e-19,
+                  -2.080308267e-19,
+                  0.00089096601408
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 9,
+          "step_time": 3.9685688679e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.9570081448e-19,
+                  -2.3282462687e-19,
+                  0.0010099840686
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 10,
+          "step_time": 4.4095209643e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.3882949286e-19,
+                  -2.4290923612e-19,
+                  0.001119770425
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 11,
+          "step_time": 4.8504730607e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.7255688853e-19,
+                  -2.3289481099e-19,
+                  0.0012225707934
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 12,
+          "step_time": 5.2914251572e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.0489548275e-19,
+                  -2.0712813877e-19,
+                  0.0013215589093
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 13,
+          "step_time": 5.7323772536e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.4288196383e-19,
+                  -1.7702494172e-19,
+                  0.0014203903266
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 14,
+          "step_time": 6.17332935e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.8127854337e-19,
+                  -1.4797718452e-19,
+                  0.0015223825636
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 15,
+          "step_time": 6.6142814464e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.1834868278e-19,
+                  -1.2600522875e-19,
+                  0.0016294678726
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 16,
+          "step_time": 7.0552335429e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.4924799643e-19,
+                  -1.0712019605e-19,
+                  0.0017414281654
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 17,
+          "step_time": 7.4961856393e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.6587953759e-19,
+                  -7.9495480805e-20,
+                  0.0018559562925
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 18,
+          "step_time": 7.9371377357e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.8017448654e-19,
+                  -5.7650166866e-20,
+                  0.0019697126375
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 19,
+          "step_time": 8.3780898322e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.9907343453e-19,
+                  -7.1005446656e-20,
+                  0.0020799656541
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 20,
+          "step_time": 8.8190419286e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.2731191557e-19,
+                  -1.2874587849e-19,
+                  0.0021859888431
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 21,
+          "step_time": 9.259994025e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.0199512744e-18,
+                  -2.3664822154e-19,
+                  0.002289430346
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 22,
+          "step_time": 9.7009461214e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.9515105979e-17,
+                  -4.1185323164e-19,
+                  0.0023933948745
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 23,
+          "step_time": 1.0141898218e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.1588298294e-16,
+                  -4.3556255365e-19,
+                  0.0025006959993
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 24,
+          "step_time": 1.0582850314e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.4308160518e-16,
+                  1.8297526032e-18,
+                  0.0026122274556
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 25,
+          "step_time": 1.1023802411e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.1339941569e-15,
+                  1.8208526504e-17,
+                  0.002726364546
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 26,
+          "step_time": 1.1464754507e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  7.244316561e-15,
+                  9.9045411068e-17,
+                  0.0028397483872
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 27,
+          "step_time": 1.1905706604e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.1667923667e-14,
+                  4.2428803298e-16,
+                  0.0029490413288
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 28,
+          "step_time": 1.23466587e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.7963827983e-14,
+                  1.5553179198e-15,
+                  0.0030527085646
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 29,
+          "step_time": 1.2787610796e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.4046147206e-13,
+                  5.0553814102e-15,
+                  0.0031518807825
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 30,
+          "step_time": 1.3228562893e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  3.1205216589e-13,
+                  1.486841552e-14,
+                  0.0032498746755
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 31,
+          "step_time": 1.3669514989e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  6.4331687145e-13,
+                  4.0106705555e-14,
+                  0.0033506786389
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 32,
+          "step_time": 1.4110467086e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.2460630775e-12,
+                  1.0020794343e-13,
+                  0.0034572275162
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 33,
+          "step_time": 1.4551419182e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.294767021e-12,
+                  2.3369136661e-13,
+                  0.0035703174543
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 34,
+          "step_time": 1.4992371279e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.0559919632e-12,
+                  5.1179144892e-13,
+                  0.0036885777384
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 35,
+          "step_time": 1.5433323375e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  6.9097428246e-12,
+                  1.0577753109e-12,
+                  0.0038093151351
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 36,
+          "step_time": 1.5874275471e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.1313837564e-11,
+                  2.0712868361e-12,
+                  0.0039296413611
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 37,
+          "step_time": 1.6315227568e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.7626216315e-11,
+                  3.8539128246e-12,
+                  0.0040472935762
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 38,
+          "step_time": 1.6756179664e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.5703418467e-11,
+                  6.8264380238e-12,
+                  0.0041608998594
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 39,
+          "step_time": 1.7197131761e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  3.4297703575e-11,
+                  1.1519173089e-11,
+                  0.0042698575637
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 40,
+          "step_time": 1.7638083857e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.0509526251e-11,
+                  1.8504607226e-11,
+                  0.0043741947998
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 41,
+          "step_time": 1.8079035954e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  3.98308617e-11,
+                  2.822954478e-11,
+                  0.004474658443
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 42,
+          "step_time": 1.851998805e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.7386560015e-11,
+                  4.069950811e-11,
+                  0.0045729409817
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 43,
+          "step_time": 1.8960940146e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.0825845167e-13,
+                  5.4983734686e-11,
+                  0.0046716937916
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 44,
+          "step_time": 1.9401892243e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.8384955155e-11,
+                  6.8556497037e-11,
+                  0.0047739992978
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 45,
+          "step_time": 1.9842844339e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -8.1038996232e-11,
+                  7.6569917934e-11,
+                  0.0048823048683
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 46,
+          "step_time": 2.0283796436e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.1767966167e-10,
+                  7.1237577459e-11,
+                  0.0049972472115
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 47,
+          "step_time": 2.0724748532e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.4741420466e-10,
+                  4.1531292899e-11,
+                  0.0051170184133
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 48,
+          "step_time": 2.1165700629e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.9088195439e-10,
+                  -2.6738714816e-11,
+                  0.0052377563698
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 49,
+          "step_time": 2.1606652725e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.9526899064e-10,
+                  -1.5075448172e-10,
+                  0.0053549405316
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 50,
+          "step_time": 2.2047604821e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -5.1912188608e-10,
+                  -3.5130105251e-10,
+                  0.0054652169133
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 51,
+          "step_time": 2.2488556918e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -8.9056956459e-10,
+                  -6.5560816284e-10,
+                  0.0055677969754
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 52,
+          "step_time": 2.2929509014e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.3496805552e-09,
+                  -1.1040609369e-09,
+                  0.0056647539339
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 53,
+          "step_time": 2.3370461111e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.7077544522e-09,
+                  -1.7617494743e-09,
+                  0.0057600891663
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 54,
+          "step_time": 2.3811413207e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.6684003029e-09,
+                  -2.7340948064e-09,
+                  0.0058580528055
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 55,
+          "step_time": 2.4252365304e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -9.3976938821e-10,
+                  -4.1834278094e-09,
+                  0.0059615345754
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 56,
+          "step_time": 2.46933174e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.8265956824e-10,
+                  -6.3417228929e-09,
+                  0.0060712232688
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 57,
+          "step_time": 2.5134269496e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.6510470984e-09,
+                  -9.5156573677e-09,
+                  0.0061857632611
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 58,
+          "step_time": 2.5575221593e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.6491400417e-09,
+                  -1.4085451674e-08,
+                  0.0063026085656
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 59,
+          "step_time": 2.6016173689e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.8244575273e-09,
+                  -2.05084329e-08,
+                  0.0064189938616
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 60,
+          "step_time": 2.6457125786e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.7395285587e-09,
+                  -2.9348689549e-08,
+                  0.006532538164
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 61,
+          "step_time": 2.6898077882e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.7294458855e-09,
+                  -4.1359052736e-08,
+                  0.0066413585362
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 62,
+          "step_time": 2.7339029979e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.0216144909e-09,
+                  -5.7633444952e-08,
+                  0.0067439309864
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 63,
+          "step_time": 2.7779982075e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.2203788243e-09,
+                  -7.9822398054e-08,
+                  0.0068390522823
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 64,
+          "step_time": 2.8220934171e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  9.1442474518e-09,
+                  -1.1036699054e-07,
+                  0.0069260722812
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 65,
+          "step_time": 2.8661886268e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.4443644559e-08,
+                  -1.5267276783e-07,
+                  0.0070052378711
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 66,
+          "step_time": 2.9102838364e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.6786551813e-08,
+                  -2.1113966054e-07,
+                  0.0070777735526
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 67,
+          "step_time": 2.9543790461e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  9.3865018119e-09,
+                  -2.9100762902e-07,
+                  0.0071453979404
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 68,
+          "step_time": 2.9984742557e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.4900939972e-08,
+                  -3.9807229943e-07,
+                  0.0072093143848
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 69,
+          "step_time": 3.0425694654e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -6.0632274873e-08,
+                  -5.3843892052e-07,
+                  0.0072691010187
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 70,
+          "step_time": 3.086664675e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.2757200994e-07,
+                  -7.1855310904e-07,
+                  0.0073220950003
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 71,
+          "step_time": 3.1307598846e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.1100916586e-07,
+                  -9.4569944014e-07,
+                  0.0073636795224
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 72,
+          "step_time": 3.1748550943e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.0547948362e-07,
+                  -1.2289510869e-06,
+                  0.0073884270557
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 73,
+          "step_time": 3.2189503039e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.1096987153e-07,
+                  -1.5802181189e-06,
+                  0.007391592752
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 74,
+          "step_time": 3.2630455136e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -5.3878981823e-07,
+                  -2.0147097461e-06,
+                  0.0073702669833
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 75,
+          "step_time": 3.3071407232e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -7.1350937981e-07,
+                  -2.5499991679e-06,
+                  0.0073237024405
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 76,
+          "step_time": 3.3512359329e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -9.6856695307e-07,
+                  -3.2031459256e-06,
+                  0.0072528066453
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 77,
+          "step_time": 3.3953311425e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.3362296062e-06,
+                  -3.9860404599e-06,
+                  0.0071592476488
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 78,
+          "step_time": 3.4394263521e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.8361965904e-06,
+                  -4.900106655e-06,
+                  0.0070447860147
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 79,
+          "step_time": 3.4835215618e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.4691788437e-06,
+                  -5.932311992e-06,
+                  0.006911230841
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 80,
+          "step_time": 3.5276167714e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.220518587e-06,
+                  -7.054568787e-06,
+                  0.0067609684746
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 81,
+          "step_time": 3.5717119811e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.0741334787e-06,
+                  -8.2276898292e-06,
+                  0.0065976163799
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 82,
+          "step_time": 3.6158071907e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -5.0307239144e-06,
+                  -9.4091452577e-06,
+                  0.0064262565827
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 83,
+          "step_time": 3.6599024004e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -6.1197820402e-06,
+                  -1.0561599336e-05,
+                  0.0062529556558
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 84,
+          "step_time": 3.70399761e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -7.3957881654e-06,
+                  -1.1657690352e-05,
+                  0.0060837132748
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 85,
+          "step_time": 3.7480928197e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -8.915998058e-06,
+                  -1.2676870474e-05,
+                  0.0059233221292
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 86,
+          "step_time": 3.7921880293e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.0707739512e-05,
+                  -1.3592853661e-05,
+                  0.0057746608645
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 87,
+          "step_time": 3.8362832389e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.2741622517e-05,
+                  -1.4354731409e-05,
+                  0.0056386697037
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 88,
+          "step_time": 3.8803784486e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.492783407e-05,
+                  -1.4869334826e-05,
+                  0.0055148632225
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 89,
+          "step_time": 3.9244736582e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.7143334371e-05,
+                  -1.4994539773e-05,
+                  0.0054019729367
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 90,
+          "step_time": 3.9685688679e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.9281480023e-05,
+                  -1.4550974487e-05,
+                  0.0052983406258
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 91,
+          "step_time": 4.0126640775e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.1300523962e-05,
+                  -1.3352724067e-05,
+                  0.0052019598367
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 92,
+          "step_time": 4.0567592872e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.324280778e-05,
+                  -1.1248258848e-05,
+                  0.0051103809964
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 93,
+          "step_time": 4.1008544968e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.5207193401e-05,
+                  -8.1550760827e-06,
+                  0.0050208252273
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 94,
+          "step_time": 4.1449497064e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.7280253964e-05,
+                  -4.0699647678e-06,
+                  0.0049306965388
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 95,
+          "step_time": 4.1890449161e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.9456158802e-05,
+                  9.5598428784e-07,
+                  0.0048383449935
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 96,
+          "step_time": 4.2331401257e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.1587397073e-05,
+                  6.8737037058e-06,
+                  0.0047436518972
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 97,
+          "step_time": 4.2772353354e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.3399288118e-05,
+                  1.3703027685e-05,
+                  0.0046479951381
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 98,
+          "step_time": 4.321330545e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.4571999686e-05,
+                  2.1578531634e-05,
+                  0.0045534511977
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 99,
+          "step_time": 4.3654257547e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.4857609082e-05,
+                  3.0745090624e-05,
+                  0.0044615348904
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 100,
+          "step_time": 4.4095209643e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.4175761931e-05,
+                  4.149149276e-05,
+                  0.0043720944836
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 101,
+          "step_time": 4.4536161739e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.263490933e-05,
+                  5.4038015833e-05,
+                  0.0042829588308
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 102,
+          "step_time": 4.4977113836e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.0459042887e-05,
+                  6.8419937541e-05,
+                  0.0041905653533
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 103,
+          "step_time": 4.5418065932e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.7848353941e-05,
+                  8.4420181834e-05,
+                  0.0040912860423
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 104,
+          "step_time": 4.5859018029e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.4841771664e-05,
+                  0.00010159190112,
+                  0.0039828071979
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 105,
+          "step_time": 4.6299970125e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.1256829082e-05,
+                  0.00011937695552,
+                  0.0038649142301
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 106,
+          "step_time": 4.6740922222e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.6749430452e-05,
+                  0.00013728179437,
+                  0.0037393795984
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 107,
+          "step_time": 4.7181874318e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.0976086378e-05,
+                  0.00015503846008,
+                  0.0036091368813
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 108,
+          "step_time": 4.7622826414e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.7840241914e-06,
+                  0.000172674055,
+                  0.0034772605558
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 109,
+          "step_time": 4.8063778511e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.6681896398e-06,
+                  0.00019044427938,
+                  0.0033462760822
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 110,
+          "step_time": 4.8504730607e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.3929618351e-05,
+                  0.00020864562201,
+                  0.003218026228
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 111,
+          "step_time": 4.8945682704e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.3418547299e-05,
+                  0.00022738152093,
+                  0.0030939288578
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 112,
+          "step_time": 4.93866348e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  3.2655566619e-05,
+                  0.00024639053044,
+                  0.0029752329524
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 113,
+          "step_time": 4.9827586897e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.1455053473e-05,
+                  0.00026502895383,
+                  0.0028629480945
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 114,
+          "step_time": 5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.4790893403e-05,
+                  0.00027205773955,
+                  0.002820901937
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "jobname": "beammix",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.310068
+    },
+    "mesh_statistics": {
+      "nodes": 77,
+      "elements": 2,
+      "equations": 1
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.5679315281e-14,
+                  0.0,
+                  5.9818195316e-16
+                ],
+                [
+                  4.6577901764e-08,
+                  2.8143269192e-06,
+                  2.0867239075e-05
+                ],
+                [
+                  3.129399529e-08,
+                  7.1676906046e-07,
+                  1.0562848736e-05
+                ],
+                [
+                  2.720557815e-15,
+                  5.1698788285e-26,
+                  8.0459217283e-16
+                ],
+                [
+                  -3.8114361474e-08,
+                  1.1402170967e-06,
+                  1.0076625536e-05
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.5271759571,
+                    0.0087670606262,
+                    -0.16097705825,
+                    0.074360435909,
+                    0.97343726435,
+                    -0.053228129168
+                  ]
+                },
+                {
+                  "element": 2,
+                  "s": [
+                    -0.04016254748,
+                    -0.017511426561,
+                    0.014807551534,
+                    -0.15222261774,
+                    -1.1686088133,
+                    -0.019189183038
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

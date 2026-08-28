@@ -1,0 +1,542 @@
+{
+  "meta": {
+    "jobname": "acou3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.682871
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 486
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 3021.2940598,
+          "frequency_rad_s": 54.96629931,
+          "frequency_hz": 8.7481582386
+        },
+        {
+          "mode_number": 2,
+          "eigenvalue": 13114.067978,
+          "frequency_rad_s": 114.51667118,
+          "frequency_hz": 18.225894284
+        },
+        {
+          "mode_number": 3,
+          "eigenvalue": 25210.50794,
+          "frequency_rad_s": 158.77817211,
+          "frequency_hz": 25.270330947
+        },
+        {
+          "mode_number": 4,
+          "eigenvalue": 27196.056759,
+          "frequency_rad_s": 164.91226989,
+          "frequency_hz": 26.246602929
+        },
+        {
+          "mode_number": 5,
+          "eigenvalue": 61794.639089,
+          "frequency_rad_s": 248.58527529,
+          "frequency_hz": 39.563575342
+        },
+        {
+          "mode_number": 6,
+          "eigenvalue": 73916.686054,
+          "frequency_rad_s": 271.87623297,
+          "frequency_hz": 43.270446386
+        },
+        {
+          "mode_number": 7,
+          "eigenvalue": 73916.686054,
+          "frequency_rad_s": 271.87623297,
+          "frequency_hz": 43.270446386
+        },
+        {
+          "mode_number": 8,
+          "eigenvalue": 75625.05165,
+          "frequency_rad_s": 275.00009391,
+          "frequency_hz": 43.767624297
+        },
+        {
+          "mode_number": 9,
+          "eigenvalue": 79310.849543,
+          "frequency_rad_s": 281.62182008,
+          "frequency_hz": 44.821504748
+        },
+        {
+          "mode_number": 10,
+          "eigenvalue": 79310.849543,
+          "frequency_rad_s": 281.62182008,
+          "frequency_hz": 44.821504748
+        },
+        {
+          "mode_number": 11,
+          "eigenvalue": 99516.295168,
+          "frequency_rad_s": 315.46203443,
+          "frequency_hz": 50.207342138
+        },
+        {
+          "mode_number": 12,
+          "eigenvalue": 99516.295168,
+          "frequency_rad_s": 315.46203443,
+          "frequency_hz": 50.207342138
+        },
+        {
+          "mode_number": 13,
+          "eigenvalue": 124108.02963,
+          "frequency_rad_s": 352.28969561,
+          "frequency_hz": 56.068646456
+        },
+        {
+          "mode_number": 14,
+          "eigenvalue": 132429.84234,
+          "frequency_rad_s": 363.90911275,
+          "frequency_hz": 57.91793413
+        },
+        {
+          "mode_number": 15,
+          "eigenvalue": 132429.84234,
+          "frequency_rad_s": 363.90911275,
+          "frequency_hz": 57.91793413
+        },
+        {
+          "mode_number": 16,
+          "eigenvalue": 148712.83298,
+          "frequency_rad_s": 385.6330289,
+          "frequency_hz": 61.37540277
+        },
+        {
+          "mode_number": 17,
+          "eigenvalue": 177716.58702,
+          "frequency_rad_s": 421.5644518,
+          "frequency_hz": 67.094066335
+        },
+        {
+          "mode_number": 18,
+          "eigenvalue": 177716.58702,
+          "frequency_rad_s": 421.5644518,
+          "frequency_hz": 67.094066335
+        },
+        {
+          "mode_number": 19,
+          "eigenvalue": 215522.78548,
+          "frequency_rad_s": 464.24431659,
+          "frequency_hz": 73.886777787
+        },
+        {
+          "mode_number": 20,
+          "eigenvalue": 234883.262,
+          "frequency_rad_s": 484.64756474,
+          "frequency_hz": 77.134055585
+        },
+        {
+          "mode_number": 21,
+          "eigenvalue": 234883.262,
+          "frequency_rad_s": 484.64756474,
+          "frequency_hz": 77.134055585
+        },
+        {
+          "mode_number": 22,
+          "eigenvalue": 247590.97412,
+          "frequency_rad_s": 497.58514259,
+          "frequency_hz": 79.193135052
+        },
+        {
+          "mode_number": 23,
+          "eigenvalue": 303533.92562,
+          "frequency_rad_s": 550.93913059,
+          "frequency_hz": 87.684685976
+        },
+        {
+          "mode_number": 24,
+          "eigenvalue": 303533.92562,
+          "frequency_rad_s": 550.93913059,
+          "frequency_hz": 87.684685976
+        },
+        {
+          "mode_number": 25,
+          "eigenvalue": 343175.16842,
+          "frequency_rad_s": 585.81154685,
+          "frequency_hz": 93.234803401
+        },
+        {
+          "mode_number": 26,
+          "eigenvalue": 374524.19782,
+          "frequency_rad_s": 611.98382154,
+          "frequency_hz": 97.40025029
+        },
+        {
+          "mode_number": 27,
+          "eigenvalue": 383450.80406,
+          "frequency_rad_s": 619.23404627,
+          "frequency_hz": 98.554159395
+        },
+        {
+          "mode_number": 28,
+          "eigenvalue": 383450.80406,
+          "frequency_rad_s": 619.23404627,
+          "frequency_hz": 98.554159395
+        },
+        {
+          "mode_number": 29,
+          "eigenvalue": 474634.68294,
+          "frequency_rad_s": 688.93735778,
+          "frequency_hz": 109.64778597
+        },
+        {
+          "mode_number": 30,
+          "eigenvalue": 474634.68294,
+          "frequency_rad_s": 688.93735778,
+          "frequency_hz": 109.64778597
+        }
+      ],
+      "total_effective_mass": {
+        "x": 6.4,
+        "y": 6.4,
+        "z": 7.8,
+        "rx": 139.13333333,
+        "ry": 139.13333333,
+        "rz": 4.2666666667
+      },
+      "fraction_of_totals": {
+        "x": 0.044855716799,
+        "y": 0.044855716799,
+        "z": 0.98961867917,
+        "rx": 0.14834301155,
+        "ry": 0.14834301155,
+        "rz": 0.27582487729
+      }
+    },
+    {
+      "step_number": 2,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 25,
+          "step_time": 0.025,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -9.1266485833e-20,
+                  0.0,
+                  3.6320337295e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 50,
+          "step_time": 0.05,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.9775783361e-19,
+                  0.0,
+                  0.00010211967621
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 75,
+          "step_time": 0.075,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.0431981637e-19,
+                  0.0,
+                  9.1527912426e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 100,
+          "step_time": 0.1,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.2917353538e-20,
+                  0.0,
+                  2.9184485809e-06
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 125,
+          "step_time": 0.125,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.0529024702e-20,
+                  0.0,
+                  -7.6624381504e-07
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 150,
+          "step_time": 0.15,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.2600220142e-19,
+                  0.0,
+                  7.4061041784e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 175,
+          "step_time": 0.175,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.4391665362e-19,
+                  0.0,
+                  0.00010205791691
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 200,
+          "step_time": 0.2,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.2248381441e-19,
+                  0.0,
+                  5.2450155475e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 225,
+          "step_time": 0.225,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.6975065415e-20,
+                  0.0,
+                  2.0692086975e-07
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 250,
+          "step_time": 0.25,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.5474160223e-19,
+                  0.0,
+                  2.3208041424e-05
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 275,
+          "step_time": 0.275,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.2352941706e-19,
+                  0.0,
+                  0.00010220660857
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 300,
+          "step_time": 0.3,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -3.1377092307e-19,
+                  0.0,
+                  0.00010096130209
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

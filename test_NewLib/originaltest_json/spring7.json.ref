@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "jobname": "spring7",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.006619
+    },
+    "mesh_statistics": {
+      "nodes": 2,
+      "elements": 1,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_RF": {
+              "set": "NALLN",
+              "field": "RF",
+              "nodes": [
+                1,
+                2
+              ],
+              "components": [
+                "fx",
+                "fy",
+                "fz"
+              ],
+              "values": [
+                [
+                  -20.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  20.0,
+                  0.0,
+                  0.0
+                ]
+              ],
+              "total": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

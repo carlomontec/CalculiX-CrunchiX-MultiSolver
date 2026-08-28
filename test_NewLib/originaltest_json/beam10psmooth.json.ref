@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "jobname": "beam10psmooth",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.042096
+    },
+    "mesh_statistics": {
+      "nodes": 164,
+      "elements": 67,
+      "equations": 258
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "jobname": "pret2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.00697
+    },
+    "mesh_statistics": {
+      "nodes": 65,
+      "elements": 2,
+      "equations": 18
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                14
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.01,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -13.283191605,
+                    1067.4141724,
+                    82.973845452,
+                    22.315837826,
+                    1.4790782778,
+                    -0.30171522819
+                  ]
+                },
+                {
+                  "element": 2,
+                  "s": [
+                    10.570602786,
+                    1055.6432202,
+                    -3.4032813329,
+                    3.9632244381,
+                    -0.10608980877,
+                    -0.053594384958
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

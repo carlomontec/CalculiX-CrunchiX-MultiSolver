@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "pendel",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 3.482079
+    },
+    "mesh_statistics": {
+      "nodes": 114,
+      "elements": 2,
+      "equations": 1
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "jobname": "pipempc3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.046354
+    },
+    "mesh_statistics": {
+      "nodes": 12,
+      "elements": 7,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.1,
+                  1.0,
+                  700.0
+                ],
+                [
+                  0.0375,
+                  0.99199,
+                  700.0
+                ],
+                [
+                  0.0125,
+                  0.99126391873,
+                  700.0
+                ],
+                [
+                  0.1,
+                  1.0,
+                  700.0
+                ],
+                [
+                  0.0375,
+                  0.995995,
+                  700.0
+                ],
+                [
+                  0.0125,
+                  0.99563195937,
+                  700.0
+                ],
+                [
+                  0.0375,
+                  0.99199,
+                  700.0
+                ],
+                [
+                  0.0125,
+                  0.99126391873,
+                  700.0
+                ],
+                [
+                  0.05,
+                  0.995,
+                  700.0
+                ],
+                [
+                  0.05,
+                  0.99,
+                  700.0
+                ],
+                [
+                  0.05,
+                  0.99,
+                  700.0
+                ],
+                [
+                  0.05,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

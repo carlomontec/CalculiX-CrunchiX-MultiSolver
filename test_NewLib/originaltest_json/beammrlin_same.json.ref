@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "beammrlin_same",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.023504
+    },
+    "mesh_statistics": {
+      "nodes": 275,
+      "elements": 34,
+      "equations": 411
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

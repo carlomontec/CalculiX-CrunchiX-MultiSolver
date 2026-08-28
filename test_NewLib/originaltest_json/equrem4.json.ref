@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "jobname": "equrem4",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.599681
+    },
+    "mesh_statistics": {
+      "nodes": 741,
+      "elements": 104,
+      "equations": 1230
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "DYNAMIC",
+      "converged": true
+    }
+  ]
+}

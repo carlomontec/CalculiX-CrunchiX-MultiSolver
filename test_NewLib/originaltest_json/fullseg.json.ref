@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "jobname": "fullseg",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 10.835985
+    },
+    "mesh_statistics": {
+      "nodes": 1013,
+      "elements": 160,
+      "equations": 5472
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 2.0420359811e-10,
+        "y": 2.0439930265e-10,
+        "z": 2.0439930265e-10,
+        "rx": 1.0206671716e-10,
+        "ry": 9.9695319287e-12,
+        "rz": 9.3333743594e-11
+      },
+      "fraction_of_totals": {
+        "x": 1.0,
+        "y": 0.91270397643,
+        "z": 0.87732785572,
+        "rx": 0.99998885638,
+        "ry": 0.77865842349,
+        "rz": 0.99703109141
+      }
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 2.04399305e-10,
+        "y": 2.0346099822e-10,
+        "z": 2.0346099822e-10,
+        "rx": 1.0193966161e-10,
+        "ry": 9.9662758159e-12,
+        "rz": 9.3220582219e-11
+      },
+      "fraction_of_totals": {
+        "x": 0.9628889834,
+        "y": 0.76724156967,
+        "z": 0.76724167757,
+        "rx": 0.93983849808,
+        "ry": 0.76127086658,
+        "rz": 0.97411860831
+      }
+    },
+    {
+      "step_number": 3,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 2.0326185685e-10,
+        "y": 2.0305368822e-10,
+        "z": 2.0305368822e-10,
+        "rx": 1.0159253941e-10,
+        "ry": 9.964568904e-12,
+        "rz": 9.2918608549e-11
+      },
+      "fraction_of_totals": {
+        "x": 0.8762439429,
+        "y": 0.74550565787,
+        "z": 0.62241521587,
+        "rx": 0.81220736962,
+        "ry": 0.7184677982,
+        "rz": 0.90863372532
+      }
+    }
+  ]
+}

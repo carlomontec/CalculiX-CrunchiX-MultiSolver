@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "mohr2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.152345
+    },
+    "mesh_statistics": {
+      "nodes": 20,
+      "elements": 1,
+      "equations": 4
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "jobname": "beamp3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.029126
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 33,
+      "equations": 720
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0
+        }
+      ]
+    }
+  ]
+}

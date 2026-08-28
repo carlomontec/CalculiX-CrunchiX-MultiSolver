@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "jobname": "beamptied5",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.719066
+    },
+    "mesh_statistics": {
+      "nodes": 282,
+      "elements": 32,
+      "equations": 705
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 8.32e-08,
+        "y": 8.32e-08,
+        "z": 8.32e-08,
+        "rx": 1.642875e-06,
+        "ry": 1.6098333333e-06,
+        "rz": 8.5908333333e-08
+      },
+      "fraction_of_totals": {
+        "x": 0.90070746419,
+        "y": 0.9134348361,
+        "z": 0.85439718262,
+        "rx": 0.85637249407,
+        "ry": 0.88571976812,
+        "rz": 0.9003948095
+      }
+    }
+  ]
+}

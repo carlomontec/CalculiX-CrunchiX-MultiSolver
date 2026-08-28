@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "jobname": "multistage",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 3.872054
+    },
+    "mesh_statistics": {
+      "nodes": 1196,
+      "elements": 140,
+      "equations": 5838
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 1.5437367239e-05,
+        "y": 1.5414621627e-05,
+        "z": 1.5414621627e-05,
+        "rx": 0.04016725025,
+        "ry": 0.051181646662,
+        "rz": 0.087470746933
+      },
+      "fraction_of_totals": {
+        "x": 0.74130598536,
+        "y": 0.89066303358,
+        "z": 0.7715293129,
+        "rx": 0.7684133497,
+        "ry": 0.39621270566,
+        "rz": 0.70024178935
+      }
+    },
+    {
+      "step_number": 2,
+      "type": "STEADY_STATE_DYNAMICS",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 0,
+          "step_time": 0.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NOUTN_U": {
+              "set": "NOUTN",
+              "field": "U",
+              "nodes": [
+                477,
+                940
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -8.2256194283e-06,
+                  -2.3500962689e-05,
+                  -5.1690827162e-05
+                ],
+                [
+                  -5.4810848143e-06,
+                  -8.1629666808e-06,
+                  -4.2846157346e-05
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

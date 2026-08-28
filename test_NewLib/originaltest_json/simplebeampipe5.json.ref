@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "simplebeampipe5",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.00884
+    },
+    "mesh_statistics": {
+      "nodes": 192,
+      "elements": 10,
+      "equations": 366
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

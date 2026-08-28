@@ -1,0 +1,115 @@
+{
+  "meta": {
+    "jobname": "beamtor",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.088952
+    },
+    "mesh_statistics": {
+      "nodes": 49,
+      "elements": 2,
+      "equations": 1
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -6.4967172945e-15,
+                  0.0,
+                  6.8074250731e-15
+                ],
+                [
+                  -1.5500160273e-07,
+                  2.036116368e-09,
+                  3.9627840336e-09
+                ],
+                [
+                  -7.7618390038e-08,
+                  5.0775552564e-10,
+                  9.8829077779e-10
+                ],
+                [
+                  -3.1092033353e-07,
+                  8.2449988884e-09,
+                  1.5551490918e-08
+                ],
+                [
+                  -2.3292158198e-07,
+                  4.6132081659e-09,
+                  8.8551896675e-09
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    0.068094506294,
+                    -0.031755218596,
+                    0.14232122262,
+                    -36.138433752,
+                    -58.196988216,
+                    1.4421513815
+                  ]
+                },
+                {
+                  "element": 2,
+                  "s": [
+                    0.027952226161,
+                    -0.33142983021,
+                    0.36171477242,
+                    -34.631313092,
+                    -59.123143599,
+                    0.30318369819
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

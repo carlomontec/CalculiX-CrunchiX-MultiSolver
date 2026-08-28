@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "jobname": "mpcforce",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.021035
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 719
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_RF": {
+              "set": "N1N",
+              "field": "RF",
+              "nodes": [
+                105,
+                129
+              ],
+              "components": [
+                "fx",
+                "fy",
+                "fz"
+              ],
+              "values": [
+                [
+                  -1.4405143745e-14,
+                  -8.3516527027e-14,
+                  25.778568062
+                ],
+                [
+                  -1.1514227072e-14,
+                  -7.3964445679e-13,
+                  -25.778568062
+                ]
+              ],
+              "total": [
+                -2.5919370816e-14,
+                -8.2316098382e-13,
+                -3.9079850467e-14
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
