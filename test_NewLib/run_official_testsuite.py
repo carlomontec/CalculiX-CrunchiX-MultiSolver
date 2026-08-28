@@ -32,6 +32,7 @@ import argparse
 import csv
 import datetime
 import fnmatch
+import json
 import os
 import platform
 import re
@@ -326,8 +327,9 @@ def run_single_test(task):
                         "detail": f"Input copy failed: {exc}",
                     }
 
-        # Execute the solver-specific binary without changing the input deck.
-        cmd = [str(bin_path), deck]
+        # Execute the solver-specific binary with -j / --json flag.
+        env["CCX_JSON"] = "1"
+        cmd = [str(bin_path), "-j", deck]
         t0 = time.perf_counter()
         try:
             proc = subprocess.run(
@@ -366,6 +368,26 @@ def run_single_test(task):
                 "detail": f"Exit {proc.returncode}",
                 "stdout": proc.stdout,
             }
+
+        # Verify JSON export
+        json_test = sandbox_path / f"{deck}.json"
+        if json_test.exists():
+            try:
+                with open(json_test, "r", encoding="utf-8") as jf:
+                    jdata = json.load(jf)
+                meta = jdata.get("meta", {})
+                timings = meta.get("timings", {})
+                if timings.get("total_wall_time_s"):
+                    elapsed = timings["total_wall_time_s"]
+            except Exception as je:
+                return {
+                    "deck": deck,
+                    "solver": solver_name,
+                    "status": "FAIL",
+                    "time": elapsed,
+                    "detail": f"JSON Export Corrupt: {je}",
+                    "stdout": proc.stdout,
+                }
 
         # Substructure format conversion
         if deck in ["substructure", "substructure2", "beammrlin_diff", "beammrlin_same"]:
@@ -668,227 +690,30 @@ def save_reports(decks, active_solvers, results, stats, output_dir, timestamp_fo
                     deck_row += "N/A | "
             f.write(deck_row + "\n")
 
-    plot_file = generate_plots(stats, active_solvers, output_dir, timestamp_formatted, baseline_solver)
-    return csv_file, md_file, plot_file
-
-
-# =============================================================================
-# Main Execution
-# =============================================================================
-
-def generate_plots(stats, solvers, output_dir, timestamp_str):
-    """Generate visual comparative benchmark dashboard with timestamps and SPOOLES delta."""
-    if not HAS_MATPLOTLIB:
-        return None
-
-    plot_file = output_dir / "solver_comparison.png"
-    solver_names = list(solvers)
-    has_spooles = "SPOOLES" in solver_names
-
-    total_runs = {
-        s: sum(stats[s][k] for k in ["PASS", "DIFF", "FAIL", "TIMEOUT", "ERROR"])
-        for s in solver_names
+    # 4. Write Structured JSON Report
+    json_file = output_dir / "results.json"
+    json_report = {
+        "metadata": {
+            "timestamp": timestamp_formatted,
+            "total_decks": total_decks,
+            "active_solvers": list(active_solvers),
+            "baseline_solver": baseline_solver if has_baseline else None,
+        },
+        "statistics": {
+            s: {
+                **stats[s],
+                "pass_rate_pct": round((stats[s]["PASS"] / total_decks * 100.0) if total_decks > 0 else 0.0, 2),
+            }
+            for s in active_solvers
+        },
+        "comparisons": solver_comparisons,
+        "results": results,
     }
-    pass_rates = [
-        (stats[s]["PASS"] / max(1, total_runs[s])) * 100.0 for s in solver_names
-    ]
-    total_times = [stats[s]["TOTAL_TIME"] for s in solver_names]
+    with open(json_file, "w", encoding="utf-8") as jf:
+        json.dump(json_report, jf, indent=2)
 
-    # Grid layout: 3 subplots if SPOOLES is present, 2 otherwise
-    cols = 3 if has_spooles else 2
-    fig, axes = plt.subplots(1, cols, figsize=(6 * cols, 5.2))
-    fig.suptitle(
-        f"CalculiX Multi-Solver Verification Benchmark\nRun Date: {timestamp_str}",
-        fontsize=13,
-        fontweight="bold",
-        y=0.98,
-    )
-
-    # 1. Absolute Pass Rate (%)
-    ax1 = axes[0]
-    colors1 = ["#2ecc71" if pr >= 98 else "#f39c12" if pr >= 90 else "#e74c3c" for pr in pass_rates]
-    bars1 = ax1.bar(solver_names, pass_rates, color=colors1, edgecolor="#2c3e50", width=0.5)
-    ax1.set_title("Verification Pass Rate (%)", fontsize=11, pad=10, fontweight="semibold")
-    ax1.set_ylabel("Pass Rate (%)")
-    ax1.set_ylim(0, 110)
-    ax1.grid(axis="y", linestyle="--", alpha=0.5)
-    for bar, val in zip(bars1, pass_rates):
-        ax1.text(bar.get_x() + bar.get_width() / 2, val + 1.5, f"{val:.1f}%", ha="center", va="bottom", fontweight="bold")
-
-    # 2. Relative Pass Rate vs SPOOLES Baseline
-    next_ax_idx = 1
-    if has_spooles:
-        ax_rel = axes[1]
-        spooles_idx = solver_names.index("SPOOLES")
-        spooles_pr = pass_rates[spooles_idx]
-        deltas = [pr - spooles_pr for pr in pass_rates]
-        rel_colors = ["#34495e" if s == "SPOOLES" else "#27ae60" if d >= 0 else "#e74c3c" for s, d in zip(solver_names, deltas)]
-
-        bars_rel = ax_rel.bar(solver_names, deltas, color=rel_colors, edgecolor="#2c3e50", width=0.5)
-        ax_rel.axhline(0, color="black", linewidth=1.2, linestyle="--")
-        ax_rel.set_title("Pass Rate Δ vs SPOOLES Baseline", fontsize=11, pad=10, fontweight="semibold")
-        ax_rel.set_ylabel("Percentage Points (Δ %)")
-        ax_rel.grid(axis="y", linestyle="--", alpha=0.5)
-
-        max_abs = max(abs(d) for d in deltas) if deltas else 5.0
-        ylim = max(5.0, max_abs * 1.3)
-        ax_rel.set_ylim(-ylim, ylim)
-
-        for bar, d, s in zip(bars_rel, deltas, solver_names):
-            label = "Baseline" if s == "SPOOLES" else f"{d:+.1f}%"
-            y_pos = d + (ylim * 0.05 if d >= 0 else -ylim * 0.12)
-            ax_rel.text(bar.get_x() + bar.get_width() / 2, y_pos, label, ha="center", va="bottom", fontweight="bold")
-        next_ax_idx = 2
-
-    # 3. Cumulative Execution Time & Speedup
-    ax_time = axes[next_ax_idx]
-    bars_time = ax_time.bar(solver_names, total_times, color="#3498db", edgecolor="#2c3e50", width=0.5)
-    ax_time.set_title("Cumulative Suite Wall Time (s)", fontsize=11, pad=10, fontweight="semibold")
-    ax_time.set_ylabel("Total Time (s)")
-    ax_time.grid(axis="y", linestyle="--", alpha=0.5)
-
-    spooles_time = stats.get("SPOOLES", {}).get("TOTAL_TIME", 0.0) if has_spooles else 0.0
-    for bar, t, s in zip(bars_time, total_times, solver_names):
-        speedup_label = ""
-        if has_spooles and spooles_time > 0 and t > 0:
-            speedup = spooles_time / t
-            speedup_label = f"\n({speedup:.2f}x)" if s != "SPOOLES" else "\n(1.0x)"
-        ax_time.text(
-            bar.get_x() + bar.get_width() / 2,
-            t + max(total_times) * 0.02,
-            f"{t:.1f}s{speedup_label}",
-            ha="center",
-            va="bottom",
-            fontweight="bold",
-        )
-
-    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.savefig(plot_file, dpi=180)
-    plt.close()
-    return plot_file
-
-
-def save_reports(decks, active_solvers, results, stats, output_dir, timestamp_formatted):
-    """Write CSV, Markdown summary reports with baseline comparisons, and plot files."""
-    output_dir.mkdir(parents=True, exist_ok=True)
-    csv_file = output_dir / "results.csv"
-    md_file = output_dir / "summary.md"
-    solver_names = list(active_solvers)
-
-    # 1. Write Semicolon-Delimited CSV
-    fieldnames = ["Deck"]
-    for s in solver_names:
-        fieldnames.extend([f"{s}_Status", f"{s}_Time_s", f"{s}_Detail"])
-
-    with open(csv_file, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, delimiter=";")
-        writer.writerow(fieldnames)
-        for d in decks:
-            row = [d]
-            for s in solver_names:
-                res = results[d].get(s, {})
-                row.append(res.get("status", "N/A"))
-                row.append(f"{res.get('time', 0.0):.2f}" if "time" in res else "N/A")
-                row.append(res.get("detail", ""))
-            writer.writerow(row)
-
-    total_decks = len(decks)
-    has_spooles = "SPOOLES" in active_solvers
-    spooles_pass_rate = (stats["SPOOLES"]["PASS"] / total_decks * 100.0) if (has_spooles and total_decks > 0) else None
-    spooles_time = stats.get("SPOOLES", {}).get("TOTAL_TIME", 0.0) if has_spooles else 0.0
-
-    # 2. Compute Progression / Regression Stats vs SPOOLES
-    solver_comparisons = {}
-    if has_spooles:
-        for s in active_solvers:
-            if s == "SPOOLES":
-                continue
-            fixes = 0
-            regressions = 0
-            for d in decks:
-                sp_st = results[d].get("SPOOLES", {}).get("status", "N/A")
-                cur_st = results[d].get(s, {}).get("status", "N/A")
-                if sp_st != "PASS" and cur_st == "PASS":
-                    fixes += 1
-                elif sp_st == "PASS" and cur_st != "PASS":
-                    regressions += 1
-            solver_comparisons[s] = {"fixes": fixes, "regressions": regressions}
-
-    # 3. Write Markdown Summary
-    with open(md_file, "w", encoding="utf-8") as f:
-        f.write("# CalculiX Multi-Solver Verification Report\n\n")
-        f.write(f"- **Execution Timestamp:** {timestamp_formatted}\n")
-        f.write(f"- **Total Test Decks:** {total_decks}\n")
-        f.write(f"- **Reference Solver:** `{'SPOOLES' if has_spooles else 'None (SPOOLES not selected)'}`\n\n")
-
-        # Visual Plot Section
-        if HAS_MATPLOTLIB:
-            f.write("## 📊 Performance & Accuracy Overview\n\n")
-            f.write("![Benchmark Overview](./solver_comparison.png)\n\n")
-
-        # Overall Status Matrix
-        f.write("## 📋 Solver Aggregate Matrix\n\n")
-        f.write("| Solver | Pass | Diff | Fail | Timeout | Error | Pass Rate (%) | Total Time (s) |\n")
-        f.write("| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
-
-        for s in active_solvers:
-            st = stats[s]
-            pass_rate = (st["PASS"] / total_decks * 100.0) if total_decks > 0 else 0.0
-            badge = "🟢" if pass_rate >= 98.0 else ("🟡" if pass_rate >= 90.0 else "🔴")
-            f.write(
-                f"| **{s}** | {st['PASS']} | {st['DIFF']} | {st['FAIL']} | {st['TIMEOUT']} | "
-                f"{st['ERROR']} | {badge} **{pass_rate:.1f}%** | {st['TOTAL_TIME']:.2f}s |\n"
-            )
-
-        # Baseline Comparison Breakdown (if SPOOLES was run)
-        if has_spooles:
-            f.write("\n## 🔍 Solver Progression vs SPOOLES Baseline\n\n")
-            f.write("| Solver | Pass Rate Δ | Speedup Factor | Time Saved (s) | Fixes (vs SPOOLES Fail) | Regressions (vs SPOOLES Pass) |\n")
-            f.write("| :--- | :---: | :---: | :---: | :---: | :---: |\n")
-
-            for s in active_solvers:
-                st = stats[s]
-                pass_rate = (st["PASS"] / total_decks * 100.0) if total_decks > 0 else 0.0
-
-                if s == "SPOOLES":
-                    f.write(f"| **SPOOLES** *(Ref)* | `Baseline` (0.0%) | 1.00x | 0.00s | — | — |\n")
-                else:
-                    diff_val = pass_rate - spooles_pass_rate
-                    if diff_val > 0:
-                        delta_str = f"📈 **+{diff_val:.1f}%**"
-                    elif diff_val < 0:
-                        delta_str = f"📉 **{diff_val:.1f}%**"
-                    else:
-                        delta_str = "⚖️ **0.0%**"
-
-                    speedup = (spooles_time / st["TOTAL_TIME"]) if st["TOTAL_TIME"] > 0 else 0.0
-                    time_saved = spooles_time - st["TOTAL_TIME"]
-                    saved_str = f"+{time_saved:.2f}s" if time_saved >= 0 else f"{time_saved:.2f}s"
-
-                    comp = solver_comparisons[s]
-                    f.write(
-                        f"| **{s}** | {delta_str} | **{speedup:.2f}x** | {saved_str} | "
-                        f"✅ {comp['fixes']} tests | ❌ {comp['regressions']} tests |\n"
-                    )
-
-        # Detailed Test Deck Table
-        f.write("\n## 🧪 Detailed Test Deck Matrix\n\n")
-        f.write("| Test Deck | " + " | ".join([f"{s} Status" for s in active_solvers]) + " |\n")
-        f.write("| :--- | " + " | ".join([":---:" for _ in active_solvers]) + " |\n")
-
-        for d in decks:
-            deck_row = f"| `{d}` | "
-            for s in active_solvers:
-                res = results[d].get(s)
-                if res:
-                    icon = "✅" if res["status"] == "PASS" else ("⚠️" if res["status"] == "DIFF" else "❌")
-                    deck_row += f"{icon} {res['status']} ({res['time']:.2f}s) | "
-                else:
-                    deck_row += "N/A | "
-            f.write(deck_row + "\n")
-
-    plot_file = generate_plots(stats, active_solvers, output_dir, timestamp_formatted)
-    return csv_file, md_file, plot_file
+    plot_file = generate_plots(stats, active_solvers, output_dir, timestamp_formatted, baseline_solver)
+    return csv_file, md_file, json_file, plot_file
 
 
 def main():
@@ -1079,17 +904,19 @@ def main():
     now = datetime.datetime.now()
     timestamp_folder = now.strftime("%Y_%m_%d_%H_%M")
     timestamp_formatted = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    base_results_dir = Path(args.output_dir) if args.output_dir else (CCX_DIR.parent / f"{CCX_DIR.name}_testsuite_results")
+    base_results_dir = Path(args.output_dir) if args.output_dir else (CCX_DIR / "test_NewLib" / "testsuite_results")
     run_output_dir = base_results_dir / timestamp_folder
 
-    csv_path, md_path, plot_path = save_reports(
-        decks, active_solvers.keys(), results, stats, run_output_dir, timestamp_formatted
+    baseline_solver = "SPOOLES" if "SPOOLES" in active_solvers else (next(iter(active_solvers.keys())) if active_solvers else None)
+
+    csv_path, md_path, json_path, plot_path = save_reports(
+        decks, active_solvers.keys(), results, stats, run_output_dir, timestamp_formatted, baseline_solver
     )
 
     print(f"\n[+] Results generated successfully in {run_output_dir}:")
     print(f"    - CSV     : {csv_path.name}")
     print(f"    - MD      : {md_path.name}")
+    print(f"    - JSON    : {json_path.name}")
     if plot_path:
         print(f"    - Chart   : {plot_path.name}")
     print("")

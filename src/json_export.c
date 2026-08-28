@@ -114,6 +114,9 @@ void json_set_meta_stats(ITG *nk, ITG *ne, ITG *neq, ITG num_cpus) {
   if (num_cpus > 0) g_num_cpus = num_cpus;
 }
 
+static ITG g_last_iinc = -1;
+static int g_step_has_increments = 0;
+
 void json_start_step(ITG istep, const char *step_type) {
   if (!g_json_active) return;
 
@@ -131,6 +134,8 @@ void json_start_step(ITG istep, const char *step_type) {
 
   g_current_step_open = 1;
   g_current_inc_open = 0;
+  g_step_has_increments = 0;
+  g_last_iinc = -1;
   g_has_modes = 0;
   g_has_buckling = 0;
   g_has_node_sets = 0;
@@ -142,12 +147,18 @@ void json_end_step(ITG istep) {
   if (!g_json_active || !g_current_step_open) return;
 
   if (g_current_inc_open) {
-    buf_append(&g_steps_buf, "\n        }\n      ]");
+    buf_append(&g_steps_buf, "\n        }");
     g_current_inc_open = 0;
+  }
+
+  if (g_step_has_increments) {
+    buf_append(&g_steps_buf, "\n      ]");
+    g_step_has_increments = 0;
   }
 
   buf_append(&g_steps_buf, "\n    }");
   g_current_step_open = 0;
+  g_last_iinc = -1;
 }
 
 void json_export_eigenvalues(double *d, ITG nev, double fmin, double fmax) {
@@ -230,8 +241,6 @@ static void clean_name(char *dst, const char *src, size_t maxlen) {
   dst[i] = '\0';
 }
 
-static ITG g_last_iinc = -1;
-
 void json_export_results(double *v, double *fn, double *stx, double *stn,
                          double *een, double *ener, double *energy,
                          char *prlab, char *prset, ITG nprint,
@@ -248,10 +257,11 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
   }
 
   if (!g_current_inc_open) {
-    if (g_last_iinc >= 0 && g_last_iinc != iinc) {
+    if (g_step_has_increments) {
       buf_append(&g_steps_buf, ",\n        {\n");
     } else {
       buf_append(&g_steps_buf, ",\n      \"increments\": [\n        {\n");
+      g_step_has_increments = 1;
     }
     buf_printf(&g_steps_buf, "          \"increment_number\": %d,\n", (int)iinc);
     buf_printf(&g_steps_buf, "          \"step_time\": %.10e,\n", time);

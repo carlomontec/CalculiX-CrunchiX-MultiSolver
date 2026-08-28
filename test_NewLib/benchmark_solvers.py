@@ -12,8 +12,7 @@ import os
 import re
 import shutil
 import subprocess
-import sys
-import time
+import json
 from pathlib import Path
 
 # Base paths
@@ -113,104 +112,72 @@ def ensure_mesh(cgx_bin):
     return True
 
 
-def parse_dat_table(dat_file, heading, value_count):
-    """Read numeric rows from the final CalculiX text-output table."""
-    if not dat_file.exists():
-        return []
-    try:
-        lines = dat_file.read_text(errors="ignore").splitlines()
-    except OSError:
-        return []
+def parse_json_metrics(json_file, is_modal=False):
+    """Read physics and system metrics directly from CalculiX JSON export."""
+    if not json_file.exists():
+        raise FileNotFoundError(f"Required JSON export file missing: {json_file.name}")
 
-    table_start = None
-    for index, line in enumerate(lines):
-        if heading.lower() in line.lower():
-            table_start = index
-    if table_start is None:
-        return []
+    with open(json_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
-    records = []
-    for line in lines[table_start + 1:]:
-        if line.strip() and not re.match(r"\s*(?:\d+|[-+]?\d)", line):
-            if records:
-                break
-            continue
-        numbers = re.findall(RESULT_NUMBER, line)
-        if len(numbers) >= value_count + 1:
-            records.append([float(value) for value in numbers[1:value_count + 1]])
-    return records
+    meta = data.get("meta", {})
+    timings = meta.get("timings", {})
+    stats = meta.get("mesh_statistics", {})
+    steps = data.get("steps", [])
+    step1 = steps[0] if steps else {}
 
+    ccx_time = timings.get("total_wall_time_s", 0.0)
+    num_eqs = stats.get("equations")
+    num_nodes = stats.get("nodes")
+    num_elements = stats.get("elements")
 
-def parse_eigenvalue_table(dat_file):
-    """Read eigenvalue records from .dat file."""
-    if not dat_file.exists():
-        return []
-    try:
-        lines = dat_file.read_text(errors="ignore").splitlines()
-    except OSError:
-        return []
-
-    table_start = None
-    for index, line in enumerate(lines):
-        if "e i g e n v a l u e   o u t p u t" in line.lower():
-            table_start = index
-            break
-    if table_start is None:
-        return []
-
-    modes = []
-    for line in lines[table_start + 1:]:
-        line_clean = line.strip()
-        if not line_clean:
-            if modes:
-                break
-            continue
-        if any(h in line_clean.lower() for h in ["mode no", "frequency", "rad/time", "cycles/time", "participation"]):
-            if "participation" in line_clean.lower() and modes:
-                break
-            continue
-        numbers = re.findall(RESULT_NUMBER, line_clean)
-        if len(numbers) >= 4:
-            mode_idx = int(float(numbers[0]))
-            eigenvalue = float(numbers[1])
-            omega = float(numbers[2])
-            freq_hz = float(numbers[3])
-            modes.append({
-                "mode": mode_idx,
-                "eigenvalue": eigenvalue,
-                "omega": omega,
-                "freq_hz": freq_hz,
-            })
-    return modes
-
-
-def parse_result_metrics(dat_file, is_modal=False):
-    """Extract physics metrics for verification."""
     if is_modal:
-        modes = parse_eigenvalue_table(dat_file)
+        modes = step1.get("modes", [])
         mode1 = modes[0] if modes else None
         return {
+            "time": ccx_time,
+            "equations": num_eqs,
+            "nodes": num_nodes,
+            "elements": num_elements,
             "modes": modes,
-            "mode_1_freq_hz": mode1["freq_hz"] if mode1 else None,
-            "mode_1_omega": mode1["omega"] if mode1 else None,
+            "mode_1_freq_hz": mode1["frequency_hz"] if mode1 else None,
+            "mode_1_omega": mode1["frequency_rad_s"] if mode1 else None,
+            "total_effective_mass": step1.get("total_effective_mass"),
+            "fraction_of_totals": step1.get("fraction_of_totals"),
             "max_displacement": None,
             "max_von_mises": None,
         }
     else:
-        displacements = parse_dat_table(dat_file, "displacements", 3)
-        stresses = parse_dat_table(dat_file, "stresses", 6)
-        max_displacement = max(
-            (sum(component * component for component in values) ** 0.5 for values in displacements),
-            default=None,
-        )
+        increments = step1.get("increments", [])
+        inc_last = increments[-1] if increments else {}
+        node_sets = inc_last.get("node_sets", {})
+        elem_sets = inc_last.get("element_sets", {})
+
+        max_displacement = None
+        for nset_key, nset_val in node_sets.items():
+            if nset_val.get("field") == "U":
+                vals = nset_val.get("values", [])
+                if vals:
+                    disp_norms = [(u1**2 + u2**2 + u3**2)**0.5 for u1, u2, u3 in vals]
+                    max_d = max(disp_norms)
+                    max_displacement = max(max_displacement or 0.0, max_d)
+
         max_von_mises = None
-        for sxx, syy, szz, sxy, syz, szx in stresses:
-            von_mises = (
-                0.5 * ((sxx - syy) ** 2 + (syy - szz) ** 2 + (szz - sxx) ** 2)
-                + 3.0 * (sxy ** 2 + syz ** 2 + szx ** 2)
-            ) ** 0.5
-            max_von_mises = max(max_von_mises or 0.0, von_mises)
+        for eset_key, eset_val in elem_sets.items():
+            if eset_val.get("field") == "S":
+                vals = eset_val.get("values", [])
+                for item in vals:
+                    s = item.get("s", [])
+                    if len(s) >= 6:
+                        sxx, syy, szz, sxy, syz, szx = s[:6]
+                        vm = (0.5 * ((sxx - syy)**2 + (syy - szz)**2 + (szz - sxx)**2) + 3.0 * (sxy**2 + syz**2 + szx**2))**0.5
+                        max_von_mises = max(max_von_mises or 0.0, vm)
+
         return {
+            "time": ccx_time,
+            "equations": num_eqs,
+            "nodes": num_nodes,
+            "elements": num_elements,
             "modes": [],
             "mode_1_freq_hz": None,
             "mode_1_omega": None,
@@ -220,15 +187,24 @@ def parse_result_metrics(dat_file, is_modal=False):
 
 
 def run_solver(solver_name, bin_path, deck_name, is_modal, threads, custom_env):
-    """Run a single solver execution and parse metrics."""
+    """Run a single solver execution and parse metrics directly from JSON export."""
     env = os.environ.copy()
     env["OMP_NUM_THREADS"] = str(threads)
     env["MKL_NUM_THREADS"] = str(threads)
     env["CCX_NPROC_EQUATION_SOLVER"] = str(threads)
     env["VECLIB_MAXIMUM_THREADS"] = str(threads)
+    env["CCX_JSON"] = "1"
     env.update(custom_env)
 
-    cmd = [str(bin_path), deck_name]
+    # Clean previous JSON artifact if present
+    json_path = TEST_DIR / f"{deck_name}.json"
+    if json_path.exists():
+        try:
+            json_path.unlink()
+        except OSError:
+            pass
+
+    cmd = [str(bin_path), "-j", deck_name]
     t0 = time.perf_counter()
     try:
         proc = subprocess.run(
@@ -250,24 +226,34 @@ def run_solver(solver_name, bin_path, deck_name, is_modal, threads, custom_env):
     if proc.returncode != 0:
         return {"success": False, "error": f"Exit code {proc.returncode}", "output": output, "time": None}
 
-    # Parse CCX internal metrics
-    eq_match = re.search(r"number of equations\s*\n\s*(\d+)", output)
-    nz_match = re.search(r"number of nonzero lower triangular matrix elements\s*\n\s*(\d+)", output)
-    time_match = re.search(r"Total CalculiX Time:\s*([\d\.]+)", output)
+    if not json_path.exists():
+        return {
+            "success": False,
+            "error": f"Missing expected JSON export: {json_path.name}",
+            "time": None,
+            "output": output,
+        }
 
-    ccx_time = float(time_match.group(1)) if time_match else elapsed
-    num_eqs = int(eq_match.group(1)) if eq_match else None
-    num_nzs = int(nz_match.group(1)) if nz_match else None
+    try:
+        metrics = parse_json_metrics(json_path, is_modal=is_modal)
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"JSON parse failure: {e}",
+            "time": None,
+            "output": output,
+        }
 
-    result_metrics = parse_result_metrics(TEST_DIR / f"{deck_name}.dat", is_modal=is_modal)
+    # Clean up generated JSON after successful extraction
+    try:
+        json_path.unlink()
+    except OSError:
+        pass
 
     return {
         "success": True,
-        "time": ccx_time,
         "wall_time": elapsed,
-        "equations": num_eqs,
-        "nonzeros": num_nzs,
-        **result_metrics,
+        **metrics,
         "output": output,
     }
 
