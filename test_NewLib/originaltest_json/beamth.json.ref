@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "jobname": "beamth",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.666247
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 219
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 10,
+          "step_time": 0.07588671875,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  20.0
+                ],
+                [
+                  77.503477823
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 20,
+          "step_time": 4.4326756401,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  20.0
+                ],
+                [
+                  94.971123107
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 23,
+          "step_time": 10.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  20.0
+                ],
+                [
+                  94.999447833
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

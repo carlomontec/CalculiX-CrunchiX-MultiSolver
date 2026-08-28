@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "jobname": "sens_freq_disp_cyc_implicit",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 2.113085
+    },
+    "mesh_statistics": {
+      "nodes": 1001,
+      "elements": 624,
+      "equations": 5592
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 3.6355095056e-05,
+        "y": 3.7017869657e-05,
+        "z": 3.7462515615e-05,
+        "rx": 0.54497750186,
+        "ry": 0.5422019277,
+        "rz": 0.0058177377508
+      },
+      "fraction_of_totals": {
+        "x": 0.28806573155,
+        "y": 0.34047042819,
+        "z": 0.0016357499215,
+        "rx": 0.67347150567,
+        "ry": 0.62828793416,
+        "rz": 0.46896873106
+      }
+    },
+    {
+      "step_number": 3,
+      "type": "SENSITIVITY",
+      "converged": true
+    }
+  ]
+}

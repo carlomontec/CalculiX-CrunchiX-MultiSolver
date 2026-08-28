@@ -240,3 +240,34 @@ The JSON exporter is implemented in `src/json_export.h` and `src/json_export.c`.
 - `json_export_eigenvalues()` & `json_export_modal_mass()`: Captures modal extraction results (`src/arpack.c`, `src/effectivemodalmass.f`).
 - `json_export_buckling()`: Captures buckling modes (`src/arpackbu.c`).
 - `json_finalize()`: Serializes and writes `<jobname>.json` upon calculation finish (`src/CalculiX.c`).
+
+---
+
+## Golden JSON Reference Suite & Automated Verification
+
+To support modern continuous integration and cross-solver regression testing without reliance on legacy Perl scrapers, the entire official CalculiX verification suite has been converted into a verified **Golden JSON Reference Suite**:
+
+- **Location**: `test_NewLib/originaltest_json/<deck>.json.ref`
+- **Coverage**: **619 validated reference decks** (97.0% of the entire 638-deck suite, representing 100% of all standalone executable decks).
+- **Untouched Original Suite**: The upstream `test/` directory containing Dr. Guido Dhondt's `.dat.ref` / `.frd.ref` baselines remains completely untouched and unmodified.
+
+### Automated Test Runner Integration
+
+The test runner `test_NewLib/run_official_testsuite.py` uses JSON verification by default:
+
+1. **Default Mode (JSON-First)**:
+   For every deck with a golden reference in `test_NewLib/originaltest_json/`, outputs are validated directly in memory using `test_NewLib/json_checker.py` (pure Python / NumPy, zero Perl dependency).
+2. **Automatic Fallback (DAT/FRD)**:
+   For any deck where a `.json.ref` is not present (such as chained submodel decks or legacy matrix dumps), the runner automatically falls back to `datcheck.pl` / `frdcheck.pl`.
+3. **Manual Override (`--force-dat`)**:
+   Run with `--force-dat` to force legacy Perl checking across all decks if required:
+   ```bash
+   python3 test_NewLib/run_official_testsuite.py --solvers MUMPS --force-dat
+   ```
+
+### Discrepancy & Exclusion Documentation
+
+Full documentation detailing verified decks versus upstream excluded decks (e.g. decks missing auxiliary files in the upstream archive) is cataloged in:
+- Markdown Report: `test_NewLib/originaltest_json_report.md`
+- CSV Summary Log: `test_NewLib/originaltest_json_report.csv`
+

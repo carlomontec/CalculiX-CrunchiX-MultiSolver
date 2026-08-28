@@ -90,6 +90,16 @@ except ImportError:
 # Resolve the repository from this script so invocation is independent of cwd.
 CCX_DIR = Path(__file__).resolve().parent.parent
 TEST_DIR = CCX_DIR / "test"
+JSON_REF_DIR = Path(__file__).resolve().parent / "originaltest_json"
+
+# Import pure-Python JSON validator
+try:
+    from json_checker import compare_files as json_compare_files
+except ImportError:
+    try:
+        from test_NewLib.json_checker import compare_files as json_compare_files
+    except ImportError:
+        json_compare_files = None
 
 # Available Solver Binaries
 EXE_NAME = "CalculiX.exe" if sys.platform in ("win32", "msys", "cygwin") or os.name == "nt" else "CalculiX"
@@ -300,7 +310,11 @@ def run_checker(command, cwd, timeout):
 
 def run_single_test(task):
     """Execute a single (deck, solver) job in an isolated sandbox."""
-    deck, solver_name, bin_path, threads, custom_env, timeout = task
+    if len(task) == 7:
+        deck, solver_name, bin_path, threads, custom_env, timeout, force_dat = task
+    else:
+        deck, solver_name, bin_path, threads, custom_env, timeout = task
+        force_dat = False
 
     env = os.environ.copy()
     env["OMP_NUM_THREADS"] = str(threads)
@@ -389,6 +403,33 @@ def run_single_test(task):
                     "stdout": proc.stdout,
                 }
 
+        # ---------------------------------------------------------------------
+        # 1. Primary Verification: Pure Python JSON Comparison (if reference exists)
+        # ---------------------------------------------------------------------
+        json_ref = JSON_REF_DIR / f"{deck}.json.ref"
+        if not force_dat and json_ref.exists() and json_test.exists() and json_compare_files:
+            j_status, j_detail, j_err = json_compare_files(json_test, json_ref, rel_tol=1e-3, abs_tol=1e-8)
+            if j_status == "PASS":
+                return {
+                    "deck": deck,
+                    "solver": solver_name,
+                    "status": "PASS",
+                    "time": elapsed,
+                    "detail": "JSON Verified",
+                }
+            elif j_status == "DIFF":
+                return {
+                    "deck": deck,
+                    "solver": solver_name,
+                    "status": "DIFF",
+                    "time": elapsed,
+                    "detail": f"JSON DIFF ({j_detail})",
+                }
+            # If j_status is UNVERIFIED/FAIL, fall through to legacy check
+
+        # ---------------------------------------------------------------------
+        # 2. Fallback Verification: Legacy Perl DAT/FRD Checkers
+        # ---------------------------------------------------------------------
         # Substructure format conversion
         if deck in ["substructure", "substructure2", "beammrlin_diff", "beammrlin_same"]:
             mtx_f = sandbox_path / f"{deck}.mtx"
@@ -466,7 +507,7 @@ def run_single_test(task):
             detail = f"FRD DIFF ({err_line})" if err_line else "FRD DIFF"
         else:
             status = "PASS"
-            detail = "OK"
+            detail = "DAT Verified"
 
         return {
             "deck": deck,
@@ -729,6 +770,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit total number of decks to test")
     parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory base (default: sibling of repository)")
     parser.add_argument("--custom-bin", type=str, default=None, help="Add a user-supplied CCX binary as the CUSTOM solver")
+    parser.add_argument("--force-dat", action="store_true", help="Force legacy DAT/FRD checking via Perl instead of JSON references")
     args = parser.parse_args()
 
     ensure_test_suite()
@@ -814,10 +856,13 @@ def main():
     threads_per_job = max(1, args.threads_per_job)
     max_workers = args.max_workers or max(1, cpu_count // threads_per_job)
 
+    mode_str = "Legacy Perl (DAT/FRD)" if args.force_dat else "JSON-First (with DAT/FRD Fallback)"
+
     print("=" * 80)
     print(" CalculiX Multi-Solver Official Verification Suite")
     print("=" * 80)
     print(f" Test Decks       : {len(decks)} discovered in test/")
+    print(f" Verification Mode: {mode_str}")
     print(f" Active Solvers   : {', '.join(active_solvers.keys())}")
     print(f" Threads / Job    : {threads_per_job}")
     print(f" Parallel Workers : {max_workers} concurrent processes")
@@ -831,7 +876,7 @@ def main():
     tasks = []
     for d in decks:
         for sname, sinfo in active_solvers.items():
-            tasks.append((d, sname, sinfo["bin"], threads_per_job, sinfo["env"], args.timeout))
+            tasks.append((d, sname, sinfo["bin"], threads_per_job, sinfo["env"], args.timeout, args.force_dat))
 
     results = {d: {} for d in decks}
     completed_count = 0

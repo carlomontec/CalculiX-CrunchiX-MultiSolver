@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "jobname": "branchliquid",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.091973
+    },
+    "mesh_statistics": {
+      "nodes": 10,
+      "elements": 6,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.0,
+                  104661.00407,
+                  0.0
+                ],
+                [
+                  1.0,
+                  104661.00407,
+                  0.0
+                ],
+                [
+                  1.0,
+                  102330.65479,
+                  0.0
+                ],
+                [
+                  1.0,
+                  100000.3055,
+                  0.0
+                ],
+                [
+                  0.701872647,
+                  100000.15275,
+                  0.0
+                ],
+                [
+                  0.701872647,
+                  100000.0,
+                  0.0
+                ],
+                [
+                  0.701872647,
+                  100000.0,
+                  0.0
+                ],
+                [
+                  0.298127353,
+                  100000.15275,
+                  0.0
+                ],
+                [
+                  0.298127353,
+                  100000.0,
+                  0.0
+                ],
+                [
+                  0.298127353,
+                  100000.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

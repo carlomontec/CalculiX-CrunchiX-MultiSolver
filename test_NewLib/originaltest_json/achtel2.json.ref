@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "jobname": "achtel2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.016009
+    },
+    "mesh_statistics": {
+      "nodes": 180,
+      "elements": 8,
+      "equations": 285
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "SET1N_U": {
+              "set": "SET1N",
+              "field": "U",
+              "nodes": [
+                1,
+                180
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.00010776672943,
+                  -0.0003545449457,
+                  0.00079276790848
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "SET2E_S": {
+              "set": "SET2E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -2.6001674582,
+                    -2.6001674582,
+                    3.6253183397,
+                    3.0625899464,
+                    1.358358382,
+                    1.358358382
+                  ]
+                },
+                {
+                  "element": 8,
+                  "s": [
+                    11.256066804,
+                    11.256066804,
+                    16.776759234,
+                    2.9299794003,
+                    10.000728626,
+                    10.000728626
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "jobname": "dashpot2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.331994
+    },
+    "mesh_statistics": {
+      "nodes": 10,
+      "elements": 3,
+      "equations": 8
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 160249324300.0,
+          "frequency_rad_s": 400311.53406,
+          "frequency_hz": 63711.559422
+        }
+      ],
+      "total_effective_mass": {
+        "x": 6.24e-11,
+        "y": 0.0,
+        "z": 0.0,
+        "rx": 0.0,
+        "ry": 2.08e-13,
+        "rz": 2.08e-13
+      },
+      "fraction_of_totals": {
+        "x": 0.99999999935,
+        "y": 1.0,
+        "z": 1.0,
+        "rx": 1.0,
+        "ry": 2.4291230218e-32,
+        "rz": 4.8017560894e-33
+      }
+    },
+    {
+      "step_number": 2,
+      "type": "STEADY_STATE_DYNAMICS",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 0,
+          "step_time": 63000.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N2N_U": {
+              "set": "N2N",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -0.16325615492,
+                  0.0,
+                  0.0
+                ]
+              ]
+            },
+            "N1N_RF": {
+              "set": "N1N",
+              "field": "RF",
+              "nodes": [
+                1
+              ],
+              "components": [
+                "fx",
+                "fy",
+                "fz"
+              ],
+              "values": [
+                [
+                  1.6325615492,
+                  0.0,
+                  0.0
+                ]
+              ],
+              "total": [
+                1.6325615492,
+                0.0,
+                0.0
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

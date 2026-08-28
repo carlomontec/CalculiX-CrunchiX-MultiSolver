@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "jobname": "beammpc",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.400673
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 719
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                105,
+                125
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  3.9128271448e-18,
+                  0.0020689084621,
+                  0.0026197202703
+                ],
+                [
+                  1.039250134e-16,
+                  0.039582199602,
+                  0.002478993711
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

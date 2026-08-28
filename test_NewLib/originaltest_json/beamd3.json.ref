@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "jobname": "beamd3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.041397
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 720
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  1.5097680613e-17,
+                  1.7097937033e-17,
+                  3.554008412e-05
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    0.17562775178,
+                    0.17562775178,
+                    1.0456768757,
+                    -0.0010181499348,
+                    0.096603435543,
+                    0.096603435543
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -1.1501840276e-06,
+                    -1.1501840271e-06,
+                    1.0000042097,
+                    5.731574241e-07,
+                    1.2195015523e-06,
+                    1.2195015545e-06
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

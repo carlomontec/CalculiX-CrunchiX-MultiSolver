@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "jobname": "segmenttemp",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 2.341158
+    },
+    "mesh_statistics": {
+      "nodes": 661,
+      "elements": 96,
+      "equations": 3360
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 2.0047622444e-10,
+        "y": 2.0025039566e-10,
+        "z": 2.0025039566e-10,
+        "rx": 1.0123700728e-10,
+        "ry": 1.0350102962e-11,
+        "rz": 9.2107494306e-11
+      },
+      "fraction_of_totals": {
+        "x": 0.92990774174,
+        "y": 6.2811435351e-12,
+        "z": 1.8461683239e-11,
+        "rx": 1.4572245019e-11,
+        "ry": 0.8024608183,
+        "rz": 0.94281562314
+      }
+    }
+  ]
+}

@@ -89,6 +89,12 @@ void json_set_active(int active) {
   g_json_active = active;
 }
 
+static void json_atexit_handler(void) {
+  if (g_json_active && g_jobname[0]) {
+    json_finalize(0, 0.0);
+  }
+}
+
 void json_init(const char *jobname, const char *solver_name) {
   if (!jobname) return;
   size_t len = 0;
@@ -113,6 +119,12 @@ void json_init(const char *jobname, const char *solver_name) {
   g_step_count = 0;
   g_current_step_open = 0;
   g_current_inc_open = 0;
+
+  static int atexit_registered = 0;
+  if (!atexit_registered) {
+    atexit(json_atexit_handler);
+    atexit_registered = 1;
+  }
 }
 
 void json_set_meta_stats(ITG *nk, ITG *ne, ITG *neq, ITG num_cpus) {
@@ -152,7 +164,7 @@ void json_start_step(ITG istep, const char *step_type) {
 }
 
 void json_end_step(ITG istep) {
-  if (!g_json_active || !g_current_step_open) return;
+  if (!g_current_step_open) return;
 
   if (g_current_inc_open) {
     buf_append(&g_steps_buf, "\n        }");
@@ -455,6 +467,7 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
 
 void json_finalize(int exit_code, double total_time) {
   if (!g_json_active || !g_jobname[0]) return;
+  g_json_active = 0;
 
   /* Close any open step */
   if (g_current_step_open) {

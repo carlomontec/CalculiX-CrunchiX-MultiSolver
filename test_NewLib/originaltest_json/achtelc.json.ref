@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "jobname": "achtelc",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.010688
+    },
+    "mesh_statistics": {
+      "nodes": 81,
+      "elements": 8,
+      "equations": 237
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "SET1N_U": {
+              "set": "SET1N",
+              "field": "U",
+              "nodes": [
+                1,
+                81
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -5.4071783407e-06,
+                  -8.0142276565e-06,
+                  9.699876374e-06
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "SET2E_S": {
+              "set": "SET2E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.041748328998,
+                    0.037117951709,
+                    0.088380071039,
+                    0.024626383539,
+                    0.053498294769,
+                    0.082120014769
+                  ]
+                },
+                {
+                  "element": 8,
+                  "s": [
+                    0.057255111223,
+                    0.055574738085,
+                    -0.053697844987,
+                    -0.063312386498,
+                    0.045325408074,
+                    0.047693166339
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

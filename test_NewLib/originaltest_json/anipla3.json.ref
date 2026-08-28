@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "anipla3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.005712
+    },
+    "mesh_statistics": {
+      "nodes": 223,
+      "elements": 1,
+      "equations": 49
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

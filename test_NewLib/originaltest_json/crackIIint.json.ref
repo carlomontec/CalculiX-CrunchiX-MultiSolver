@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "crackIIint",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 12.203853
+    },
+    "mesh_statistics": {
+      "nodes": 10237,
+      "elements": 2128,
+      "equations": 29706
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "jobname": "beam8pjc",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.292781
+    },
+    "mesh_statistics": {
+      "nodes": 425,
+      "elements": 256,
+      "equations": 1200
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true
+    }
+  ]
+}
