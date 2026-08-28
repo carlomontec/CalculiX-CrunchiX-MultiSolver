@@ -73,6 +73,14 @@ static void buf_printf(JsonBuffer *b, const char *fmt, ...) {
   buf_append(b, temp);
 }
 
+static void buf_print_float(JsonBuffer *b, double val) {
+  if (isnan(val) || isinf(val)) {
+    buf_append(b, "null");
+  } else {
+    buf_printf(b, "%.10e", val);
+  }
+}
+
 int json_is_active(void) {
   return g_json_active;
 }
@@ -179,10 +187,10 @@ void json_export_eigenvalues(double *d, ITG nev, double fmin, double fmax) {
     if (count > 0) buf_append(&g_steps_buf, ",\n");
     buf_printf(&g_steps_buf, "        {\n");
     buf_printf(&g_steps_buf, "          \"mode_number\": %d,\n", (int)(j + 1));
-    buf_printf(&g_steps_buf, "          \"eigenvalue\": %.10e,\n", eig);
-    buf_printf(&g_steps_buf, "          \"frequency_rad_s\": %.10e,\n", rad_s);
-    buf_printf(&g_steps_buf, "          \"frequency_hz\": %.10e\n", hz);
-    buf_append(&g_steps_buf, "        }");
+    buf_append(&g_steps_buf, "          \"eigenvalue\": "); buf_print_float(&g_steps_buf, eig);
+    buf_append(&g_steps_buf, ",\n          \"frequency_rad_s\": "); buf_print_float(&g_steps_buf, rad_s);
+    buf_append(&g_steps_buf, ",\n          \"frequency_hz\": "); buf_print_float(&g_steps_buf, hz);
+    buf_append(&g_steps_buf, "\n        }");
     count++;
   }
 
@@ -196,20 +204,24 @@ void json_export_modal_mass(ITG nev, double *part, double *toteffmass, double *e
   /* Append modal masses, participation factors, and total effective mass */
   if (toteffmass) {
     buf_append(&g_steps_buf, ",\n      \"total_effective_mass\": {\n");
-    buf_printf(&g_steps_buf, "        \"x\": %.10e, \"y\": %.10e, \"z\": %.10e,\n",
-               toteffmass[0], toteffmass[1], toteffmass[2]);
-    buf_printf(&g_steps_buf, "        \"rx\": %.10e, \"ry\": %.10e, \"rz\": %.10e\n",
-               toteffmass[3], toteffmass[4], toteffmass[5]);
-    buf_append(&g_steps_buf, "      }");
+    buf_append(&g_steps_buf, "        \"x\": "); buf_print_float(&g_steps_buf, toteffmass[0]);
+    buf_append(&g_steps_buf, ", \"y\": "); buf_print_float(&g_steps_buf, toteffmass[1]);
+    buf_append(&g_steps_buf, ", \"z\": "); buf_print_float(&g_steps_buf, toteffmass[2]);
+    buf_append(&g_steps_buf, ",\n        \"rx\": "); buf_print_float(&g_steps_buf, toteffmass[3]);
+    buf_append(&g_steps_buf, ", \"ry\": "); buf_print_float(&g_steps_buf, toteffmass[4]);
+    buf_append(&g_steps_buf, ", \"rz\": "); buf_print_float(&g_steps_buf, toteffmass[5]);
+    buf_append(&g_steps_buf, "\n      }");
   }
 
   if (fraction) {
     buf_append(&g_steps_buf, ",\n      \"fraction_of_totals\": {\n");
-    buf_printf(&g_steps_buf, "        \"x\": %.10e, \"y\": %.10e, \"z\": %.10e,\n",
-               fraction[0], fraction[1], fraction[2]);
-    buf_printf(&g_steps_buf, "        \"rx\": %.10e, \"ry\": %.10e, \"rz\": %.10e\n",
-               fraction[3], fraction[4], fraction[5]);
-    buf_append(&g_steps_buf, "      }");
+    buf_append(&g_steps_buf, "        \"x\": "); buf_print_float(&g_steps_buf, fraction[0]);
+    buf_append(&g_steps_buf, ", \"y\": "); buf_print_float(&g_steps_buf, fraction[1]);
+    buf_append(&g_steps_buf, ", \"z\": "); buf_print_float(&g_steps_buf, fraction[2]);
+    buf_append(&g_steps_buf, ",\n        \"rx\": "); buf_print_float(&g_steps_buf, fraction[3]);
+    buf_append(&g_steps_buf, ", \"ry\": "); buf_print_float(&g_steps_buf, fraction[4]);
+    buf_append(&g_steps_buf, ", \"rz\": "); buf_print_float(&g_steps_buf, fraction[5]);
+    buf_append(&g_steps_buf, "\n      }");
   }
 }
 
@@ -225,8 +237,9 @@ void json_export_buckling(double *d, ITG nev) {
     if (j > 0) buf_append(&g_steps_buf, ",\n");
     buf_printf(&g_steps_buf, "        {\n");
     buf_printf(&g_steps_buf, "          \"mode_number\": %d,\n", (int)(j + 1));
-    buf_printf(&g_steps_buf, "          \"buckling_factor\": %.10e\n", d[j]);
-    buf_append(&g_steps_buf, "        }");
+    buf_append(&g_steps_buf, "          \"buckling_factor\": ");
+    buf_print_float(&g_steps_buf, d[j]);
+    buf_append(&g_steps_buf, "\n        }");
   }
   buf_append(&g_steps_buf, "\n      ]");
   g_has_buckling = 1;
@@ -264,8 +277,8 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
       g_step_has_increments = 1;
     }
     buf_printf(&g_steps_buf, "          \"increment_number\": %d,\n", (int)iinc);
-    buf_printf(&g_steps_buf, "          \"step_time\": %.10e,\n", time);
-    buf_printf(&g_steps_buf, "          \"total_time\": %.10e", ttime);
+    buf_append(&g_steps_buf, "          \"step_time\": "); buf_print_float(&g_steps_buf, time); buf_append(&g_steps_buf, ",\n");
+    buf_append(&g_steps_buf, "          \"total_time\": "); buf_print_float(&g_steps_buf, ttime);
     g_current_inc_open = 1;
     g_last_iinc = iinc;
   }
@@ -330,8 +343,11 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
           ITG node = is_all ? (k + 1) : ialset[k];
           if (node <= 0 || node > nk) continue;
           if (row_count > 0) buf_append(&g_steps_buf, ",\n");
-          buf_printf(&g_steps_buf, "                [%.10e, %.10e, %.10e]",
-                     v[mt * (node - 1) + 1], v[mt * (node - 1) + 2], v[mt * (node - 1) + 3]);
+          buf_append(&g_steps_buf, "                [");
+          buf_print_float(&g_steps_buf, v[mt * (node - 1) + 1]); buf_append(&g_steps_buf, ", ");
+          buf_print_float(&g_steps_buf, v[mt * (node - 1) + 2]); buf_append(&g_steps_buf, ", ");
+          buf_print_float(&g_steps_buf, v[mt * (node - 1) + 3]);
+          buf_append(&g_steps_buf, "]");
           row_count++;
         }
         buf_append(&g_steps_buf, "\n              ]\n");
@@ -348,12 +364,19 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
           double fy = fn[mt * (node - 1) + 2];
           double fz = fn[mt * (node - 1) + 3];
           rftot[0] += fx; rftot[1] += fy; rftot[2] += fz;
-          buf_printf(&g_steps_buf, "                [%.10e, %.10e, %.10e]", fx, fy, fz);
+          buf_append(&g_steps_buf, "                [");
+          buf_print_float(&g_steps_buf, fx); buf_append(&g_steps_buf, ", ");
+          buf_print_float(&g_steps_buf, fy); buf_append(&g_steps_buf, ", ");
+          buf_print_float(&g_steps_buf, fz);
+          buf_append(&g_steps_buf, "]");
           row_count++;
         }
         buf_append(&g_steps_buf, "\n              ],\n");
-        buf_printf(&g_steps_buf, "              \"total\": [%.10e, %.10e, %.10e]\n",
-                   rftot[0], rftot[1], rftot[2]);
+        buf_append(&g_steps_buf, "              \"total\": [");
+        buf_print_float(&g_steps_buf, rftot[0]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, rftot[1]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, rftot[2]);
+        buf_append(&g_steps_buf, "]\n");
       } else if ((strcmp(label, "NT") == 0 || strcmp(label, "HGN") == 0) && v) {
         buf_printf(&g_steps_buf, "              \"components\": [\"%s\"],\n", label);
         buf_append(&g_steps_buf, "              \"values\": [\n");
@@ -362,7 +385,9 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
           ITG node = is_all ? (k + 1) : ialset[k];
           if (node <= 0 || node > nk) continue;
           if (row_count > 0) buf_append(&g_steps_buf, ",\n");
-          buf_printf(&g_steps_buf, "                [%.10e]", v[mt * (node - 1)]);
+          buf_append(&g_steps_buf, "                [");
+          buf_print_float(&g_steps_buf, v[mt * (node - 1)]);
+          buf_append(&g_steps_buf, "]");
           row_count++;
         }
         buf_append(&g_steps_buf, "\n              ]\n");
@@ -397,8 +422,14 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
         if (elem_count > 0) buf_append(&g_steps_buf, ",\n");
 
         ITG idx = 6 * mi[0] * (elem - 1);
-        buf_printf(&g_steps_buf, "                {\"element\": %d, \"s\": [%.10e, %.10e, %.10e, %.10e, %.10e, %.10e]}",
-                   (int)elem, stx[idx], stx[idx+1], stx[idx+2], stx[idx+3], stx[idx+4], stx[idx+5]);
+        buf_printf(&g_steps_buf, "                {\"element\": %d, \"s\": [", (int)elem);
+        buf_print_float(&g_steps_buf, stx[idx]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, stx[idx+1]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, stx[idx+2]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, stx[idx+3]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, stx[idx+4]); buf_append(&g_steps_buf, ", ");
+        buf_print_float(&g_steps_buf, stx[idx+5]);
+        buf_append(&g_steps_buf, "]}");
         elem_count++;
       }
       buf_append(&g_steps_buf, "\n              ]\n            }");
@@ -414,11 +445,11 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
   /* Total energy balance if available */
   if (energy && (energy[0] != 0.0 || energy[1] != 0.0 || energy[2] != 0.0 || energy[3] != 0.0)) {
     buf_append(&g_steps_buf, ",\n          \"energy\": {\n");
-    buf_printf(&g_steps_buf, "            \"kinetic\": %.10e,\n", energy[0]);
-    buf_printf(&g_steps_buf, "            \"internal\": %.10e,\n", energy[1]);
-    buf_printf(&g_steps_buf, "            \"contact_friction\": %.10e,\n", energy[2]);
-    buf_printf(&g_steps_buf, "            \"total\": %.10e\n", energy[3]);
-    buf_append(&g_steps_buf, "          }");
+    buf_append(&g_steps_buf, "            \"kinetic\": "); buf_print_float(&g_steps_buf, energy[0]);
+    buf_append(&g_steps_buf, ",\n            \"internal\": "); buf_print_float(&g_steps_buf, energy[1]);
+    buf_append(&g_steps_buf, ",\n            \"contact_friction\": "); buf_print_float(&g_steps_buf, energy[2]);
+    buf_append(&g_steps_buf, ",\n            \"total\": "); buf_print_float(&g_steps_buf, energy[3]);
+    buf_append(&g_steps_buf, "\n          }");
   }
 }
 
