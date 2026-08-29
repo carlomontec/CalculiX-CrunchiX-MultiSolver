@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import json
+import time
 from pathlib import Path
 
 # Base paths
@@ -94,8 +95,11 @@ def ensure_mesh(cgx_bin):
     msh_file = TEST_DIR / "all.msh"
     fbl_file = TEST_DIR / "beam_10k.fbl"
     if not msh_file.exists():
+        if not fbl_file.exists():
+            print(f"[!] Error: Meshing definition {fbl_file.name} is missing.")
+            return False
         if not cgx_bin:
-            print(f"[!] Warning: {msh_file} missing and cgx binary not found.")
+            print(f"[!] Warning: {msh_file.name} missing and cgx binary not found.")
             return False
         print(f"[*] Generating mesh via CGX batch mode ({fbl_file.name})...")
         res = subprocess.run(
@@ -105,7 +109,7 @@ def ensure_mesh(cgx_bin):
             stderr=subprocess.STDOUT,
             text=True,
         )
-        if res.returncode != 0:
+        if res.returncode != 0 or not msh_file.exists():
             print(f"[!] CGX meshing failed:\n{res.stdout}")
             return False
         print("[+] Mesh generated successfully.")
