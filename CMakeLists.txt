@@ -38,6 +38,8 @@ option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver"                OFF)
 option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
+set(CCX_BLAS "AUTO" CACHE STRING "BLAS/LAPACK backend: AUTO, BLIS, OPENBLAS, MKL, NETLIB")
+set_property(CACHE CCX_BLAS PROPERTY STRINGS AUTO BLIS OPENBLAS MKL NETLIB)
 
 # -----------------------------------------------------------------------------
 # Compiler Flags
@@ -390,66 +392,208 @@ if(NOT CCX_USE_PARDISO)
             list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
         endif()
     else()
-        # Prefer optimized BLAS (MKL runtime, AMD AOCL-BLIS, OpenBLAS) over slow reference Netlib BLAS
-        find_library(MKL_RT_LIB NAMES mkl_rt PATHS $ENV{MKLROOT}/lib/intel64 $ENV{MKLROOT}/lib /opt/intel/oneapi/mkl/latest/lib /usr/lib)
-        find_library(AOCL_BLAS_LIB NAMES blis-mt blis blis-openmp blis-pthread libblis-mt libblis
-            PATHS
-                $ENV{AOCL_ROOT}/lib
-                $ENV{MINGW_PREFIX}/lib
-                $ENV{MSYSTEM_PREFIX}/lib
-                C:/msys64/ucrt64/lib
-                C:/msys64/mingw64/lib
-                /opt/AMD/aocl/latest/lib
-                /opt/aocl/lib
-                /usr/lib
-                /usr/lib/x86_64-linux-gnu
-                /usr/local/lib
-        )
-        find_library(AOCL_LAPACK_LIB NAMES flame libflame
-            PATHS
-                $ENV{AOCL_ROOT}/lib
-                $ENV{MINGW_PREFIX}/lib
-                $ENV{MSYSTEM_PREFIX}/lib
-                C:/msys64/ucrt64/lib
-                C:/msys64/mingw64/lib
-                /opt/AMD/aocl/latest/lib
-                /opt/aocl/lib
-                /usr/lib
-                /usr/lib/x86_64-linux-gnu
-                /usr/local/lib
-        )
-        find_library(OPENBLAS_LIB NAMES openblas openblas64 libopenblas
-            PATHS
-                $ENV{MINGW_PREFIX}/lib
-                $ENV{MSYSTEM_PREFIX}/lib
-                C:/msys64/ucrt64/lib
-                C:/msys64/mingw64/lib
-                /usr/lib
-                /usr/local/lib
+        # Common search paths across Linux (including multiarch) and Windows MSYS2
+        set(CCX_BLAS_SEARCH_PATHS
+            $ENV{AOCL_ROOT}/lib
+            $ENV{MKLROOT}/lib/intel64
+            $ENV{MKLROOT}/lib
+            /opt/intel/oneapi/mkl/latest/lib
+            /opt/intel/oneapi/mkl/latest/lib/intel64
+            $ENV{MINGW_PREFIX}/lib
+            $ENV{MSYSTEM_PREFIX}/lib
+            C:/msys64/ucrt64/lib
+            C:/msys64/mingw64/lib
+            /opt/AMD/aocl/latest/lib
+            /opt/AMD/aocl/lib
+            /opt/aocl/lib
+            /usr/lib/x86_64-linux-gnu
+            /usr/lib/aarch64-linux-gnu
+            /usr/lib64
+            /usr/lib
+            /usr/local/lib
         )
 
-        if(MKL_RT_LIB)
-            message(STATUS "Using Intel oneMKL Optimized BLAS/LAPACK: ${MKL_RT_LIB}")
-            list(APPEND EXTRA_LINK_LIBS ${MKL_RT_LIB})
-        elseif(AOCL_BLAS_LIB)
-            message(STATUS "Using AMD AOCL (BLIS) Optimized BLAS: ${AOCL_BLAS_LIB}")
-            list(APPEND EXTRA_LINK_LIBS ${AOCL_BLAS_LIB})
-            if(AOCL_LAPACK_LIB)
-                message(STATUS "Using AMD AOCL (libflame) LAPACK: ${AOCL_LAPACK_LIB}")
-                list(APPEND EXTRA_LINK_LIBS ${AOCL_LAPACK_LIB})
+        set(CCX_BLAS_SEARCH_INCLUDES
+            $ENV{AOCL_ROOT}/include
+            $ENV{MKLROOT}/include
+            /opt/intel/oneapi/mkl/latest/include
+            $ENV{MINGW_PREFIX}/include
+            $ENV{MSYSTEM_PREFIX}/include
+            C:/msys64/ucrt64/include
+            C:/msys64/mingw64/include
+            /opt/AMD/aocl/latest/include
+            /opt/AMD/aocl/include
+            /opt/aocl/include
+            /usr/include/x86_64-linux-gnu
+            /usr/include/aarch64-linux-gnu
+            /usr/include
+            /usr/local/include
+        )
+
+        string(TOUPPER "${CCX_BLAS}" CCX_BLAS_UPPER)
+
+        # Helper macros for discovering candidate BLAS libraries
+        macro(discover_blis)
+            find_library(AOCL_BLAS_LIB NAMES blis-mt blis blis-openmp blis-pthread libblis-mt libblis-openmp libblis PATHS ${CCX_BLAS_SEARCH_PATHS})
+            find_library(AOCL_LAPACK_LIB NAMES flame libflame PATHS ${CCX_BLAS_SEARCH_PATHS})
+            find_path(AOCL_INCLUDE_DIR NAMES blis.h PATHS ${CCX_BLAS_SEARCH_INCLUDES} PATH_SUFFIXES blis)
+        endmacro()
+
+        macro(discover_openblas)
+            find_library(OPENBLAS_LIB NAMES openblas openblas64 libopenblas PATHS ${CCX_BLAS_SEARCH_PATHS})
+            find_path(OPENBLAS_INCLUDE_DIR NAMES cblas.h openblas_config.h PATHS ${CCX_BLAS_SEARCH_INCLUDES} PATH_SUFFIXES openblas)
+        endmacro()
+
+        macro(discover_mkl)
+            find_library(MKL_RT_LIB NAMES mkl_rt PATHS ${CCX_BLAS_SEARCH_PATHS})
+            find_path(MKL_RT_INCLUDE_DIR NAMES mkl.h PATHS ${CCX_BLAS_SEARCH_INCLUDES} PATH_SUFFIXES mkl)
+        endmacro()
+
+        set(BLAS_CONFIGURED FALSE)
+
+        # 1. Explicit BLIS / AMD AOCL requested
+        if(CCX_BLAS_UPPER STREQUAL "BLIS" OR CCX_BLAS_UPPER STREQUAL "AOCL")
+            discover_blis()
+            if(AOCL_BLAS_LIB)
+                message(STATUS "Using AMD AOCL (BLIS) Optimized BLAS: ${AOCL_BLAS_LIB}")
+                list(APPEND EXTRA_LINK_LIBS ${AOCL_BLAS_LIB})
+                if(AOCL_INCLUDE_DIR)
+                    include_directories(${AOCL_INCLUDE_DIR})
+                endif()
+                if(AOCL_LAPACK_LIB)
+                    message(STATUS "Using AMD AOCL (libflame) LAPACK: ${AOCL_LAPACK_LIB}")
+                    list(APPEND EXTRA_LINK_LIBS ${AOCL_LAPACK_LIB})
+                else()
+                    find_package(LAPACK REQUIRED)
+                    list(APPEND EXTRA_LINK_LIBS ${LAPACK_LIBRARIES})
+                endif()
+                set(BLAS_CONFIGURED TRUE)
             else()
-                find_package(LAPACK REQUIRED)
-                list(APPEND EXTRA_LINK_LIBS ${LAPACK_LIBRARIES})
+                message(FATAL_ERROR "BLIS / AMD AOCL requested (-DCCX_BLAS=BLIS) but not found in search paths: ${CCX_BLAS_SEARCH_PATHS}")
             endif()
-        elseif(OPENBLAS_LIB)
-            message(STATUS "Using OpenBLAS Optimized BLAS/LAPACK: ${OPENBLAS_LIB}")
-            list(APPEND EXTRA_LINK_LIBS ${OPENBLAS_LIB})
-        else()
+
+        # 2. Explicit OpenBLAS requested
+        elseif(CCX_BLAS_UPPER STREQUAL "OPENBLAS")
+            discover_openblas()
+            if(OPENBLAS_LIB)
+                message(STATUS "Using OpenBLAS Optimized BLAS/LAPACK: ${OPENBLAS_LIB}")
+                list(APPEND EXTRA_LINK_LIBS ${OPENBLAS_LIB})
+                if(OPENBLAS_INCLUDE_DIR)
+                    include_directories(${OPENBLAS_INCLUDE_DIR})
+                endif()
+                set(BLAS_CONFIGURED TRUE)
+            else()
+                message(FATAL_ERROR "OpenBLAS requested (-DCCX_BLAS=OPENBLAS) but not found in search paths: ${CCX_BLAS_SEARCH_PATHS}")
+            endif()
+
+        # 3. Explicit Intel oneMKL runtime requested
+        elseif(CCX_BLAS_UPPER STREQUAL "MKL")
+            discover_mkl()
+            if(MKL_RT_LIB)
+                message(STATUS "Using Intel oneMKL Optimized BLAS/LAPACK: ${MKL_RT_LIB}")
+                list(APPEND EXTRA_LINK_LIBS ${MKL_RT_LIB})
+                if(MKL_RT_INCLUDE_DIR)
+                    include_directories(${MKL_RT_INCLUDE_DIR})
+                endif()
+                set(BLAS_CONFIGURED TRUE)
+            else()
+                message(FATAL_ERROR "Intel MKL runtime requested (-DCCX_BLAS=MKL) but not found in search paths: ${CCX_BLAS_SEARCH_PATHS}")
+            endif()
+
+        # 4. Explicit Reference Netlib BLAS requested
+        elseif(CCX_BLAS_UPPER STREQUAL "NETLIB")
             find_package(BLAS REQUIRED)
             find_package(LAPACK REQUIRED)
-            message(STATUS "Found BLAS: ${BLAS_LIBRARIES}")
-            message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
+            message(STATUS "Using Reference Netlib BLAS: ${BLAS_LIBRARIES}")
+            message(STATUS "Using Reference Netlib LAPACK: ${LAPACK_LIBRARIES}")
             list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+            set(BLAS_CONFIGURED TRUE)
+
+        # 5. AUTO mode: Smart platform and hardware detection
+        else()
+            # Check for AMD Zen host CPU on Linux
+            set(IS_AMD_HOST FALSE)
+            if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND EXISTS "/proc/cpuinfo")
+                file(READ "/proc/cpuinfo" _CPUINFO)
+                if(_CPUINFO MATCHES "AuthenticAMD")
+                    set(IS_AMD_HOST TRUE)
+                endif()
+            endif()
+
+            # Priority 1 for AMD Zen: AMD AOCL / BLIS
+            if(IS_AMD_HOST OR DEFINED ENV{AOCL_ROOT} OR EXISTS "/opt/AMD/aocl")
+                discover_blis()
+                if(AOCL_BLAS_LIB)
+                    message(STATUS "Auto-detected AMD Zen CPU / AOCL: Using AMD AOCL (BLIS) Optimized BLAS: ${AOCL_BLAS_LIB}")
+                    list(APPEND EXTRA_LINK_LIBS ${AOCL_BLAS_LIB})
+                    if(AOCL_INCLUDE_DIR)
+                        include_directories(${AOCL_INCLUDE_DIR})
+                    endif()
+                    if(AOCL_LAPACK_LIB)
+                        message(STATUS "Using AMD AOCL (libflame) LAPACK: ${AOCL_LAPACK_LIB}")
+                        list(APPEND EXTRA_LINK_LIBS ${AOCL_LAPACK_LIB})
+                    else()
+                        find_package(LAPACK REQUIRED)
+                        list(APPEND EXTRA_LINK_LIBS ${LAPACK_LIBRARIES})
+                    endif()
+                    set(BLAS_CONFIGURED TRUE)
+                endif()
+            endif()
+
+            # Priority 2: OpenBLAS (standard cross-platform open-source high performance)
+            if(NOT BLAS_CONFIGURED)
+                discover_openblas()
+                if(OPENBLAS_LIB)
+                    message(STATUS "Using OpenBLAS Optimized BLAS/LAPACK: ${OPENBLAS_LIB}")
+                    list(APPEND EXTRA_LINK_LIBS ${OPENBLAS_LIB})
+                    if(OPENBLAS_INCLUDE_DIR)
+                        include_directories(${OPENBLAS_INCLUDE_DIR})
+                    endif()
+                    set(BLAS_CONFIGURED TRUE)
+                endif()
+            endif()
+
+            # Priority 3: BLIS (if on non-AMD but BLIS is installed)
+            if(NOT BLAS_CONFIGURED)
+                discover_blis()
+                if(AOCL_BLAS_LIB)
+                    message(STATUS "Using AMD AOCL (BLIS) Optimized BLAS: ${AOCL_BLAS_LIB}")
+                    list(APPEND EXTRA_LINK_LIBS ${AOCL_BLAS_LIB})
+                    if(AOCL_INCLUDE_DIR)
+                        include_directories(${AOCL_INCLUDE_DIR})
+                    endif()
+                    if(AOCL_LAPACK_LIB)
+                        message(STATUS "Using AMD AOCL (libflame) LAPACK: ${AOCL_LAPACK_LIB}")
+                        list(APPEND EXTRA_LINK_LIBS ${AOCL_LAPACK_LIB})
+                    else()
+                        find_package(LAPACK REQUIRED)
+                        list(APPEND EXTRA_LINK_LIBS ${LAPACK_LIBRARIES})
+                    endif()
+                    set(BLAS_CONFIGURED TRUE)
+                endif()
+            endif()
+
+            # Priority 4: Intel MKL runtime (mkl_rt) if installed
+            if(NOT BLAS_CONFIGURED)
+                discover_mkl()
+                if(MKL_RT_LIB)
+                    message(STATUS "Using Intel oneMKL Optimized BLAS/LAPACK: ${MKL_RT_LIB}")
+                    list(APPEND EXTRA_LINK_LIBS ${MKL_RT_LIB})
+                    if(MKL_RT_INCLUDE_DIR)
+                        include_directories(${MKL_RT_INCLUDE_DIR})
+                    endif()
+                    set(BLAS_CONFIGURED TRUE)
+                endif()
+            endif()
+
+            # Priority 5: Fallback to standard CMake find_package(BLAS)
+            if(NOT BLAS_CONFIGURED)
+                find_package(BLAS REQUIRED)
+                find_package(LAPACK REQUIRED)
+                message(STATUS "Found BLAS: ${BLAS_LIBRARIES}")
+                message(STATUS "Found LAPACK: ${LAPACK_LIBRARIES}")
+                list(APPEND EXTRA_LINK_LIBS ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+            endif()
         endif()
     endif()
 endif()

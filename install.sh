@@ -310,6 +310,7 @@ elif [ "${OS}" = "Linux" ]; then
             IS_AMD=true
         fi
 
+        CMAKE_BLAS_FLAGS=""
         if [ "$IS_AMD" = true ]; then
             echo -e "\n${BOLD}${YELLOW}AMD Zen CPU Architecture Detected (Ryzen/EPYC/Threadripper):${NC}"
             echo -e "  AMD provides ${BOLD}AOCL-BLIS${NC} (open-source linear algebra tuned specifically for AMD CPUs)."
@@ -322,6 +323,25 @@ elif [ "${OS}" = "Linux" ]; then
                     sudo dnf install -y blis-devel libflame-devel 2>/dev/null || true
                 elif command -v pacman &>/dev/null; then
                     sudo pacman -S --needed blis 2>/dev/null || true
+                fi
+                CMAKE_BLAS_FLAGS="-DCCX_BLAS=BLIS"
+            fi
+        fi
+
+        # Ensure system default BLAS alternative points to an optimized library on Debian/Ubuntu
+        if command -v update-alternatives &>/dev/null; then
+            ARCH_TRIPLET="$(uname -m)-linux-gnu"
+            CURRENT_BLAS=$(update-alternatives --query "libblas.so.3-${ARCH_TRIPLET}" 2>/dev/null | grep '^Value:' | awk '{print $2}' || true)
+            if [ -z "$CURRENT_BLAS" ]; then
+                CURRENT_BLAS=$(update-alternatives --query libblas.so.3 2>/dev/null | grep '^Value:' | awk '{print $2}' || true)
+            fi
+            if [[ "$CURRENT_BLAS" == *"/blas/libblas.so"* ]]; then
+                if [ -f "/usr/lib/${ARCH_TRIPLET}/openblas-pthread/libblas.so.3" ]; then
+                    echo -e "${YELLOW}[INFO] Setting system BLAS alternative to OpenBLAS...${NC}"
+                    sudo update-alternatives --set "libblas.so.3-${ARCH_TRIPLET}" "/usr/lib/${ARCH_TRIPLET}/openblas-pthread/libblas.so.3" 2>/dev/null || true
+                elif [ -f "/usr/lib/${ARCH_TRIPLET}/blis-openmp/libblas.so.3" ]; then
+                    echo -e "${YELLOW}[INFO] Setting system BLAS alternative to BLIS...${NC}"
+                    sudo update-alternatives --set "libblas.so.3-${ARCH_TRIPLET}" "/usr/lib/${ARCH_TRIPLET}/blis-openmp/libblas.so.3" 2>/dev/null || true
                 fi
             fi
         fi
@@ -361,6 +381,8 @@ elif [ "${OS}" = "Linux" ]; then
             else
                 SOLVER_NAME="Intel oneMKL PARDISO"
             fi
+        elif [ -n "${CMAKE_BLAS_FLAGS}" ]; then
+            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} ${CMAKE_BLAS_FLAGS}"
         fi
 
         # --- SPOOLES (x86_64) ---
