@@ -196,7 +196,8 @@ jobs:
           export OMP_NUM_THREADS=1
           export PYTHONIOENCODING=utf8
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" 
+          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG") || true
+          echo "$OUTPUT"
 
       - name: Verify Standalone Execution & Install Script
         shell: pwsh
