@@ -217,6 +217,11 @@ if ($Solver -eq "pardiso") {
 
 $cmakeSolverFlags = ""
 $solverDisplayName = ""
+$cmakeBlasFlags = ""
+
+if ($isAmd -and ($useAocl -match "^[Yy]$")) {
+    $cmakeBlasFlags = "-DCCX_BLAS=BLIS"
+}
 
 if ($enableMkl -match "^[Yy]$") {
     $defaultMklPath = "C:\Program Files (x86)\Intel\oneAPI\mkl\latest"
@@ -241,6 +246,7 @@ if ($enableMkl -match "^[Yy]$") {
         Write-Host "  https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html" -ForegroundColor Cyan
         Write-Host "Falling back to MUMPS 5.x as primary solver for this build." -ForegroundColor Yellow
         $cmakeSolverFlags = "-DCCX_USE_MUMPS=ON"
+        if ($cmakeBlasFlags) { $cmakeSolverFlags += " $cmakeBlasFlags" }
         $solverDisplayName = "MUMPS 5.x (Open-Source Default)"
     }
 
@@ -252,6 +258,7 @@ if ($enableMkl -match "^[Yy]$") {
 
 } else {
     $cmakeSolverFlags = "-DCCX_USE_MUMPS=ON"
+    if ($cmakeBlasFlags) { $cmakeSolverFlags += " $cmakeBlasFlags" }
     $solverDisplayName = "MUMPS 5.x (Open-Source Default)"
 }
 
@@ -324,6 +331,8 @@ $runtimeDlls = @(
     "libwinpthread-*.dll",
     "libgomp-*.dll",
     "libopenblas.dll",
+    "libblis*.dll",
+    "libflame*.dll",
     "libarpack-*.dll",
     "libdmumps*.dll",
     "libmumps_common*.dll",
