@@ -22,6 +22,7 @@
 #include <pthread.h>
 #include "CalculiX.h"
 #include "mortar.h"
+#include "json_export.h"
 
 static char *lakon1,*matname1,*sideload1;
 
@@ -470,6 +471,12 @@ void results(double *co,ITG *nk,ITG *kon,ITG *ipkon,char *lakon,ITG *ne,
 			  veold,ne0,nmpc,ipompc,nodempc,labmpc,energyini,energy,
 			  orname,xload,itiefac,pmastsurf,springarea,tieset,
 			  ipobody,ibody,xbody,nbody,iinc,dam,damn,accold));
+  }
+  
+  if(json_is_active() && *iout > 0){
+    json_export_results(v, fn, stx, stn, een, ener, energy,
+                        prlab, prset, *nprint, set, *nset, istartset, iendset, ialset,
+                        ipkon, kon, lakon, *nk, *ne, mi, *time, *ttime, *iinc);
   }
   
   return;

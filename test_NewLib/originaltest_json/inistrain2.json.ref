@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "jobname": "inistrain2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.084701
+    },
+    "mesh_statistics": {
+      "nodes": 20,
+      "elements": 1,
+      "equations": 36
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 1.0,
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    305.23241684,
+                    -480.65050975,
+                    -420.38312052,
+                    -265.5217547,
+                    157.04292481,
+                    -767.1104767
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

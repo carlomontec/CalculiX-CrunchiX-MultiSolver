@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "jobname": "ringfcontact4",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 4.612766
+    },
+    "mesh_statistics": {
+      "nodes": 800,
+      "elements": 100,
+      "equations": 3300
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 5.8538281208e-10,
+        "y": 5.8538281208e-10,
+        "z": 5.8664664681e-10,
+        "rx": 1.3439122783e-09,
+        "ry": 1.109095961e-10,
+        "rz": 1.4538727538e-09
+      },
+      "fraction_of_totals": {
+        "x": 0.80266648511,
+        "y": 0.72669046943,
+        "z": 0.86338826825,
+        "rx": 0.8328729449,
+        "ry": 0.78011471221,
+        "rz": 0.77554041374
+      }
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "jobname": "channel15",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.005937
+    },
+    "mesh_statistics": {
+      "nodes": 11,
+      "elements": 6,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                4,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  29967.183666,
+                  6.403175,
+                  0.0
+                ],
+                [
+                  29967.183666,
+                  6.403175,
+                  0.0
+                ],
+                [
+                  29967.183666,
+                  4.97535995,
+                  0.62155886054
+                ],
+                [
+                  29967.183666,
+                  3.5475449001,
+                  1.2431177211
+                ],
+                [
+                  29967.183666,
+                  3.67377245,
+                  1.1070479018
+                ],
+                [
+                  29967.183666,
+                  3.8,
+                  0.97097808249
+                ],
+                [
+                  29967.183666,
+                  3.8,
+                  0.48548904125
+                ],
+                [
+                  29967.183666,
+                  3.8,
+                  0.0
+                ],
+                [
+                  29967.183666,
+                  3.8,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "jobname": "aniso",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.020491
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 720
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -9.5125013687e-05,
+                  -0.00016861228826,
+                  0.00036158210955
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.98403200573,
+                    -0.90962943786,
+                    8.6005861841,
+                    -0.32208303154,
+                    -0.90412724003,
+                    -0.80491069262
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    1.3350495341,
+                    1.4660112629,
+                    6.3106395722,
+                    -0.24573114284,
+                    -1.1868852138,
+                    -1.4940279806
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

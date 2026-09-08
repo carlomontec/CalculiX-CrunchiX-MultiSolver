@@ -1,0 +1,507 @@
+{
+  "meta": {
+    "jobname": "acou4",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.790147
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 486
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 2,
+          "step_time": 0.002,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  7.2627066059e-23,
+                  0.0,
+                  -2.5630503106e-10
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 2.2981733579e-06,
+            "internal": 2.3494602845e-06,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 0.004,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.1754927876e-22,
+                  0.0,
+                  1.250084689e-09
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 5.8608604545e-06,
+            "internal": 5.8259312448e-06,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 0.006,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -4.5904352072e-22,
+                  0.0,
+                  -2.5851812917e-09
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 9.0983506382e-06,
+            "internal": 9.3546110233e-06,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 8,
+          "step_time": 0.008,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -2.3009386799e-21,
+                  0.0,
+                  1.576619977e-08
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 1.2922051104e-05,
+            "internal": 1.2964472924e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 10,
+          "step_time": 0.01,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.4604555951e-21,
+                  0.0,
+                  -2.9937979752e-08
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 1.6966526491e-05,
+            "internal": 1.6413774324e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 12,
+          "step_time": 0.012,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  9.8099786254e-21,
+                  0.0,
+                  4.141658033e-07
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 1.9668706356e-05,
+            "internal": 2.0094152114e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 14,
+          "step_time": 0.014,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.0927819144e-20,
+                  0.0,
+                  1.0816371118e-08
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 2.359145053e-05,
+            "internal": 2.3521082662e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 16,
+          "step_time": 0.016,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.8933759896e-21,
+                  0.0,
+                  4.0405845877e-06
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 2.7295523472e-05,
+            "internal": 2.7194977196e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 18,
+          "step_time": 0.018,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -6.9414799597e-21,
+                  0.0,
+                  1.1456381898e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 3.099731416e-05,
+            "internal": 3.0668964905e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 20,
+          "step_time": 0.02,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  4.8948522857e-22,
+                  0.0,
+                  1.8118120185e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 3.3855965254e-05,
+            "internal": 3.4275424119e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 22,
+          "step_time": 0.022,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -6.6037591033e-21,
+                  0.0,
+                  2.5910064687e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 3.7981062367e-05,
+            "internal": 3.7830625944e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 24,
+          "step_time": 0.024,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.9957565777e-20,
+                  0.0,
+                  3.3119203386e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 4.1625071422e-05,
+            "internal": 4.1371214129e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 26,
+          "step_time": 0.026,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  9.6466518336e-21,
+                  0.0,
+                  4.0008696231e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 4.4869588955e-05,
+            "internal": 4.5033193246e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 28,
+          "step_time": 0.028,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.368498754e-20,
+                  0.0,
+                  4.6863066006e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 4.871631846e-05,
+            "internal": 4.8008757216e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        },
+        {
+          "increment_number": 30,
+          "step_time": 0.03,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_U": {
+              "set": "MIDN",
+              "field": "U",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.1722891259e-20,
+                  0.0,
+                  5.4610547338e-05
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 5.523189633e-05,
+            "internal": 4.922678906e-05,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        }
+      ]
+    }
+  ]
+}

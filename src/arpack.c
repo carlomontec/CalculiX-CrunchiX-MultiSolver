@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "CalculiX.h"
+#include "json_export.h"
 #ifdef SPOOLES
 #include "spooles.h"
 #endif
@@ -926,6 +927,9 @@ void arpack(double *co, ITG *nk, ITG **konp, ITG **ipkonp, char **lakonp,
       FORTRAN(dseupd,(&rvec,howmny,select,d,z,&ldz,&sigma,bmat,&neq[1],which,
 		      &nev,&tol,resid,&ncv,z,&ldz,iparam,ipntr,workd,workl,&lworkl,&info));
       FORTRAN(writeev,(d,&nev,&fmin,&fmax));
+      if(json_is_active()){
+        json_export_eigenvalues(d, nev, fmin, fmax);
+      }
     }
     SFREE(select);SFREE(workd);SFREE(workl);SFREE(resid);
 	

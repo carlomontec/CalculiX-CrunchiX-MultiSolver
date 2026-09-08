@@ -1,0 +1,174 @@
+{
+  "meta": {
+    "jobname": "beampkin",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.066239
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 759
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.006505982593,
+                  -0.006505982593,
+                  0.21358243736
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.11549642437,
+                    -0.11549642439,
+                    989.84740305,
+                    -2.078409646e-09,
+                    6.3539555807e-09,
+                    6.3409528672e-09
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -0.11548116984,
+                    -0.11548116984,
+                    989.8474068,
+                    -6.7310815831e-07,
+                    -9.0234932683e-07,
+                    -9.0234804218e-07
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0052800281085,
+                  0.0052800281085,
+                  -0.16911969219
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.0046430563804,
+                    -0.0046430563781,
+                    -943.96159368,
+                    1.9802753273e-09,
+                    -6.903899501e-09,
+                    -6.901819886e-09
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -0.0046579582297,
+                    -0.0046579582283,
+                    -943.96159572,
+                    9.6462969622e-07,
+                    1.0591199007e-07,
+                    1.0591210152e-07
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

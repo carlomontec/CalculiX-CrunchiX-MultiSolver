@@ -1,0 +1,312 @@
+{
+  "meta": {
+    "jobname": "contact9",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.185399
+    },
+    "mesh_statistics": {
+      "nodes": 16,
+      "elements": 2,
+      "equations": 37
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1e-06,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 2,
+          "step_time": 2e-06,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 3,
+          "step_time": 3.5e-06,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 4,
+          "step_time": 5.75e-06,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 5,
+          "step_time": 9.125e-06,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 6,
+          "step_time": 1.41875e-05,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 7,
+          "step_time": 2.178125e-05,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 8,
+          "step_time": 3.3171875e-05,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 9,
+          "step_time": 5.02578125e-05,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 10,
+          "step_time": 7.588671875e-05,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 11,
+          "step_time": 0.00011433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 12,
+          "step_time": 0.00016433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 13,
+          "step_time": 0.00021433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 14,
+          "step_time": 0.00026433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 15,
+          "step_time": 0.00031433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 16,
+          "step_time": 0.00036433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 17,
+          "step_time": 0.00041433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 18,
+          "step_time": 0.00046433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 19,
+          "step_time": 0.00051433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 20,
+          "step_time": 0.00056433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 21,
+          "step_time": 0.00061433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 22,
+          "step_time": 0.00066433007813,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 23,
+          "step_time": 0.00071433007812,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 24,
+          "step_time": 0.00076433007812,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 25,
+          "step_time": 0.00081433007812,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 26,
+          "step_time": 0.00086433007812,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 27,
+          "step_time": 0.00091433007812,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 28,
+          "step_time": 0.00096433007812,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 29,
+          "step_time": 0.0010143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 30,
+          "step_time": 0.0010643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 31,
+          "step_time": 0.0011143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 32,
+          "step_time": 0.0011643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 33,
+          "step_time": 0.0012143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 34,
+          "step_time": 0.0012643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 35,
+          "step_time": 0.0013143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 36,
+          "step_time": 0.0013643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 37,
+          "step_time": 0.0014143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 38,
+          "step_time": 0.0014643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 39,
+          "step_time": 0.0015143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 40,
+          "step_time": 0.0015643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 41,
+          "step_time": 0.0016143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 42,
+          "step_time": 0.0016643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 43,
+          "step_time": 0.0017143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 44,
+          "step_time": 0.0017643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 45,
+          "step_time": 0.0018143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 46,
+          "step_time": 0.0018643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 47,
+          "step_time": 0.0019143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 48,
+          "step_time": 0.0019643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 49,
+          "step_time": 0.0020143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 50,
+          "step_time": 0.0020643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 51,
+          "step_time": 0.0021143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 52,
+          "step_time": 0.0021643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 53,
+          "step_time": 0.0022143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 54,
+          "step_time": 0.0022643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 55,
+          "step_time": 0.0023143300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 56,
+          "step_time": 0.0023643300781,
+          "total_time": 0.0
+        },
+        {
+          "increment_number": 57,
+          "step_time": 0.0024,
+          "total_time": 0.0
+        }
+      ]
+    }
+  ]
+}

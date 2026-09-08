@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "jobname": "beamimpdy1",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.431137
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 720
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 10,
+          "step_time": 1e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  1.7061901805e-18,
+                  -0.014760248072,
+                  -3.5019499804e-19
+                ]
+              ]
+            }
+          },
+          "energy": {
+            "kinetic": 0.047792993873,
+            "internal": 0.025137235378,
+            "contact_friction": 0.0,
+            "total": 0.0
+          }
+        }
+      ]
+    }
+  ]
+}

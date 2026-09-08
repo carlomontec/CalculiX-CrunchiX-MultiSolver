@@ -1,0 +1,130 @@
+{
+  "meta": {
+    "jobname": "spring4",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.058819
+    },
+    "mesh_statistics": {
+      "nodes": 33,
+      "elements": 2,
+      "equations": 8
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.1999,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.19992138582,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.199938535,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.199938535,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.19992138582,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.19992996041,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.1999444601,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.19992996041,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 160241249220.0,
+          "frequency_rad_s": 400301.44794,
+          "frequency_hz": 63709.954166
+        }
+      ],
+      "total_effective_mass": {
+        "x": 6.24e-11,
+        "y": 0.0,
+        "z": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 2.08e-13
+      },
+      "fraction_of_totals": {
+        "x": 0.99999999903,
+        "y": 1.0,
+        "z": 1.0,
+        "rx": 1.0,
+        "ry": 1.0,
+        "rz": 5.867759052e-32
+      }
+    }
+  ]
+}

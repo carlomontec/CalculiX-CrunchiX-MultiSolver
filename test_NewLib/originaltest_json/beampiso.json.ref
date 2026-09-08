@@ -1,0 +1,174 @@
+{
+  "meta": {
+    "jobname": "beampiso",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.760406
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 759
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.006510856799,
+                  -0.006510856799,
+                  0.21373505477
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.11581554114,
+                    -0.11581554114,
+                    989.86451976,
+                    -2.0768763154e-09,
+                    6.3532821763e-09,
+                    6.3530239894e-09
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -0.11580029221,
+                    -0.11580029221,
+                    989.8645235,
+                    -6.734872877e-07,
+                    -9.0217970942e-07,
+                    -9.0218046922e-07
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.0051186996081,
+                  -0.0051186996082,
+                  0.14161112297
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -0.081094935771,
+                    -0.081094935789,
+                    -984.15205488,
+                    -1.6335922735e-09,
+                    2.9579655749e-09,
+                    2.9405630374e-09
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -0.081105860333,
+                    -0.081105860315,
+                    -984.15205334,
+                    1.1175399065e-07,
+                    -6.8363672025e-07,
+                    -6.8365291275e-07
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

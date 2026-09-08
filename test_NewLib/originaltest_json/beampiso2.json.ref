@@ -1,0 +1,1033 @@
+{
+  "meta": {
+    "jobname": "beampiso2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 5.18791
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 738
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 0.01,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -3.8758741062e-14,
+                    -1.1225210051e-14,
+                    26.25,
+                    -2.0602030929e-14,
+                    -9.4043485917e-14,
+                    -1.2243823794e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 0.02,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -4.6080723212e-14,
+                    -4.0751652693e-14,
+                    52.5,
+                    -3.8200822755e-14,
+                    -4.7469605838e-14,
+                    -1.2715071837e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 0.035,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -2.9511100033e-13,
+                    -2.2405672675e-13,
+                    91.875,
+                    -5.7994238748e-14,
+                    -8.0934692709e-16,
+                    -1.4858649367e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 0.0575,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -1.900162016e-13,
+                    -5.2750903005e-15,
+                    150.9375,
+                    -6.0932770782e-14,
+                    -5.915259492e-14,
+                    -8.2371089907e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 0.09125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    1.3519909999e-13,
+                    3.6257277544e-13,
+                    239.53125,
+                    -1.2854963625e-13,
+                    6.9611030741e-15,
+                    -7.9331362453e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 0.141875,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -6.4778222273e-13,
+                    -4.7725196615e-13,
+                    372.421875,
+                    5.6852879656e-14,
+                    -5.823943412e-13,
+                    -1.2573470077e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 7,
+          "step_time": 0.2178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -8.2334633555e-14,
+                    -2.5286489014e-13,
+                    571.7578125,
+                    -5.0432653769e-13,
+                    -4.8502953465e-14,
+                    -8.6035965964e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 8,
+          "step_time": 0.3178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -3.1263880373e-12,
+                    -3.9790393203e-12,
+                    801.25716743,
+                    2.599866958e-13,
+                    -6.7892655433e-14,
+                    -2.7031263552e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 9,
+          "step_time": 0.4178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -4.9737991503e-12,
+                    -3.7800873542e-12,
+                    810.89019495,
+                    1.2681944724e-13,
+                    9.8078124688e-15,
+                    -3.9478106378e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 10,
+          "step_time": 0.5178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    7.9580786405e-13,
+                    2.1600499167e-12,
+                    820.52322248,
+                    1.412468532e-14,
+                    6.8672099007e-13,
+                    -4.668758028e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 11,
+          "step_time": 0.6178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -1.0231815395e-11,
+                    -1.1795009414e-11,
+                    830.15625,
+                    -1.5295065358e-13,
+                    -5.7632893489e-13,
+                    -2.6088380617e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 12,
+          "step_time": 0.7178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    2.4726887204e-12,
+                    2.7000623959e-12,
+                    839.78927752,
+                    -6.2340366946e-13,
+                    -1.2451986877e-12,
+                    -3.9983337047e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 13,
+          "step_time": 0.8178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    3.9790393203e-13,
+                    -2.2737367544e-12,
+                    849.42230505,
+                    -7.7567974107e-13,
+                    1.7182546475e-12,
+                    3.0342019596e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 14,
+          "step_time": 0.9178125,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -6.2527760747e-13,
+                    -6.2527760747e-13,
+                    859.05533257,
+                    -9.8960690234e-13,
+                    -2.5519166137e-12,
+                    -9.8755698174e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 15,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    3.7232439354e-12,
+                    4.7180037654e-12,
+                    866.97247706,
+                    -2.8754616789e-13,
+                    1.075744181e-12,
+                    -1.0333196795e-11
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 1.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    3.2739318443e-12,
+                    3.8423660329e-12,
+                    866.97247706,
+                    1.4605528541e-12,
+                    -1.9325098569e-13,
+                    -6.6680833078e-12
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 3,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 0.01,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -3.9781511418e-10,
+                    -3.9739589397e-10,
+                    82.132003926,
+                    1.0811102567e-15,
+                    -4.228226874e-13,
+                    -2.9511086627e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 0.02,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    0.00013471103611,
+                    0.00013471103611,
+                    44.691586679,
+                    7.6997614573e-13,
+                    -1.4687543572e-12,
+                    -2.2060438931e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 0.035,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    7.9101445838e-07,
+                    7.910133375e-07,
+                    32.776216607,
+                    1.2768444677e-12,
+                    -3.0065884458e-12,
+                    5.4585852703e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 0.0575,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    2.9775575783e-08,
+                    2.9777957877e-08,
+                    26.546698653,
+                    -1.8993568949e-13,
+                    -3.1046217712e-12,
+                    -1.0403900806e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 0.09125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    2.4939987853e-09,
+                    2.4953994426e-09,
+                    22.478856227,
+                    6.9771825658e-13,
+                    -1.5618855363e-12,
+                    4.0858134233e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 0.141875,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    7.7243900165e-10,
+                    7.741203234e-10,
+                    19.489460469,
+                    -1.9092542507e-13,
+                    -1.6788230347e-12,
+                    1.4089542098e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 7,
+          "step_time": 0.2178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    3.0414826213e-10,
+                    3.0456881461e-10,
+                    17.13434204,
+                    1.0267084778e-12,
+                    -1.9264819739e-12,
+                    1.6969342363e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 8,
+          "step_time": 0.3178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    7.3943962065e-11,
+                    7.5484951623e-11,
+                    15.346664225,
+                    1.4591598465e-12,
+                    -1.4062357703e-12,
+                    1.9611898596e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 9,
+          "step_time": 0.4178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    8.7219120815e-12,
+                    8.0211393083e-12,
+                    14.153812457,
+                    5.8503714569e-13,
+                    -9.7997941915e-13,
+                    5.2949184656e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 10,
+          "step_time": 0.5178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    -6.5152327977e-12,
+                    -7.6361139634e-12,
+                    13.284847653,
+                    -2.8978449915e-13,
+                    -3.0212670668e-13,
+                    7.704983294e-13
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 11,
+          "step_time": 0.6178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    3.7476688419e-12,
+                    3.047340158e-12,
+                    12.614171394,
+                    1.0595702199e-12,
+                    -3.2896413071e-12,
+                    3.9240203624e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 12,
+          "step_time": 0.7178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    4.2033043712e-12,
+                    2.5219826227e-12,
+                    12.075072918,
+                    -2.1856998419e-13,
+                    -1.3130919941e-12,
+                    -1.85695955e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 13,
+          "step_time": 0.8178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    6.2700955539e-12,
+                    5.0088821979e-12,
+                    11.628547099,
+                    -4.1477604523e-13,
+                    1.507705698e-12,
+                    -1.3161589224e-12
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 14,
+          "step_time": 0.9178125,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    6.9704242378e-12,
+                    5.9894311732e-12,
+                    11.250102962,
+                    1.2308363772e-12,
+                    -4.4254618582e-13,
+                    -8.0713624397e-14
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 15,
+          "step_time": 1.0,
+          "total_time": 2.0,
+          "element_sets": {
+            "E1E_S": {
+              "set": "E1E",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 32,
+                  "s": [
+                    3.8880010322e-12,
+                    4.5887738054e-12,
+                    10.975251827,
+                    8.140192666e-13,
+                    7.0121969259e-12,
+                    -1.3947913022e-12
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

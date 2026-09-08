@@ -1,0 +1,509 @@
+{
+  "meta": {
+    "jobname": "furnace",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 35.865033
+    },
+    "mesh_statistics": {
+      "nodes": 2791,
+      "elements": 355,
+      "equations": 971
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 0.1,
+          "total_time": 0.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  299.9996173
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 0.2,
+          "total_time": 0.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  299.99862772
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 0.35,
+          "total_time": 0.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  299.99714024
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 0.575,
+          "total_time": 0.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  299.99675287
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 0.9125,
+          "total_time": 0.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  300.00534671
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  300.00918588
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 10.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  302.38444288
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 20.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  304.91137428
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 35.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  308.70215189
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 57.5,
+          "total_time": 1.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  314.37424561
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 91.25,
+          "total_time": 1.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  322.87463079
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 100.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  325.07924926
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 3,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 10.0,
+          "total_time": 101.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  327.60050436
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 20.0,
+          "total_time": 101.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  330.12390079
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 35.0,
+          "total_time": 101.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  333.9149482
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 57.5,
+          "total_time": 101.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  339.61940162
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 91.25,
+          "total_time": 101.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  348.23448852
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 100.0,
+          "total_time": 101.0,
+          "node_sets": {
+            "NGASN_NT": {
+              "set": "NGASN",
+              "field": "NT",
+              "nodes": [
+                603,
+                608
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  300.0
+                ],
+                [
+                  350.47268931
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

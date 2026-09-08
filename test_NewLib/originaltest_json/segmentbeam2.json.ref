@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "jobname": "segmentbeam2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.17282
+    },
+    "mesh_statistics": {
+      "nodes": 681,
+      "elements": 97,
+      "equations": 3412
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 2.0592219524e-10,
+        "y": 2.0553104832e-10,
+        "z": 2.0553104832e-10,
+        "rx": 1.035225756e-10,
+        "ry": 1.0465574428e-11,
+        "rz": 9.4201702752e-11
+      },
+      "fraction_of_totals": {
+        "x": 0.96364080636,
+        "y": 0.77135452035,
+        "z": 0.77083121508,
+        "rx": 0.93823232118,
+        "ry": 0.77914640449,
+        "rz": 0.96852498499
+      }
+    }
+  ]
+}
