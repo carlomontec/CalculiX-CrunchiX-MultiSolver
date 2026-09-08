@@ -31,12 +31,16 @@ Ubuntu/Debian:
 ```bash
 sudo apt-get update
 sudo apt-get install -y build-essential gfortran cmake libopenblas-dev liblapack-dev libarpack2-dev libmumps-seq-dev
+# Optional for AMD Zen CPUs (Ryzen/EPYC/Threadripper):
+sudo apt-get install -y libblis-openmp-dev libflame-dev
 ```
 
 Fedora/RHEL:
 
 ```bash
 sudo dnf install -y gcc gcc-gfortran cmake openblas-devel lapack-devel arpack-devel MUMPS-devel
+# Optional for AMD Zen CPUs:
+sudo dnf install -y blis-devel libflame-devel
 ```
 
 Arch Linux:
@@ -127,6 +131,48 @@ cmake --build build_pardiso --parallel
 ```
 
 The executable is written to `build_<solver>/CalculiX`.
+
+## BLAS & Linear Algebra Acceleration Strategy
+
+CalculiX sparse direct solvers—especially **MUMPS 5.x**—rely on dense Level 3 BLAS operations (`DGEMM`, `DSYRK`, `DTRSM`) for 80% to 90% of their numerical factorization runtime. Linking an unoptimized reference BLAS library (such as Netlib reference BLAS) can degrade solver performance by 5× to 10×.
+
+CalculiX includes a platform-adaptive, compile-time BLAS discovery engine controlled by the CMake cache option:
+
+```bash
+-DCCX_BLAS=AUTO|BLIS|OPENBLAS|MKL|NETLIB  # Default: AUTO
+```
+
+### Hardware-Adaptive Defaults (`AUTO` Mode)
+
+| Platform & CPU Architecture | Default BLAS Backend | Key Characteristics |
+| :--- | :--- | :--- |
+| **macOS (Apple Silicon arm64)** | **Apple Accelerate Framework** | Native hardware AMX & Neon SIMD vectorization with unified memory. |
+| **Linux (AMD Zen / EPYC / Ryzen)** | **AMD AOCL-BLIS** (fallback: OpenBLAS) | Cache tiling tuned specifically for Zen Core Complex Die (CCD) and L3 cache boundaries. |
+| **Linux (Intel / General x86_64 / arm64)** | **OpenBLAS** (fallback: Intel MKL runtime) | Multi-architecture runtime dispatch with AVX2/AVX-512 and ARM Neon support. |
+| **Windows (MSYS2 UCRT64)** | **OpenBLAS** or **AMD BLIS** | Native Windows x64 DLL bundling (`libopenblas.dll` or `libblis.dll`). |
+| **When `-DCCX_USE_PARDISO=ON`** | **Intel oneMKL** | Intel oneMKL runtime provides full integrated BLAS/LAPACK to both PARDISO and MUMPS. |
+
+### Selecting a Specific BLAS Implementation at Compile Time
+
+To explicitly select a specific BLAS implementation, pass `-DCCX_BLAS=<CHOICE>` to CMake:
+
+```bash
+# Force AMD AOCL / BLIS with MUMPS
+cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=BLIS
+cmake --build build_mumps --parallel
+
+# Force OpenBLAS with MUMPS
+cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=OPENBLAS
+cmake --build build_mumps --parallel
+
+# Force Intel oneMKL runtime BLAS without PARDISO
+cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=MKL
+cmake --build build_mumps --parallel
+```
+
+### Linux Debian/Ubuntu System BLAS Alternatives Note
+
+On Debian and Ubuntu systems, system-packaged shared MUMPS (`libdmumps_seq.so`) dynamically resolves `dgemm` through `/etc/alternatives/libblas.so.3-<arch>`. The automated installer `install.sh` automatically checks and configures this alternative to ensure it points to an optimized library (`openblas-pthread` or `blis-openmp`) rather than the unvectorized reference Netlib BLAS (`/usr/lib/.../blas/libblas.so.3`).
 
 ## Selecting a Solver
 
