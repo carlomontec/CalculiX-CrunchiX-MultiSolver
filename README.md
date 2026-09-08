@@ -54,7 +54,7 @@ This project is designed to work with [CalculiX GraphiX GLFW](https://github.com
 
 | Backend | Linux | macOS | Windows | Role |
 |:---|:---:|:---:|:---:|:---|
-| **MUMPS 5.x** | System package (recommended) | Vendored archive | System/MSYS2 package (recommended) | Primary modern open-source candidate |
+| **MUMPS 5.x** | System package (recommended) | Vendored archive | System/MSYS2 package (recommended) | Primary modern open-source candidate (accelerated via OpenBLAS / AMD AOCL-BLIS; see [INSTALL.md](INSTALL.md)) |
 | **Apple Accelerate** | No | Native framework (recommended) | No | macOS sparse solver |
 | **Intel oneMKL PARDISO** | Optional | No | Optional | High-performance oneMKL backend |
 | **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
@@ -103,7 +103,7 @@ This project is designed to work with [CalculiX GraphiX GLFW](https://github.com
 
 | Backend | Linux | macOS | Windows | Role |
 |:---|:---:|:---:|:---:|:---|
-| **MUMPS 5.x** | System package (**recommended**) | Vendored archive | System/MSYS2 (**recommended**) package | Primary modern open-source candidate |
+| **MUMPS 5.x** | System package (**recommended**) | Vendored archive | System/MSYS2 (**recommended**) package | Primary modern open-source candidate (accelerated via OpenBLAS / AMD AOCL-BLIS; see [INSTALL.md](INSTALL.md)) |
 | **Apple Accelerate** | No | Native framework (**recommended**) | No | macOS sparse solver |
 | **Intel oneMKL PARDISO** | Optional | No | Optional | High-performance oneMKL backend |
 | **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
