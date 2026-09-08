@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "jobname": "rot2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.029458
+    },
+    "mesh_statistics": {
+      "nodes": 75,
+      "elements": 5,
+      "equations": 78
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NS_ALLN_U": {
+              "set": "NS_ALLN",
+              "field": "U",
+              "nodes": [
+                10,
+                20,
+                30,
+                4,
+                5
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  -1.395961876e-22,
+                  0.0
+                ],
+                [
+                  -8.3646197607e-16,
+                  0.010453808242,
+                  -5.388274695e-12
+                ],
+                [
+                  -1.6390968444e-15,
+                  0.041865599678,
+                  -2.1308312889e-11
+                ],
+                [
+                  -2.1920399523e-15,
+                  0.095210258585,
+                  -4.3819637965e-11
+                ],
+                [
+                  -2.6811235523e-15,
+                  0.17139952316,
+                  -6.8973988527e-11
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NS_ALLN_U": {
+              "set": "NS_ALLN",
+              "field": "U",
+              "nodes": [
+                10,
+                20,
+                30,
+                4,
+                5
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  5.2811899815e-23,
+                  0.0
+                ],
+                [
+                  -1.3415477225e-16,
+                  0.00052440129949,
+                  -9.7632322279e-13
+                ],
+                [
+                  -2.8474198368e-16,
+                  0.0021207965099,
+                  -3.8696871758e-12
+                ],
+                [
+                  -4.2451936064e-16,
+                  0.01513468135,
+                  -7.9894205409e-12
+                ],
+                [
+                  -6.047137617e-16,
+                  0.049924308403,
+                  -1.2630954421e-11
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

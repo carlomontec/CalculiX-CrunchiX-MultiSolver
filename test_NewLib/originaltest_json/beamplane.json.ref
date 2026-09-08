@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "jobname": "beamplane",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 2.170384
+    },
+    "mesh_statistics": {
+      "nodes": 322,
+      "elements": 32,
+      "equations": 698
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 0.25,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.0029097314078,
+                  0.17393585832,
+                  -0.0021353821115
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -35.3935461,
+                    337.87411603,
+                    1960.2796073,
+                    106.00071907,
+                    -43.202407357,
+                    323.04286455
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -8.9438561486,
+                    -19.429737107,
+                    -23.57575649,
+                    -7.1703585943,
+                    -2.6785479392,
+                    32.097628477
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 0.5,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.0058868007123,
+                  0.35042178771,
+                  -0.0084756733422
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -68.091007401,
+                    669.64764065,
+                    3974.4833477,
+                    205.11380746,
+                    -86.067270991,
+                    672.82038939
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -17.546328597,
+                    -33.906145388,
+                    -46.895665612,
+                    -14.554774257,
+                    -5.3706539981,
+                    63.048574984
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 0.75,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.0088344503125,
+                  0.52935273267,
+                  -0.019221873908
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -98.232782256,
+                    995.68391933,
+                    6041.3659789,
+                    297.61405316,
+                    -128.50814139,
+                    1050.4540463
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -25.783175559,
+                    -43.478509417,
+                    -69.79300131,
+                    -22.152853692,
+                    -8.0248568804,
+                    92.668322829
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.011780501655,
+                  0.71058729353,
+                  -0.034572968706
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    -125.99022557,
+                    1316.4771082,
+                    8159.2149277,
+                    383.80048732,
+                    -170.44413363,
+                    1457.0948514
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    -33.6311262,
+                    -48.228091146,
+                    -92.06480106,
+                    -29.975410641,
+                    -10.627691388,
+                    120.77892463
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

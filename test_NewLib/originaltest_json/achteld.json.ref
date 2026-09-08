@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "jobname": "achteld",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.012782
+    },
+    "mesh_statistics": {
+      "nodes": 81,
+      "elements": 8,
+      "equations": 236
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "SET1N_U": {
+              "set": "SET1N",
+              "field": "U",
+              "nodes": [
+                1,
+                81
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -0.19246722776,
+                  -0.36697204602,
+                  0.24469415753
+                ]
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    5573.7518622,
+                    5573.7518622,
+                    -34480.487685,
+                    4716.7243728,
+                    -10690.039828,
+                    -10690.039828
+                  ]
+                },
+                {
+                  "element": 8,
+                  "s": [
+                    1883.3789663,
+                    1883.3789663,
+                    -2813.6467655,
+                    -219.27671866,
+                    682.37447668,
+                    682.37447668
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

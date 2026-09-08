@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "jobname": "axiplane",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.024429
+    },
+    "mesh_statistics": {
+      "nodes": 61,
+      "elements": 2,
+      "equations": 41
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    0.015944957317,
+                    -0.0038445090979,
+                    0.023950876983,
+                    -3.4491588776e-05,
+                    0.00011431525561,
+                    4.7019011522e-07
+                  ]
+                },
+                {
+                  "element": 2,
+                  "s": [
+                    101.71013604,
+                    -0.5083595649,
+                    8.3074411533e-05,
+                    -4.0013539268,
+                    1.5190435845e-05,
+                    -2.9231027308e-06
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

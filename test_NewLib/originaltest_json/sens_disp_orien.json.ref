@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "jobname": "sens_disp_orien",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.075003
+    },
+    "mesh_statistics": {
+      "nodes": 12,
+      "elements": 2,
+      "equations": 24
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "SENSITIVITY",
+      "converged": true
+    }
+  ]
+}

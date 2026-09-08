@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "CalculiX.h"
+#include "json_export.h"
 
 #ifdef CALCULIX_MPI
 ITG myid = 0,nproc = 0;
@@ -114,25 +115,57 @@ int main(int argc,char *argv[])
   if(argc==1){printf("Usage: CalculiX.exe -i jobname\n");FORTRAN(stop,());}
   else{
     for(i=1;i<argc;i++){
+      if(strcmp1(argv[i],"-j")==0 || strcmp1(argv[i],"--json")==0 || strcmp1(argv[i],"-json")==0){
+        json_set_active(1);
+        continue;
+      }
       if(strcmp1(argv[i],"-i")==0){
-	if(strlen(argv[i+1])>127){
-	  printf(" *ERROR in CalculiX: the number of characters in the name of the input deck (without .inp) exceeds 127 characters\n");
-	  FORTRAN(stop,());
-	}
-	strcpy2(jobnamec,argv[i+1],132);
-	strcpy1(jobnamef,argv[i+1],132);jin++;break;}
+        if(i+1<argc){
+          if(strlen(argv[i+1])>127){
+            printf(" *ERROR in CalculiX: the number of characters in the name of the input deck (without .inp) exceeds 127 characters\n");
+            FORTRAN(stop,());
+          }
+          strcpy2(jobnamec,argv[i+1],132);
+          strcpy1(jobnamef,argv[i+1],132);jin++;i++;
+        }
+        continue;
+      }
       if(strcmp1(argv[i],"-v")==0){
-	printf("\nThis is Version DEVELOPMENT\n\n");
-	FORTRAN(stop,());
+        printf("\nThis is Version DEVELOPMENT\n\n");
+        FORTRAN(stop,());
+      }
+      if(argv[i][0]!='-' && jin==0){
+        if(strlen(argv[i])>127){
+          printf(" *ERROR in CalculiX: the number of characters in the name of the input deck (without .inp) exceeds 127 characters\n");
+          FORTRAN(stop,());
+        }
+        strcpy2(jobnamec,argv[i],132);
+        strcpy1(jobnamef,argv[i],132);
+        jin++;
       }
     }
-    if(jin==0){
-      if(strlen(argv[1])>127){
-	printf(" *ERROR in CalculiX: the number of characters in the name of the input deck (without .inp) exceeds 127 characters\n");
-	FORTRAN(stop,());
-      }
-      strcpy2(jobnamec,argv[1],132);
-      strcpy1(jobnamef,argv[1],132);}
+  }
+
+  if(getenv("CCX_JSON") || getenv("CCX_EXPORT_JSON")){
+    json_set_active(1);
+  }
+
+  if(json_is_active()){
+    json_init(jobnamec,
+#if defined(ACCELERATE_SOLVER)
+      "ACCELERATE"
+#elif defined(MUMPS)
+      "MUMPS"
+#elif defined(PARDISO)
+      "PARDISO"
+#elif defined(SPOOLES)
+      "SPOOLES"
+#elif defined(PASTIX)
+      "PASTIX"
+#else
+      "DEFAULT"
+#endif
+    );
   }
 
   putenv("CCX_JOBNAME_GETJOBNAME=jobnamec");
@@ -1243,6 +1276,17 @@ int main(int argc,char *argv[])
     /* nmethod=15: Crack propagation */
     /* nmethod=16: Feasible direction based on sensitivity information */
 
+    if(json_is_active()){
+      json_set_meta_stats(&nk, &ne, neq, 1);
+      const char *stype = "STATIC";
+      if(nmethod == 2) stype = "FREQUENCY";
+      else if(nmethod == 3) stype = "BUCKLE";
+      else if(nmethod == 4) stype = "DYNAMIC";
+      else if(nmethod == 5) stype = "STEADY_STATE_DYNAMICS";
+      else if(nmethod == 12) stype = "SENSITIVITY";
+      json_start_step(istep, stype);
+    }
+
     if((nmethod<=1)||(nmethod==11)||((iperturb[0]>1)&&(nmethod<8)))
       {
 	if(iperturb[0]<2){
@@ -1977,6 +2021,10 @@ int main(int argc,char *argv[])
   printf("Total CalculiX Time: %lf\n", totalCalculixTime);
 
   printf("________________________________________\n");
+
+  if(json_is_active()){
+    json_finalize(0, totalCalculixTime);
+  }
 
   return 0;
       

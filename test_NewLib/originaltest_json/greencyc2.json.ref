@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "jobname": "greencyc2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 2.962798
+    },
+    "mesh_statistics": {
+      "nodes": 661,
+      "elements": 96,
+      "equations": 3168
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "SENSITIVITY",
+      "converged": true
+    }
+  ]
+}

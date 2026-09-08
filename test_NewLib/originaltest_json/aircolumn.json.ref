@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "jobname": "aircolumn",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.073864
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 219
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 17828.179218,
+          "frequency_rad_s": 133.52220496,
+          "frequency_hz": 21.250718932
+        },
+        {
+          "mode_number": 2,
+          "eigenvalue": 71380.856487,
+          "frequency_rad_s": 267.17196052,
+          "frequency_hz": 42.521738172
+        },
+        {
+          "mode_number": 3,
+          "eigenvalue": 161241.72169,
+          "frequency_rad_s": 401.54915228,
+          "frequency_hz": 63.908532479
+        },
+        {
+          "mode_number": 4,
+          "eigenvalue": 289526.13494,
+          "frequency_rad_s": 538.07632817,
+          "frequency_hz": 85.637507389
+        },
+        {
+          "mode_number": 5,
+          "eigenvalue": 461353.79671,
+          "frequency_rad_s": 679.23029726,
+          "frequency_hz": 108.10285931
+        },
+        {
+          "mode_number": 6,
+          "eigenvalue": 686883.23245,
+          "frequency_rad_s": 828.78418931,
+          "frequency_hz": 131.90510049
+        },
+        {
+          "mode_number": 7,
+          "eigenvalue": 984565.14481,
+          "frequency_rad_s": 992.252561,
+          "frequency_hz": 157.92189988
+        }
+      ],
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  0.0
+                ],
+                [
+                  -172.76517654
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

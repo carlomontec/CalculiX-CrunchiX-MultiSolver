@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "jobname": "circ10pcent",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.344438
+    },
+    "mesh_statistics": {
+      "nodes": 326,
+      "elements": 114,
+      "equations": 552
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

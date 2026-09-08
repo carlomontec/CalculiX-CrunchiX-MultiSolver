@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "jobname": "circ11p.rfn",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.016194
+    },
+    "mesh_statistics": {
+      "nodes": 0,
+      "elements": 0,
+      "equations": 0
+    }
+  },
+  "steps": []
+}

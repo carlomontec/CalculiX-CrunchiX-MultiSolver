@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "jobname": "scheibejc",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.86431
+    },
+    "mesh_statistics": {
+      "nodes": 2052,
+      "elements": 904,
+      "equations": 5094
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 162,
+          "step_time": 1e-05,
+          "total_time": 0.0
+        }
+      ]
+    }
+  ]
+}

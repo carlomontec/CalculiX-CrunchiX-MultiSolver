@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "jobname": "circ10pnl",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.394076
+    },
+    "mesh_statistics": {
+      "nodes": 331,
+      "elements": 116,
+      "equations": 591
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                54,
+                58
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -0.00021265466925,
+                  0.0012914113891,
+                  -0.00016405989119
+                ],
+                [
+                  -0.00021265466925,
+                  0.0012914113891,
+                  -0.00016405989119
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                54,
+                58
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -0.00020268442364,
+                  0.001454816808,
+                  -0.00021829964031
+                ],
+                [
+                  -0.00020268442364,
+                  0.001454816808,
+                  -0.00021829964031
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

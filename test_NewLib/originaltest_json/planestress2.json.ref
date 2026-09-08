@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "jobname": "planestress2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.005088
+    },
+    "mesh_statistics": {
+      "nodes": 117,
+      "elements": 4,
+      "equations": 100
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    295.32194795,
+                    -5.0610317622,
+                    -0.00028717105537,
+                    3.1060097228,
+                    0.037654501012,
+                    -0.023295947773
+                  ]
+                },
+                {
+                  "element": 2,
+                  "s": [
+                    233.36396382,
+                    0.73670174305,
+                    0.0037706617412,
+                    -0.56459570807,
+                    0.021011816025,
+                    -0.11527835888
+                  ]
+                },
+                {
+                  "element": 3,
+                  "s": [
+                    102.25274323,
+                    -8.6723806838,
+                    -0.0011973068214,
+                    -0.04792687948,
+                    0.043632981841,
+                    -0.023677868912
+                  ]
+                },
+                {
+                  "element": 4,
+                  "s": [
+                    101.79532084,
+                    -8.8307587342,
+                    -0.0042225323206,
+                    1.4470447335,
+                    0.044330532164,
+                    0.0084511218461
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

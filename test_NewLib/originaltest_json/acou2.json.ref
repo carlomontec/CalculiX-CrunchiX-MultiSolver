@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "jobname": "acou2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.151477
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 240
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 4456.771401,
+          "frequency_rad_s": 66.759054824,
+          "frequency_hz": 10.625033571
+        },
+        {
+          "mode_number": 2,
+          "eigenvalue": 40123.926381,
+          "frequency_rad_s": 200.30957636,
+          "frequency_hz": 31.880259226
+        },
+        {
+          "mode_number": 3,
+          "eigenvalue": 111691.69566,
+          "frequency_rad_s": 334.20307547,
+          "frequency_hz": 53.190071458
+        },
+        {
+          "mode_number": 4,
+          "eigenvalue": 220351.6232,
+          "frequency_rad_s": 469.41625792,
+          "frequency_hz": 74.709917816
+        },
+        {
+          "mode_number": 5,
+          "eigenvalue": 369509.85836,
+          "frequency_rad_s": 607.87322557,
+          "frequency_hz": 96.746028622
+        },
+        {
+          "mode_number": 6,
+          "eigenvalue": 566498.56266,
+          "frequency_rad_s": 752.66098787,
+          "frequency_hz": 119.78971669
+        },
+        {
+          "mode_number": 7,
+          "eigenvalue": 825093.00367,
+          "frequency_rad_s": 908.34630162,
+          "frequency_hz": 144.56780394
+        },
+        {
+          "mode_number": 8,
+          "eigenvalue": 1162561.4477,
+          "frequency_rad_s": 1078.2214279,
+          "frequency_hz": 171.60427
+        },
+        {
+          "mode_number": 9,
+          "eigenvalue": 1162563.3762,
+          "frequency_rad_s": 1078.2223223,
+          "frequency_hz": 171.60441234
+        },
+        {
+          "mode_number": 10,
+          "eigenvalue": 1169882.8234,
+          "frequency_rad_s": 1081.6112164,
+          "frequency_hz": 172.14377159
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "STEADY_STATE_DYNAMICS",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 0,
+          "step_time": 5.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "MIDN_NT": {
+              "set": "MIDN",
+              "field": "NT",
+              "nodes": [
+                117
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  -0.030729853229
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

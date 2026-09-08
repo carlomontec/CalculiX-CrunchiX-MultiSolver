@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^python3 test_NewLib/run_official_testsuite\\.py --solvers MUMPS --limit 1 --timeout 1$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

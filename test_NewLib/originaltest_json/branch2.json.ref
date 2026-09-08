@@ -1,0 +1,138 @@
+{
+  "meta": {
+    "jobname": "branch2",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.010112
+    },
+    "mesh_statistics": {
+      "nodes": 8,
+      "elements": 5,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -0.023239066733,
+                  0.08,
+                  500.0
+                ],
+                [
+                  0.023239066733,
+                  0.08,
+                  500.0
+                ],
+                [
+                  -0.011619533367,
+                  0.09,
+                  500.0
+                ],
+                [
+                  0.011619533367,
+                  0.1,
+                  500.0
+                ],
+                [
+                  -0.011619533367,
+                  0.1,
+                  500.0
+                ],
+                [
+                  -0.011619533367,
+                  0.09,
+                  500.0
+                ],
+                [
+                  0.011619533367,
+                  0.1,
+                  500.0
+                ],
+                [
+                  -0.011619533367,
+                  0.1,
+                  500.0
+                ]
+              ]
+            },
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ],
+                [
+                  500.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "jobname": "beamp2rotate",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 11.736999
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 766
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 3,
+      "type": "STATIC",
+      "converged": true
+    }
+  ]
+}

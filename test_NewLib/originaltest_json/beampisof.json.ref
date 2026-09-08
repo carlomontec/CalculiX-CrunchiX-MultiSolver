@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "jobname": "beampisof",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.639602
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 720
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 12240486586.0,
+          "frequency_rad_s": 110636.73254,
+          "frequency_hz": 17608.382871
+        },
+        {
+          "mode_number": 2,
+          "eigenvalue": 20114031307.0,
+          "frequency_rad_s": 141823.94476,
+          "frequency_hz": 22571.981857
+        },
+        {
+          "mode_number": 3,
+          "eigenvalue": 268362815350.0,
+          "frequency_rad_s": 518037.4652,
+          "frequency_hz": 82448.223293
+        },
+        {
+          "mode_number": 4,
+          "eigenvalue": 299078408730.0,
+          "frequency_rad_s": 546880.61652,
+          "frequency_hz": 87038.753401
+        },
+        {
+          "mode_number": 5,
+          "eigenvalue": 473261139810.0,
+          "frequency_rad_s": 687939.7792,
+          "frequency_hz": 109489.01641
+        },
+        {
+          "mode_number": 6,
+          "eigenvalue": 1042099500300.0,
+          "frequency_rad_s": 1020832.7485,
+          "frequency_hz": 162470.57799
+        },
+        {
+          "mode_number": 7,
+          "eigenvalue": 1609429337400.0,
+          "frequency_rad_s": 1268632.8616,
+          "frequency_hz": 201909.19089
+        },
+        {
+          "mode_number": 8,
+          "eigenvalue": 2639222000100.0,
+          "frequency_rad_s": 1624568.2504,
+          "frequency_hz": 258558.06744
+        },
+        {
+          "mode_number": 9,
+          "eigenvalue": 2697252008700.0,
+          "frequency_rad_s": 1642331.2725,
+          "frequency_hz": 261385.14022
+        },
+        {
+          "mode_number": 10,
+          "eigenvalue": 4984775070200.0,
+          "frequency_rad_s": 2232660.9842,
+          "frequency_hz": 355339.03188
+        }
+      ],
+      "total_effective_mass": {
+        "x": 9.1e-08,
+        "y": 9.1e-08,
+        "z": 9.1e-08,
+        "rx": 2.06505e-06,
+        "ry": 2.0271333333e-06,
+        "rz": 9.8583333333e-08
+      },
+      "fraction_of_totals": {
+        "x": 0.93794879247,
+        "y": 0.90942269831,
+        "z": 0.82876151569,
+        "rx": 0.99481654452,
+        "ry": 0.99765081784,
+        "rz": 0.92608168899
+      }
+    }
+  ]
+}

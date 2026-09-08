@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "jobname": "beamb",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.307813
+    },
+    "mesh_statistics": {
+      "nodes": 261,
+      "elements": 32,
+      "equations": 720
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "BUCKLE",
+      "converged": true,
+      "buckling_modes": [
+        {
+          "mode_number": 1,
+          "buckling_factor": 48.154555293
+        },
+        {
+          "mode_number": 2,
+          "buckling_factor": 106.31745418
+        },
+        {
+          "mode_number": 3,
+          "buckling_factor": 393.40259296
+        },
+        {
+          "mode_number": 4,
+          "buckling_factor": 780.70616816
+        },
+        {
+          "mode_number": 5,
+          "buckling_factor": 927.99684277
+        },
+        {
+          "mode_number": 6,
+          "buckling_factor": 1490.8970659
+        },
+        {
+          "mode_number": 7,
+          "buckling_factor": 1595.5363428
+        },
+        {
+          "mode_number": 8,
+          "buckling_factor": 1986.4591304
+        },
+        {
+          "mode_number": 9,
+          "buckling_factor": 1991.3734106
+        },
+        {
+          "mode_number": 10,
+          "buckling_factor": 2177.3015005
+        }
+      ]
+    }
+  ]
+}

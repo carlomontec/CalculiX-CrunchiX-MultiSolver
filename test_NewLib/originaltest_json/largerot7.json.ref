@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "jobname": "largerot7",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.039494
+    },
+    "mesh_statistics": {
+      "nodes": 262,
+      "elements": 32,
+      "equations": 766
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 51929844125.0,
+          "frequency_rad_s": 227881.20617,
+          "frequency_hz": 36268.4204
+        },
+        {
+          "mode_number": 2,
+          "eigenvalue": 91092678639.0,
+          "frequency_rad_s": 301815.63684,
+          "frequency_hz": 48035.450505
+        },
+        {
+          "mode_number": 3,
+          "eigenvalue": 288695581010.0,
+          "frequency_rad_s": 537303.9931,
+          "frequency_hz": 85514.586446
+        },
+        {
+          "mode_number": 4,
+          "eigenvalue": 682720266550.0,
+          "frequency_rad_s": 826268.88272,
+          "frequency_hz": 131504.77701
+        }
+      ],
+      "total_effective_mass": {
+        "x": 6.5938888889e-08,
+        "y": 6.5938888889e-08,
+        "z": 6.3857945847e-08,
+        "rx": 1.4820811023e-06,
+        "ry": 1.4795959679e-06,
+        "rz": 4.3489814815e-08
+      },
+      "fraction_of_totals": {
+        "x": 0.74853939857,
+        "y": 0.71744861602,
+        "z": 0.062950836233,
+        "rx": 0.70966165997,
+        "ry": 0.61395220697,
+        "rz": 0.75559621074
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "jobname": "hinge",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.372682
+    },
+    "mesh_statistics": {
+      "nodes": 332,
+      "elements": 32,
+      "equations": 1
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 4,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                100
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  8.9924350548,
+                  -9.9995988245,
+                  1.5768382183e-15
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

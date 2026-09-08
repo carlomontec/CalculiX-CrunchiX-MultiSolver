@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "jobname": "channel3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.133977
+    },
+    "mesh_statistics": {
+      "nodes": 11,
+      "elements": 6,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                4,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  60000.0,
+                  3.6669724771,
+                  0.0
+                ],
+                [
+                  60000.0,
+                  3.6669724771,
+                  0.0
+                ],
+                [
+                  60000.0,
+                  2.2334862385,
+                  0.77122833709
+                ],
+                [
+                  60000.0,
+                  0.8,
+                  1.5424566742
+                ],
+                [
+                  60000.0,
+                  1.75,
+                  1.5424566742
+                ],
+                [
+                  60000.0,
+                  2.7,
+                  1.5424566742
+                ],
+                [
+                  60000.0,
+                  2.7,
+                  0.77122833709
+                ],
+                [
+                  60000.0,
+                  2.7,
+                  0.0
+                ],
+                [
+                  60000.0,
+                  2.7,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

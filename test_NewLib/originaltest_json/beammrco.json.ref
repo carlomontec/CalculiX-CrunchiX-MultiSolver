@@ -1,0 +1,127 @@
+{
+  "meta": {
+    "jobname": "beammrco",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.57824
+    },
+    "mesh_statistics": {
+      "nodes": 263,
+      "elements": 32,
+      "equations": 1
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  -4.8512427099e-06,
+                  -2.7415922095e-06,
+                  -0.0013056340429
+                ]
+              ]
+            },
+            "NALLN_RF": {
+              "set": "NALLN",
+              "field": "RF",
+              "nodes": [
+                1,
+                261
+              ],
+              "components": [
+                "fx",
+                "fy",
+                "fz"
+              ],
+              "values": [
+                [
+                  11.36134139,
+                  -12.529127911,
+                  -1.5573657819
+                ],
+                [
+                  0.0077278246862,
+                  0.017909796276,
+                  -0.0071212185325
+                ]
+              ],
+              "total": [
+                11.369069215,
+                -12.511218115,
+                -1.5644870004
+              ]
+            }
+          },
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    158.0124862,
+                    -48.888578869,
+                    37.364847729,
+                    -45.972780962,
+                    1375.9310175,
+                    -1329.0612181
+                  ]
+                },
+                {
+                  "element": 32,
+                  "s": [
+                    58.542514597,
+                    -281.81572748,
+                    -119.65728489,
+                    213.6481439,
+                    -765.8199182,
+                    305.98492164
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

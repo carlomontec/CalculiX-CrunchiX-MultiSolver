@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "jobname": "truss",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.004699
+    },
+    "mesh_statistics": {
+      "nodes": 45,
+      "elements": 2,
+      "equations": 52
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "element_sets": {
+            "EALLE_S": {
+              "set": "EALLE",
+              "field": "S",
+              "components": [
+                "sxx",
+                "syy",
+                "szz",
+                "sxy",
+                "syz",
+                "szx"
+              ],
+              "values": [
+                {
+                  "element": 1,
+                  "s": [
+                    5.6568542495,
+                    -8.9208482852e-14,
+                    5.6568542495,
+                    1.1158731573e-13,
+                    5.6568542495,
+                    8.7400745703e-14
+                  ]
+                },
+                {
+                  "element": 2,
+                  "s": [
+                    5.6568542495,
+                    -4.8220275442e-13,
+                    5.6568542495,
+                    1.7235327489e-13,
+                    -5.6568542495,
+                    -9.9883053636e-14
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

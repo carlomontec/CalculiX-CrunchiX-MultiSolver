@@ -1,0 +1,32 @@
+{
+  "meta": {
+    "jobname": "couette1",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 1.839479
+    },
+    "mesh_statistics": {
+      "nodes": 84,
+      "elements": 20,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0
+        }
+      ]
+    }
+  ]
+}

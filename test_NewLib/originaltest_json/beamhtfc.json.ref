@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "jobname": "beamhtfc",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.024419
+    },
+    "mesh_statistics": {
+      "nodes": 279,
+      "elements": 56,
+      "equations": 200
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                271
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  20.0
+                ],
+                [
+                  89.296620845
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "jobname": "unetp1",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.030415
+    },
+    "mesh_statistics": {
+      "nodes": 5,
+      "elements": 3,
+      "equations": 0
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.50203093598,
+                  544300.0,
+                  819.0
+                ],
+                [
+                  0.50203093598,
+                  544300.0,
+                  819.0
+                ],
+                [
+                  0.50203093598,
+                  542150.0,
+                  819.0
+                ],
+                [
+                  0.50203093598,
+                  540000.0,
+                  819.0
+                ],
+                [
+                  0.50203093598,
+                  540000.0,
+                  819.0
+                ]
+              ]
+            },
+            "NALLN_NT": {
+              "set": "NALLN",
+              "field": "NT",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "components": [
+                "NT"
+              ],
+              "values": [
+                [
+                  819.0
+                ],
+                [
+                  819.0
+                ],
+                [
+                  819.0
+                ],
+                [
+                  819.0
+                ],
+                [
+                  819.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

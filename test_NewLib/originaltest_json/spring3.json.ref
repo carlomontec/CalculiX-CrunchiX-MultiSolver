@@ -1,0 +1,218 @@
+{
+  "meta": {
+    "jobname": "spring3",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.025891
+    },
+    "mesh_statistics": {
+      "nodes": 10,
+      "elements": 2,
+      "equations": 8
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.40007071079,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.40007071079,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.40007071079,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.40007071079,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.4,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "step_number": 2,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 160249324300.0,
+          "frequency_rad_s": 400311.53406,
+          "frequency_hz": 63711.559422
+        }
+      ],
+      "total_effective_mass": {
+        "x": 6.24e-11,
+        "y": 0.0,
+        "z": 0.0,
+        "rx": 0.0,
+        "ry": 2.08e-13,
+        "rz": 2.08e-13
+      },
+      "fraction_of_totals": {
+        "x": 0.99999999935,
+        "y": 1.0,
+        "z": 1.0,
+        "rx": 1.0,
+        "ry": 2.4291230218e-32,
+        "rz": 4.8017560894e-33
+      },
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 1.0,
+          "node_sets": {
+            "NALLN_U": {
+              "set": "NALLN",
+              "field": "U",
+              "nodes": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126586.82339,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126586.82339,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126598.0183,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126598.0183,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126586.82339,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126586.82339,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126598.0183,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126598.0183,
+                  0.0,
+                  0.0
+                ],
+                [
+                  126586.82339,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

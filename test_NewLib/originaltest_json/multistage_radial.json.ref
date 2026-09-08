@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "jobname": "multistage_radial",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 8.367349
+    },
+    "mesh_statistics": {
+      "nodes": 2154,
+      "elements": 320,
+      "equations": 9528
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "total_effective_mass": {
+        "x": 4.8140662002e-05,
+        "y": 4.8118621011e-05,
+        "z": 4.8118621011e-05,
+        "rx": 0.53166567295,
+        "ry": 0.86176652192,
+        "rz": 0.34283578429
+      },
+      "fraction_of_totals": {
+        "x": 0.81631588462,
+        "y": 0.37144971462,
+        "z": 0.64492069606,
+        "rx": 0.37814525493,
+        "ry": 0.72875102708,
+        "rz": 0.24251865517
+      }
+    }
+  ]
+}

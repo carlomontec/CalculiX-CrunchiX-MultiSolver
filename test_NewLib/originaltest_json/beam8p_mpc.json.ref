@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "jobname": "beam8p_mpc",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.15892
+    },
+    "mesh_statistics": {
+      "nodes": 426,
+      "elements": 256,
+      "equations": 1200
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1.0,
+          "total_time": 0.0,
+          "node_sets": {
+            "N1N_U": {
+              "set": "N1N",
+              "field": "U",
+              "nodes": [
+                426
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  2.0318170763e-07,
+                  0.078923720772,
+                  -0.0018362554744
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

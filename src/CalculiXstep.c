@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "CalculiX.h"
+#include "json_export.h"
 
 #ifdef CALCULIX_MPI
 ITG myid = 0,nproc = 0;
@@ -1378,6 +1379,17 @@ void CalculiXstep(int argc,char argv[][133],ITG **nelemloadp,double **xloadp,
     /* nmethod=12: sensitivity analysis  */
     /* nmethod=13: Green function calculation */
     /* nmethod=14: Robustness w.r.t. to geometric tolerances */
+
+    if(json_is_active()){
+      json_set_meta_stats(nk, ne, neq, 1);
+      const char *stype = "STATIC";
+      if(*nmethod == 2) stype = "FREQUENCY";
+      else if(*nmethod == 3) stype = "BUCKLE";
+      else if(*nmethod == 4) stype = "DYNAMIC";
+      else if(*nmethod == 5) stype = "STEADY_STATE_DYNAMICS";
+      else if(*nmethod == 12) stype = "SENSITIVITY";
+      json_start_step(istep, stype);
+    }
 
     if((*nmethod<=1)||(*nmethod==11)||((iperturb[0]>1)&&(*nmethod<8)))
       {

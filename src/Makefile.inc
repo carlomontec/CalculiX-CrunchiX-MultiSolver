@@ -1063,6 +1063,7 @@ insertrad.c \
 interfaceloading.c \
 interpolatestatemain.c \
 interpoltetmain.c \
+json_export.c \
 linstatic.c \
 mafilldmssmain.c \
 mafillmm.c \

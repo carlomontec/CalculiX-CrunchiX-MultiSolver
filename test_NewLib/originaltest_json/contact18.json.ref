@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "jobname": "contact18",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 2.185409
+    },
+    "mesh_statistics": {
+      "nodes": 16,
+      "elements": 2,
+      "equations": 16
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "STATIC",
+      "converged": true
+    },
+    {
+      "step_number": 2,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 296,
+          "step_time": 2e-06,
+          "total_time": 1e-20,
+          "energy": {
+            "kinetic": 0.00045521243076,
+            "internal": 4.3992203037e-06,
+            "contact_friction": 5.5274704823e-05,
+            "total": 0.0
+          }
+        }
+      ]
+    }
+  ]
+}

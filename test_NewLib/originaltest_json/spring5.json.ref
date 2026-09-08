@@ -1,0 +1,5256 @@
+{
+  "meta": {
+    "jobname": "spring5",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.079018
+    },
+    "mesh_statistics": {
+      "nodes": 10,
+      "elements": 2,
+      "equations": 8
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "FREQUENCY",
+      "converged": true,
+      "modes": [
+        {
+          "mode_number": 1,
+          "eigenvalue": 160249324300.0,
+          "frequency_rad_s": 400311.53406,
+          "frequency_hz": 63711.559422
+        }
+      ],
+      "total_effective_mass": {
+        "x": 6.24e-11,
+        "y": 0.0,
+        "z": 0.0,
+        "rx": 0.0,
+        "ry": 2.08e-13,
+        "rz": 2.08e-13
+      },
+      "fraction_of_totals": {
+        "x": 0.99999999935,
+        "y": 1.0,
+        "z": 1.0,
+        "rx": 1.0,
+        "ry": 2.4291230218e-32,
+        "rz": 4.8017560894e-33
+      }
+    },
+    {
+      "step_number": 2,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 1,
+          "step_time": 1e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.00032047002033,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 2,
+          "step_time": 2e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0012813665988,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 3,
+          "step_time": 3e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0028811501109,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 4,
+          "step_time": 4e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0051172572566,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 5,
+          "step_time": 5e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0079861051677,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 6,
+          "step_time": 6e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.011483097149,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 7,
+          "step_time": 7e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.015602630042,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 8,
+          "step_time": 8e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.020338103206,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 9,
+          "step_time": 9e-07,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.02568192909,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 10,
+          "step_time": 1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.031625545391,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 11,
+          "step_time": 1.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.038159428779,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 12,
+          "step_time": 1.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.045273110145,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 13,
+          "step_time": 1.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.052955191388,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 14,
+          "step_time": 1.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.061193363666,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 15,
+          "step_time": 1.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.069974427127,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 16,
+          "step_time": 1.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.079284312057,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 17,
+          "step_time": 1.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.089108101418,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 18,
+          "step_time": 1.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.099430054758,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 19,
+          "step_time": 1.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.11023363342,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 20,
+          "step_time": 2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.12150152707,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 21,
+          "step_time": 2.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.13321568137,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 22,
+          "step_time": 2.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.145357327,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 23,
+          "step_time": 2.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.15790700963,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 24,
+          "step_time": 2.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.17084462119,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 25,
+          "step_time": 2.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.18414943198,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 26,
+          "step_time": 2.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.19780012401,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 27,
+          "step_time": 2.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.21177482504,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 28,
+          "step_time": 2.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.2260511437,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 29,
+          "step_time": 2.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.24060620534,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 30,
+          "step_time": 3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.2554166887,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 31,
+          "step_time": 3.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.27045886323,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 32,
+          "step_time": 3.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.28570862717,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 33,
+          "step_time": 3.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.30114154616,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 34,
+          "step_time": 3.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.31673289232,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 35,
+          "step_time": 3.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.33245768399,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 36,
+          "step_time": 3.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.34829072565,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 37,
+          "step_time": 3.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.36420664834,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 38,
+          "step_time": 3.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.38017995032,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 39,
+          "step_time": 3.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.39618503788,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 40,
+          "step_time": 4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.41219626643,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 41,
+          "step_time": 4.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.42818798148,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 42,
+          "step_time": 4.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.44413455986,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 43,
+          "step_time": 4.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.46001045068,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 44,
+          "step_time": 4.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.47579021634,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 45,
+          "step_time": 4.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.49144857325,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 46,
+          "step_time": 4.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.50696043235,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 47,
+          "step_time": 4.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.5223009393,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 48,
+          "step_time": 4.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.53744551433,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 49,
+          "step_time": 4.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.55236989161,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 50,
+          "step_time": 5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.56705015811,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 51,
+          "step_time": 5.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.58146279194,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 52,
+          "step_time": 5.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.59558470004,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 53,
+          "step_time": 5.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.60939325517,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 54,
+          "step_time": 5.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.62286633218,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 55,
+          "step_time": 5.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.63598234342,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 56,
+          "step_time": 5.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.64872027338,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 57,
+          "step_time": 5.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.66105971235,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 58,
+          "step_time": 5.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.6729808891,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 59,
+          "step_time": 5.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.68446470257,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 60,
+          "step_time": 6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.69549275248,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 61,
+          "step_time": 6.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.70604736883,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 62,
+          "step_time": 6.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.71611164017,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 63,
+          "step_time": 6.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.72566944071,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 64,
+          "step_time": 6.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.73470545621,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 65,
+          "step_time": 6.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.74320520844,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 66,
+          "step_time": 6.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.75115507842,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 67,
+          "step_time": 6.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.75854232824,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 68,
+          "step_time": 6.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.76535512147,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 69,
+          "step_time": 6.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.7715825421,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 70,
+          "step_time": 7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.77721461207,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 71,
+          "step_time": 7.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.78224230723,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 72,
+          "step_time": 7.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.78665757181,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 73,
+          "step_time": 7.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79045333132,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 74,
+          "step_time": 7.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79362350389,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 75,
+          "step_time": 7.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79616301003,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 76,
+          "step_time": 7.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79806778074,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 77,
+          "step_time": 7.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79933476404,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 78,
+          "step_time": 7.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79996192986,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 79,
+          "step_time": 7.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79994827332,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 80,
+          "step_time": 8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.7992938163,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 81,
+          "step_time": 8.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79799960742,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 82,
+          "step_time": 8.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79606772036,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 83,
+          "step_time": 8.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79350125055,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 84,
+          "step_time": 8.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.79030431019,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 85,
+          "step_time": 8.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.78648202166,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 86,
+          "step_time": 8.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.78204050935,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 87,
+          "step_time": 8.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.77698688979,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 88,
+          "step_time": 8.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.7713292603,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 89,
+          "step_time": 8.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.76507668597,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 90,
+          "step_time": 9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.75823918518,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 91,
+          "step_time": 9.1e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.75082771352,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 92,
+          "step_time": 9.2e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.74285414622,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 93,
+          "step_time": 9.3e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.73433125918,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 94,
+          "step_time": 9.4e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.72527270844,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 95,
+          "step_time": 9.5e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.71569300832,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 96,
+          "step_time": 9.6e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.70560750818,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 97,
+          "step_time": 9.7e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.69503236781,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 98,
+          "step_time": 9.8e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.68398453153,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 99,
+          "step_time": 9.9e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.67248170107,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 100,
+          "step_time": 1e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.66054230717,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 101,
+          "step_time": 1.01e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.64818548008,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 102,
+          "step_time": 1.02e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.63543101887,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 103,
+          "step_time": 1.03e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.62229935977,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 104,
+          "step_time": 1.04e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.60881154335,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 105,
+          "step_time": 1.05e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.59498918087,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 106,
+          "step_time": 1.06e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.58085441961,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 107,
+          "step_time": 1.07e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.5664299074,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 108,
+          "step_time": 1.08e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.55173875634,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 109,
+          "step_time": 1.09e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.53680450575,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 110,
+          "step_time": 1.1e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.52165108449,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 111,
+          "step_time": 1.11e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.50630277255,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 112,
+          "step_time": 1.12e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.49078416222,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 113,
+          "step_time": 1.13e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.47512011865,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 114,
+          "step_time": 1.14e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.45933574002,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 115,
+          "step_time": 1.15e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.44345631729,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 116,
+          "step_time": 1.16e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.42750729375,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 117,
+          "step_time": 1.17e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.41151422418,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 118,
+          "step_time": 1.18e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.39550273395,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 119,
+          "step_time": 1.19e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.37949847793,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 120,
+          "step_time": 1.2e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.36352709941,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 121,
+          "step_time": 1.21e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.347614189,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 122,
+          "step_time": 1.22e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.33178524363,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 123,
+          "step_time": 1.23e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.31606562569,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 124,
+          "step_time": 1.24e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.30048052239,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 125,
+          "step_time": 1.25e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.28505490543,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 126,
+          "step_time": 1.26e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.26981349094,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 127,
+          "step_time": 1.27e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.25478069994,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 128,
+          "step_time": 1.28e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.23998061914,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 129,
+          "step_time": 1.29e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.22543696242,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 130,
+          "step_time": 1.3e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.21117303277,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 131,
+          "step_time": 1.31e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.197211685,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 132,
+          "step_time": 1.32e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.18357528907,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 133,
+          "step_time": 1.33e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.1702856943,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 134,
+          "step_time": 1.34e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.15736419434,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 135,
+          "step_time": 1.35e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.14483149303,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 136,
+          "step_time": 1.36e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.13270767127,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 137,
+          "step_time": 1.37e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.1210121548,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 138,
+          "step_time": 1.38e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.10976368311,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 139,
+          "step_time": 1.39e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.098980279385,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 140,
+          "step_time": 1.4e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.088679221652,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 141,
+          "step_time": 1.41e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.078877015082,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 142,
+          "step_time": 1.42e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.069589365548,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 143,
+          "step_time": 1.43e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.060831154458,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 144,
+          "step_time": 1.44e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.052616414911,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 145,
+          "step_time": 1.45e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.044958309215,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 146,
+          "step_time": 1.46e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.037869107794,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 147,
+          "step_time": 1.47e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.031360169527,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 148,
+          "step_time": 1.48e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.025441923552,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 149,
+          "step_time": 1.49e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.020123852551,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 150,
+          "step_time": 1.5e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.015414477559,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 151,
+          "step_time": 1.51e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.011321344311,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 152,
+          "step_time": 1.52e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0078510111477,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 153,
+          "step_time": 1.53e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0050090385129,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 154,
+          "step_time": 1.54e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0027999800403,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 155,
+          "step_time": 1.55e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0012273752584,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 156,
+          "step_time": 1.56e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.00029374391924,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 157,
+          "step_time": 1.57e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  5.8196095301e-07,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 158,
+          "step_time": 1.58e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.00034835911085,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 159,
+          "step_time": 1.59e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0013365181328,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 160,
+          "step_time": 1.6e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0029634757202,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 161,
+          "step_time": 1.61e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0052266250325,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 162,
+          "step_time": 1.62e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.0081223398727,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 163,
+          "step_time": 1.63e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.011645980497,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 164,
+          "step_time": 1.64e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.015791901049,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 165,
+          "step_time": 1.65e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.020553458606,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 166,
+          "step_time": 1.66e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.025923023823,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 167,
+          "step_time": 1.67e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.031891993157,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 168,
+          "step_time": 1.68e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.038450802654,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 169,
+          "step_time": 1.69e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.045588943267,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 170,
+          "step_time": 1.7e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.053294977703,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 171,
+          "step_time": 1.71e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.061556558743,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 172,
+          "step_time": 1.72e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.070360449026,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 173,
+          "step_time": 1.73e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.079692542261,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 174,
+          "step_time": 1.74e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.08953788583,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 175,
+          "step_time": 1.75e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.099880704743,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 176,
+          "step_time": 1.76e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.11070442692,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 177,
+          "step_time": 1.77e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.12199170972,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 178,
+          "step_time": 1.78e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.13372446778,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 179,
+          "step_time": 1.79e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.14588390194,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 180,
+          "step_time": 1.8e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.15845052939,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 181,
+          "step_time": 1.81e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.17140421489,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 182,
+          "step_time": 1.82e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.18472420301,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 183,
+          "step_time": 1.83e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.19838915141,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 184,
+          "step_time": 1.84e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.21237716503,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 185,
+          "step_time": 1.85e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.22666583116,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 186,
+          "step_time": 1.86e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.24123225538,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 187,
+          "step_time": 1.87e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.2560530982,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 188,
+          "step_time": 1.88e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.27110461249,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 189,
+          "step_time": 1.89e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.28636268152,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 190,
+          "step_time": 1.9e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.30180285761,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 191,
+          "step_time": 1.91e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.31740040129,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 192,
+          "step_time": 1.92e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.33313032092,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 193,
+          "step_time": 1.93e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.3489674128,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 194,
+          "step_time": 1.94e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.36488630147,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 195,
+          "step_time": 1.95e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.38086148042,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 196,
+          "step_time": 1.96e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.39686735297,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 197,
+          "step_time": 1.97e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.41287827323,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 198,
+          "step_time": 1.98e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.42886858724,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 199,
+          "step_time": 1.99e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.44481267406,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 200,
+          "step_time": 2e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "ENDOFSPRINGN_U": {
+              "set": "ENDOFSPRINGN",
+              "field": "U",
+              "nodes": [
+                2
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  0.46068498679,
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
