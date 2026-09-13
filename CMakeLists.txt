@@ -469,7 +469,7 @@ if(NOT CCX_USE_PARDISO)
                 endif()
                 set(BLAS_CONFIGURED TRUE)
             else()
-                message(FATAL_ERROR "BLIS / AMD AOCL requested (-DCCX_BLAS=BLIS) but not found in search paths: ${CCX_BLAS_SEARCH_PATHS}")
+                message(FATAL_ERROR "BLIS / AMD AOCL requested (-DCCX_BLAS=BLIS) but not found in search paths: ${CCX_BLAS_SEARCH_PATHS}\nHint: Install BLIS (e.g., 'sudo apt install libblis-openmp-dev', 'paru -S blis', or install AOCL to /opt/AMD/aocl), or omit -DCCX_BLAS / use -DCCX_BLAS=AUTO to auto-detect OpenBLAS/standard BLAS.")
             endif()
 
         # 2. Explicit OpenBLAS requested

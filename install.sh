@@ -236,12 +236,19 @@ check_dependencies() {
             MISSING_PAC=""
             command -v cmake &>/dev/null || MISSING_PAC="${MISSING_PAC} cmake"
             command -v gfortran &>/dev/null || MISSING_PAC="${MISSING_PAC} gcc-fortran"
+            command -v gcc &>/dev/null || MISSING_PAC="${MISSING_PAC} base-devel"
+            pacman -Qq openblas &>/dev/null || pacman -Qq blas &>/dev/null || MISSING_PAC="${MISSING_PAC} openblas"
+            pacman -Qq lapack &>/dev/null || MISSING_PAC="${MISSING_PAC} lapack"
+            pacman -Qq arpack &>/dev/null || MISSING_PAC="${MISSING_PAC} arpack"
 
             if [ -n "${MISSING_PAC}" ]; then
+                echo -e "${YELLOW}Missing build packages:${NC}${MISSING_PAC}"
                 prompt_read "Install required packages via pacman/paru/yay (requires sudo)? [Y/n] " "Y" INSTALL_PKGS
                 if [[ "$INSTALL_PKGS" =~ ^[Yy]$ ]]; then
-                    $ARCH_INSTALLER base-devel gcc-fortran cmake openblas lapack arpack
+                    $ARCH_INSTALLER ${MISSING_PAC}
                 fi
+            else
+                echo -e "${GREEN}[OK] Base Arch build tools, linear algebra, and ARPACK found.${NC}"
             fi
         fi
     fi
@@ -318,13 +325,37 @@ elif [ "${OS}" = "Linux" ]; then
             if [[ "$USE_AOCL" =~ ^[Yy]$ ]]; then
                 echo -e "${MAGENTA}Installing AMD BLIS/AOCL linear algebra libraries...${NC}"
                 if command -v apt-get &>/dev/null; then
-                    sudo apt-get install -y libblis-openmp-dev libflame-dev 2>/dev/null || sudo apt-get install -y libblis-dev 2>/dev/null || true
+                    sudo apt-get install -y libblis-openmp-dev libflame-dev || sudo apt-get install -y libblis-dev || true
                 elif command -v dnf &>/dev/null; then
-                    sudo dnf install -y blis-devel libflame-devel 2>/dev/null || true
+                    sudo dnf install -y blis-devel libflame-devel || true
                 elif command -v pacman &>/dev/null; then
-                    sudo pacman -S --needed blis 2>/dev/null || true
+                    ARCH_INSTALLER="sudo pacman -S --needed"
+                    if command -v paru &>/dev/null; then
+                        ARCH_INSTALLER="paru -S --needed"
+                    elif command -v yay &>/dev/null; then
+                        ARCH_INSTALLER="yay -S --needed"
+                    fi
+                    $ARCH_INSTALLER blis || echo -e "${YELLOW}Note: 'blis' is an AUR package on Arch (e.g., paru -S blis or yay -S blis).${NC}"
                 fi
-                CMAKE_BLAS_FLAGS="-DCCX_BLAS=BLIS"
+
+                # Verify if BLIS is actually present on the system before enforcing -DCCX_BLAS=BLIS
+                BLIS_FOUND=false
+                if [ -d "/opt/AMD/aocl" ] || [ -n "$AOCL_ROOT" ]; then
+                    BLIS_FOUND=true
+                elif pkg-config --exists blis 2>/dev/null; then
+                    BLIS_FOUND=true
+                elif ldconfig -p 2>/dev/null | grep -q "libblis"; then
+                    BLIS_FOUND=true
+                elif ls /usr/lib*/libblis* &>/dev/null || ls /usr/local/lib*/libblis* &>/dev/null; then
+                    BLIS_FOUND=true
+                fi
+
+                if [ "$BLIS_FOUND" = true ]; then
+                    CMAKE_BLAS_FLAGS="-DCCX_BLAS=BLIS"
+                    echo -e "${GREEN}[OK] BLIS detected. Building with AMD AOCL-BLIS acceleration.${NC}"
+                else
+                    echo -e "${YELLOW}[INFO] BLIS was not found or failed to install. Falling back to OpenBLAS / auto-detection.${NC}"
+                fi
             fi
         fi
 
