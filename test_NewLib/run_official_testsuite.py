@@ -763,7 +763,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--pattern", nargs="+", help="Glob pattern(s) to filter test decks (e.g. 'achtel*' 'beam*')")
-    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ACCELERATE", "ALL"], default=["ALL"])
+    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ACCELERATE", "ALL", "CUSTOM", "NONE"], default=None, help="Solvers to test (default: ALL, or CUSTOM if --custom-bin is provided)")
     parser.add_argument("--threads-per-job", type=int, default=2, help="OpenMP threads per job (default: 2)")
     parser.add_argument("--max-workers", type=int, default=None, help="Max concurrent workers (default: physical_cores // threads_per_job)")
     parser.add_argument("--timeout", type=int, default=60, help="Per-test timeout in seconds (default: 60s)")
@@ -797,17 +797,24 @@ def main():
     # 1. Filter solvers based on OS capabilities
     viable_solvers = get_viable_solvers()
     
-    if "ALL" in args.solvers:
+    if args.solvers is None:
+        if args.custom_bin:
+            target_solvers = []
+        else:
+            target_solvers = viable_solvers
+    elif "ALL" in args.solvers:
         target_solvers = viable_solvers
+    elif "NONE" in args.solvers:
+        target_solvers = []
     else:
         target_solvers = []
         for s in args.solvers:
             if s in viable_solvers:
                 target_solvers.append(s)
-            else:
+            elif s != "CUSTOM":
                 print(colorize(f"[!] Warning: Solver '{s}' is not supported on this platform ({platform.system()} {platform.machine()}). Dropping from run.", "yellow"))
     
-    if not target_solvers:
+    if not target_solvers and not args.custom_bin:
         print("[-] No viable solvers selected for this OS/Architecture. Exiting.")
         sys.exit(1)
 

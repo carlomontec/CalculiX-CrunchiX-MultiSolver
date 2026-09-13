@@ -400,10 +400,23 @@ Write-Header "CalculiX CrunchiX (CCX) Installed Successfully!"
 Write-Host "To run a simulation from any Command Prompt or PowerShell:" -ForegroundColor Green
 Write-Host "   ccx input_deck_name       (without .inp extension)" -ForegroundColor Cyan
 Write-Host "   CalculiX input_deck_name" -ForegroundColor Cyan
-Write-Host "`nSelecting Solvers in Your Input Decks (*.inp):" -ForegroundColor Yellow
-Write-Host "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)" -ForegroundColor White
-Write-Host "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX-512)" -ForegroundColor White
-Write-Host "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)" -ForegroundColor White
+$enabledSolvers = @()
+if ($cmakeSolverFlags -match "CCX_USE_MUMPS=ON") { $enabledSolvers += "MUMPS" }
+if ($cmakeSolverFlags -match "CCX_USE_PARDISO=ON") { $enabledSolvers += "PARDISO" }
+if ($cmakeSolverFlags -match "CCX_USE_SPOOLES=ON") { $enabledSolvers += "SPOOLES" }
+
+if ($enabledSolvers.Count -gt 1) {
+    Write-Host "`nSelecting Solvers in Your Input Decks (*.inp):" -ForegroundColor Yellow
+    if ($enabledSolvers -contains "MUMPS") {
+        Write-Host "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)" -ForegroundColor White
+    }
+    if ($enabledSolvers -contains "PARDISO") {
+        Write-Host "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)" -ForegroundColor White
+    }
+    if ($enabledSolvers -contains "SPOOLES") {
+        Write-Host "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)" -ForegroundColor White
+    }
+}
 Write-Host "`nSee README.md for complete solver benchmarks and documentation." -ForegroundColor Gray
 Write-Host "================================================================`n" -ForegroundColor Cyan
 

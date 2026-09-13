@@ -576,10 +576,26 @@ echo -e "To run a simulation:"
 echo -e "  ${CYAN}ccx input_deck_name${NC}  (without .inp extension)"
 echo -e "  or"
 echo -e "  ${CYAN}CalculiX input_deck_name${NC}"
-echo -e "\n${BOLD}Selecting Solvers in Your Input Decks (*.inp):${NC}"
-echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
-echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX-512)"
-echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
-echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"
+NUM_SOLVERS=0
+if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_ACCELERATE=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
+if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_MUMPS=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
+if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_PARDISO=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
+if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_SPOOLES=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
+
+if [ "$NUM_SOLVERS" -gt 1 ]; then
+    echo -e "\n${BOLD}Selecting Solvers in Your Input Decks (*.inp):${NC}"
+    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_MUMPS=ON"* ]]; then
+        echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
+    fi
+    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_PARDISO=ON"* ]]; then
+        echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)"
+    fi
+    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_ACCELERATE=ON"* ]]; then
+        echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
+    fi
+    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_SPOOLES=ON"* ]]; then
+        echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"
+    fi
+fi
 echo -e "\nSee README.md for complete solver benchmarks and documentation."
 echo -e "${BOLD}${BLUE}================================================================${NC}\n"
