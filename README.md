@@ -12,7 +12,7 @@ An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dh
 [![MUMPS x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps-x64.json)](#solver-benchmarks--verification-pass-rates)
 [![MUMPS ARM Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps-arm.json)](#solver-benchmarks--verification-pass-rates)
 [![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#solver-benchmarks--verification-pass-rates)
-![CalculiX CrunchiX FEA Simulation](pictures/turbs.gif)
+
 
 
 ## Table of Contents
@@ -91,6 +91,23 @@ $script | Out-File -FilePath install.ps1 -Encoding utf8
 Set-ExecutionPolicy Bypass -Scope Process -Force
 .\install.ps1
 ```
+
+### Verification and Testing
+
+To verify your installation against Dr. Guido Dhondt's official CalculiX test suite (630+ verification decks):
+
+```bash
+# 1. Quick verification run (tests 20 decks in parallel using your CPU threads)
+python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --limit 20
+
+# 2. Complete official test suite (runs all 600+ decks across all CPU threads)
+python3 test_NewLib/run_official_testsuite.py --custom-bin ccx
+
+# 3. Filter specific test deck patterns
+python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --pattern "beam*" "achtel*"
+```
+
+Reports (Markdown table, CSV data, JSON export, and comparison charts) are automatically saved to `test_NewLib/testsuite_results/`. See [VALIDATION.md](VALIDATION.md) for full options and solver-to-solver comparative benchmarking.
 
 ## Companion Project: CalculiX GraphiX GLFW
 ![CalculiX CrunchiX FEA Simulation](pictures/cgx_glfw.png)
