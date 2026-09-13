@@ -220,7 +220,15 @@ $solverDisplayName = ""
 $cmakeBlasFlags = ""
 
 if ($isAmd -and ($useAocl -match "^[Yy]$")) {
-    $cmakeBlasFlags = "-DCCX_BLAS=BLIS"
+    $hasBlis = (Test-Path "$msysRoot\ucrt64\lib\libblis.a") -or 
+               (Test-Path "$msysRoot\ucrt64\lib\libblis.dll.a") -or 
+               (Test-Path "$msysRoot\ucrt64\bin\libblis*.dll")
+    if ($hasBlis) {
+        $cmakeBlasFlags = "-DCCX_BLAS=BLIS"
+        Write-Success "AMD BLIS detected in MSYS2 UCRT64."
+    } else {
+        Write-Warn "AMD BLIS library was not found in MSYS2 UCRT64. Falling back to OpenBLAS / auto-detection."
+    }
 }
 
 if ($enableMkl -match "^[Yy]$") {
