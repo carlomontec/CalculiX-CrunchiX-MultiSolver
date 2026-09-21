@@ -1,6 +1,6 @@
 # CalculiX CrunchiX Multi-Solver Edition
 
-An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dhondt.de/), the open-source finite-element solver created by Dr. Guido Dhondt. The project preserves the original CalculiX numerical code with a more performant open- source options for solver backends, and multi-platform. Single codebase compiles in Linux, MacOS, and Windows.
+An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dhondt.de/), the open-source finite-element solver created by Dr. Guido Dhondt and other collaborators. The project preserves the original CalculiX numerical code with a more performant open-source options for solver backends, and multi-platform. Single codebase compiles in Linux, MacOS, and Windows.
 
 <!-- [![CI Multi-Solver Matrix](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml/badge.svg)](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml) -->
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](COPYING)
@@ -14,18 +14,17 @@ An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dh
 [![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#solver-benchmarks--verification-pass-rates)
 
 
-
 ## Table of Contents
 
 - [Goal](#goal)
 - [Project Status](#project-status)
+- [Solver Backends](#solver-backends)
+  - [Linear Equation Solvers](#linear-equation-solvers)
+  - [Eigenvalue Solver (arpack-ng)](#eigenvalue-solver-modal-analysis--buckling)
 - [Quick Installation](#quick-install-for-linux-macos-and-windows-recommended)
   - [Linux & macOS One-Liner](#quick-install-for-linux-macos-and-windows-recommended)
   - [Windows (PowerShell)](#quick-install-for-windows-powershell)
 - [Companion Project: CalculiX GraphiX GLFW](#companion-project-calculix-graphix-glfw)
-- [Solver Backends](#solver-backends)
-  - [Linear Equation Solvers](#linear-equation-solvers)
-  - [Eigenvalue Solver (arpack-ng)](#eigenvalue-solver-modal-analysis--buckling)
 - [Quick Installation](#quick-install-for-linux-macos-and-windows-recommended)
   - [Linux & macOS One-Liner](#quick-install-for-linux-macos-and-windows-recommended)
   - [Windows (PowerShell)](#quick-install-for-windows-powershell)
@@ -35,18 +34,18 @@ An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dh
 
 ## Goal
 
-This work is a didactic exploration of agent-assisted scientific-software development by Carlo Monjaraz-Tec. Almost all the code that differ from the original CalculiX CrunchiX code is AI generated. The original CalculiX implementation and its authors remain credited below.
+This work is a didactic exploration of agent-assisted scientific-software development. Almost all the code that differ from the original CalculiX CrunchiX code is AI generated. The original CalculiX implementation and its authors remain credited below. At the same time, it is intended to provide a robust implementation of CalculiX that leverages from modern linear solvers and it is very easy to compile and install in the major Operative Systems.
 
 ## Project Status
 
-- **Multi-Solver Architecture**: Unified codebase supporting four sparse direct backends: **MUMPS 5.x** (recommended open-source default), **Apple Accelerate** (native macOS), **Intel oneMKL PARDISO** (Linux/Windows), and **SPOOLES 2.2** (legacy baseline).
-- **Modern Eigenvalue Solver**: Integrated **`arpack-ng`** for `*FREQUENCY`, `*MODAL DYNAMIC`, and `*BUCKLE` analyses, replacing the legacy 1990s ARPACK 96 archive.
-- **Direct JSON Export (`-j` / `--json`)**: In-memory JSON export for zero-parsing automation in Python, Julia, and MATLAB workflows (see [JSON_EXPORT.md](JSON_EXPORT.md)).
-- **High Performance & Compatibility**: Delivers substantial speedups over SPOOLES while maintaining >95% pass rate across the official 630-deck verification suite.
-
-## Companion Project: CalculiX GraphiX GLFW
-
-This project is designed to work with [CalculiX GraphiX GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW), a modernized CalculiX pre/post-processor with modern 3D rendering and ParaView export support.
+- **Multi-Solver Architecture**: Unified codebase supporting four sparse direct backends: 
+  - **MUMPS 5.x** (recommended open-source default)
+  - **Apple Accelerate** (native macOS)
+  - **Intel oneMKL PARDISO** (Linux/Windows)
+  - **SPOOLES 2.2** (legacy baseline).
+- **Modern Eigenvalue Solver**: Integrated **`arpack-ng`** eigenvalue solverfor modal and buckle analyses, replacing the legacy ARPACK 96 archive.
+- **Direct JSON Export (`-j` / `--json`)**: Results export as JSON export for better automation in Python/Julia/MATLAB workflows (see [JSON_EXPORT.md](JSON_EXPORT.md)).
+- **High Performance & Compatibility**: Delivers performance improvement over SPOOLES while maintaining >95% pass rate across the official 630-deck verification suite.
 
 ## Solver Backends
 
@@ -54,8 +53,8 @@ This project is designed to work with [CalculiX GraphiX GLFW](https://github.com
 
 | Backend | Linux | macOS | Windows | Role |
 |:---|:---:|:---:|:---:|:---|
-| **MUMPS 5.x** | System package (recommended) | Vendored archive | System/MSYS2 package (recommended) | Primary modern open-source candidate (accelerated via OpenBLAS / AMD AOCL-BLIS; see [INSTALL.md](INSTALL.md)) |
-| **Apple Accelerate** | No | Native framework (recommended) | No | macOS sparse solver |
+| **MUMPS 5.x** | System package (**recommended**) | Vendored archive | System/MSYS2 (**recommended**) package | Primary modern open-source candidate (accelerated via OpenBLAS / AMD AOCL-BLIS; see [INSTALL.md](INSTALL.md)) |
+| **Apple Accelerate** | No | Native framework (**recommended**) | No | macOS sparse solver |
 | **Intel oneMKL PARDISO** | Optional | No | Optional | High-performance oneMKL backend |
 | **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
 
@@ -94,7 +93,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force
 
 ### Verification and Testing
 
-To verify your installation against Dr. Guido Dhondt's official CalculiX test suite (630+ verification decks):
+To verify your installation against official CalculiX test suite (630+ verification decks):
 
 ```bash
 # 1. Quick verification run (tests 20 decks in parallel using your CPU threads)
@@ -114,24 +113,7 @@ Reports (Markdown table, CSV data, JSON export, and comparison charts) are autom
 
 This project is designed to work with [CalculiX GraphiX GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW), a flavor of CalculiX GraphiX with modern 3D GLFW rendering library. It also runs in Linux, MacOs and Windows. Binaries available.
 
-## Solver Backends
 
-### Linear Equation Solvers
-
-| Backend | Linux | macOS | Windows | Role |
-|:---|:---:|:---:|:---:|:---|
-| **MUMPS 5.x** | System package (**recommended**) | Vendored archive | System/MSYS2 (**recommended**) package | Primary modern open-source candidate (accelerated via OpenBLAS / AMD AOCL-BLIS; see [INSTALL.md](INSTALL.md)) |
-| **Apple Accelerate** | No | Native framework (**recommended**) | No | macOS sparse solver |
-| **Intel oneMKL PARDISO** | Optional | No | Optional | High-performance oneMKL backend |
-| **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
-
-On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives: [MUMPS vendor package](third_party/mumps/README.md),  [SPOOLES vendor package](third_party/spooles/README.md)
-
-### Eigenvalue Solver (Modal Analysis & Buckling)
-
-| Solver | Distribution | Platform Support | Role |
-|:---|:---|:---:|:---|
-| **arpack-ng** | System package (`arpack` / `libarpack2-dev`) | Linux, macOS, Windows | Maintained Arnoldi eigenvalue solver for modal dynamics, frequency, and buckling analysis. Replaces legacy ARPACK 96. |
 
 ## Repository Guide
 
@@ -145,7 +127,7 @@ On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives:
 
 ## Attribution and License
 
-CalculiX CrunchiX is free software distributed under the GNU General Public License version 2. The original project is maintained by Dr. Guido Dhondt. CalculiX GraphiX was created by Klaus Wittig.
+CalculiX CrunchiX is free software distributed under the GNU General Public License version 2. The original project is maintained by Dr. Guido Dhondt. CalculiX GraphiX was created by Klaus Wittig. This work of this repository is mantained by Dr. Carlo Monjaraz-Tec
 
 - CalculiX: [calculix.de](https://www.calculix.de) and [dhondt.de](https://www.dhondt.de)
 - CalculiX community: [CalculiX Discourse](https://calculix.discourse.group)
