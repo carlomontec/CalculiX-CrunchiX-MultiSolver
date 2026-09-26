@@ -34,7 +34,7 @@ An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dh
 
 ## Goal
 
-This work is a didactic exploration of agent-assisted scientific-software development. Almost all the code that differ from the original CalculiX CrunchiX code is AI generated. The original CalculiX implementation and its authors remain credited below. At the same time, it is intended to provide a robust implementation of CalculiX that leverages from modern linear solvers and it is very easy to compile and install in the major Operative Systems.
+This work is an exploration of agent-assisted scientific-software development. The newly written code is AI generated. The original CalculiX implementation and its authors remain credited below. At the same time, it is intended to provide a robust implementation of CalculiX that leverages from modern linear solvers and it is very easy to compile and install in the major Operative Systems.
 
 ## Project Status
 
