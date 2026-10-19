@@ -1,0 +1,26 @@
+# Ignore heavy mesh files and solver scratch artifacts
+*.msh
+*.frd
+*.dat
+*.cvg
+*.sta
+*.12d
+*.nam
+*.bou
+*.dlo
+*.out
+*.json
+-j.*
+mesh_*.fbl
+
+# Local benchmark results and plotting suites (kept locally, not published)
+results/
+plotting/
+
+# Keep generator scripts and input decks
+!.gitignore
+!lavff.fbd
+!lavffcyc.inp
+!send.fbl
+!remesh.py
+
