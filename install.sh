@@ -3,46 +3,37 @@
 # CalculiX CrunchiX (CCX) Multi-Solver — Universal Installer
 #
 # DESCRIPTION:
-#   Downloads, configures, and builds CCX with support for multiple sparse 
-#   direct solvers (Apple Accelerate, PARDISO, MUMPS, SPOOLES) depending on 
+#   Downloads, configures, and builds CCX with support for multiple sparse
+#   direct solvers (Apple Accelerate, PARDISO, MUMPS, SPOOLES) depending on
 #   the detected OS and CPU architecture.
+#
+#   Design: all questions are asked first, then the installation runs
+#   unattended. This script only installs packages and states intent; library
+#   detection is done by CMake (CCX_SOLVERS_STRICT=OFF turns a missing optional
+#   solver into a warning, and the solvers actually built are reported at the end).
 #
 # 1-LINER USAGE (Defaults to 'main' branch):
 #   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 #
 # EXPERT USAGE (Selecting a specific branch, tag, or commit):
-#   You can bypass the default 'main' branch by exporting CCX_REF or passing flags.
 #   - Via curl:
 #       CCX_REF=fix_accelerate_contact /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 #   - Via local script:
 #       ./install.sh --ref v2.21
 #       ./install.sh -b fix_accelerate_contact
+#
+# OPTIONS:
+#   -b, --ref, --branch, --tag <ref>   Git branch, tag or commit (default: main, env: CCX_REF)
+#   --prefix <dir>                     Install prefix; binary goes to <dir>/bin (default: ~/.local)
+#   -y, --yes, --non-interactive       Accept all defaults without prompting (env: NON_INTERACTIVE=1)
+#   -j, --jobs <n>                     Parallel build jobs (default: all cores)
+#   -h, --help                         Show this help
 # ==============================================================================
 
-set -e
+set -Eeo pipefail
 
 REPO="carlomontec/CalculiX-CrunchiX-MultiSolver"
 GITHUB_REPO_URL="https://github.com/${REPO}.git"
-
-# Default Git reference (branch, tag, or commit)
-CCX_REF="${CCX_REF:-main}"
-
-# Parse optional command-line flags
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -b|--branch|-r|--ref|--tag)
-            CCX_REF="$2"
-            shift 2
-            ;;
-        --help|-h)
-            echo "Usage: $0 [--ref <branch|tag|commit>]"
-            exit 0
-            ;;
-        *)
-            shift
-            ;;
-    esac
-done
 
 # Color formatting
 BOLD="\033[1m"
@@ -52,550 +43,596 @@ CYAN="\033[1;36m"
 YELLOW="\033[1;33m"
 RED="\033[1;31m"
 MAGENTA="\033[1;35m"
-NC="\033[0m" # No Color
+NC="\033[0m"
 
-# Helper for interactive reading
-prompt_read() {
-    local prompt_msg="$1"
-    local default_val="$2"
-    local var_name="$3"
-    local input_val=""
+info()  { echo -e "${BOLD}${CYAN}--> $*${NC}"; }
+ok()    { echo -e "${GREEN}[OK] $*${NC}"; }
+warn()  { echo -e "${YELLOW}Warning: $*${NC}"; }
+die()   { echo -e "${RED}Error: $*${NC}" >&2; exit 1; }
 
-    if [ -n "$NON_INTERACTIVE" ]; then
-        eval "$var_name=\"$default_val\""
-        return 0
-    fi
-
-    if [ -t 0 ]; then
-        read -r -p "$prompt_msg" input_val
-    elif [ -c /dev/tty ]; then
-        read -r -p "$prompt_msg" input_val < /dev/tty
-    else
-        input_val="$default_val"
-    fi
-
-    input_val="${input_val:-$default_val}"
-    eval "$var_name=\"$input_val\""
-}
-
-# ASCII Banner
-echo -e "${BOLD}${CYAN}"
-echo -e "  ____  ____ __  __ "
-echo -e " / ___|/ ___|\ \/ / "
-echo -e "| |   | |     \  /  "
-echo -e "| |___| |___  /  \  "
-echo -e " \____|\____|/_/\_\ "
-echo -e "${NC}"
-echo -e "${BOLD}${BLUE}================================================================${NC}"
-echo -e "${BOLD}${MAGENTA}   CalculiX CrunchiX (CCX) Multi-Solver — Universal Installer  ${NC}"
-echo -e "${BOLD}${BLUE}================================================================${NC}"
-
-# Detect OS and Architecture
-OS="$(uname -s)"
-ARCH="$(uname -m)"
-echo -e "Detected Platform: ${BOLD}${GREEN}${OS} (${ARCH})${NC}"
-
-if [ "${OS}" = "Darwin" ] && [ "${ARCH}" != "arm64" ]; then
-    echo -e "${RED}This project currently supports Apple Silicon macOS only (arm64).${NC}"
-    exit 1
-fi
-
-# Determine number of build jobs
-if [ "${OS}" = "Darwin" ]; then
-    NPROC=$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
-else
-    NPROC=$(nproc 2>/dev/null || echo 4)
-fi
-
-# -----------------------------------------------------------------------------
-# 1. Target Install Directory Configuration
-# -----------------------------------------------------------------------------
-DEFAULT_INSTALL_DIR="${HOME}/.local/bin"
-echo -e ""
-prompt_read "Where should the binary be installed? [${DEFAULT_INSTALL_DIR}]: " "${DEFAULT_INSTALL_DIR}" INSTALL_DIR
-INSTALL_DIR="${INSTALL_DIR/#\~/$HOME}"
-mkdir -p "${INSTALL_DIR}"
-
-# -----------------------------------------------------------------------------
-# 2. Source Directory & Git Checkout Management
-# -----------------------------------------------------------------------------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || echo "")"
-TEMP_BUILD_DIR=""
-
+TEMP_ROOT=""
 cleanup() {
-    if [ -n "$TEMP_BUILD_DIR" ] && [ -d "$TEMP_BUILD_DIR" ]; then
-        rm -rf "$TEMP_BUILD_DIR"
+    if [ -n "$TEMP_ROOT" ] && [ -d "$TEMP_ROOT" ]; then
+        rm -rf "$TEMP_ROOT"
     fi
 }
 trap cleanup EXIT
+trap 'echo -e "${RED}Installation failed near line ${LINENO} (exit code $?).${NC}" >&2' ERR
 
-if [ -f "${SCRIPT_DIR}/CMakeLists.txt" ] && [ -d "${SCRIPT_DIR}/src" ]; then
-    SOURCE_DIR="${SCRIPT_DIR}"
-    CURRENT_GIT_REF="$(git -C "${SOURCE_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'local')"
-    echo -e "Building from local repository: ${CYAN}${SOURCE_DIR}${NC} (branch/ref: ${BOLD}${GREEN}${CURRENT_GIT_REF}${NC})"
-else
-    echo -e "\n${YELLOW}[TODO: CARLO] Reminder: Update this script to fetch the latest GitHub Release instead of 'main' once official releases are published!${NC}"
-    
-    TEMP_BUILD_DIR="$(mktemp -d -t ccx_build_XXXXXX)"
-    echo -e "\n${BOLD}${CYAN}--> Cloning CalculiX repository (Ref: ${CCX_REF})...${NC}"
-    
-    if [ "$CCX_REF" = "main" ]; then
-        git clone --depth 1 "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx"
-    else
-        # Try shallow branch/tag clone first; fallback to full clone + checkout if it's a raw commit SHA
-        if ! git clone --depth 1 --branch "${CCX_REF}" "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx" 2>/dev/null; then
-            git clone "${GITHUB_REPO_URL}" "${TEMP_BUILD_DIR}/ccx"
-            git -C "${TEMP_BUILD_DIR}/ccx" checkout "${CCX_REF}"
+# -----------------------------------------------------------------------------
+# Prompt helpers
+# -----------------------------------------------------------------------------
+NON_INTERACTIVE="${NON_INTERACTIVE:-}"
+
+# Prints prompt and stores the answer (or default) in the variable named by $3.
+ask_value() {
+    local prompt_msg="$1" default_val="$2" var_name="$3" input_val=""
+    if [ -z "$NON_INTERACTIVE" ]; then
+        if [ -t 0 ]; then
+            read -r -p "$prompt_msg" input_val || true
+        elif { : < /dev/tty; } 2>/dev/null; then
+            read -r -p "$prompt_msg" input_val < /dev/tty || true
         fi
     fi
+    printf -v "$var_name" '%s' "${input_val:-$default_val}"
+}
 
-    SOURCE_DIR="${TEMP_BUILD_DIR}/ccx"
-fi
+# confirm "question" Y|N  -> returns 0 for yes, 1 for no
+confirm() {
+    local question="$1" default="$2" hint answer
+    if [ "$default" = "Y" ]; then hint="[Y/n]"; else hint="[y/N]"; fi
+    ask_value "${question} ${hint}: " "$default" answer
+    [[ "$answer" =~ ^[Yy] ]]
+}
 
 # -----------------------------------------------------------------------------
-# 3. Dependency Management
+# Argument parsing
 # -----------------------------------------------------------------------------
-check_dependencies() {
-    echo -e "\n${BOLD}${CYAN}--> Checking prerequisites and build tools...${NC}"
+CCX_REF="${CCX_REF:-main}"
+PREFIX="${HOME}/.local"
+PREFIX_SET=0
+NPROC=""
 
-    if [ "${OS}" = "Darwin" ]; then
-        if ! command -v brew &>/dev/null; then
-            if [ -x "/opt/homebrew/bin/brew" ]; then
-                eval "$(/opt/homebrew/bin/brew shellenv)"
-            elif [ -x "/usr/local/bin/brew" ]; then
-                eval "$(/usr/local/bin/brew shellenv)"
-            else
-                echo -e "\n${YELLOW}Homebrew is recommended to install build tools (cmake, gcc, arpack).${NC}"
-                prompt_read "Install Homebrew now? [Y/n] " "Y" INSTALL_BREW
-                if [[ "$INSTALL_BREW" =~ ^[Yy]$ ]]; then
-                    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-                    if [ -x "/opt/homebrew/bin/brew" ]; then
-                        eval "$(/opt/homebrew/bin/brew shellenv)"
-                    elif [ -x "/usr/local/bin/brew" ]; then
-                        eval "$(/usr/local/bin/brew shellenv)"
-                    fi
-                fi
-            fi
-        fi
+parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -b|--branch|-r|--ref|--tag)
+                [ -n "$2" ] || die "Option $1 requires a value."
+                CCX_REF="$2"; shift 2 ;;
+            --prefix)
+                [ -n "$2" ] || die "Option $1 requires a value."
+                PREFIX="$2"; PREFIX_SET=1; shift 2 ;;
+            -j|--jobs)
+                [ -n "$2" ] || die "Option $1 requires a value."
+                NPROC="$2"; shift 2 ;;
+            -y|--yes|--non-interactive)
+                NON_INTERACTIVE=1; shift ;;
+            -h|--help)
+                echo "Usage: $0 [--ref <branch|tag|commit>] [--prefix <dir>] [--yes] [--jobs <n>]"
+                exit 0 ;;
+            *)
+                die "Unknown option: $1 (see --help)" ;;
+        esac
+    done
+}
 
-        MISSING_BREW=""
-        command -v cmake &>/dev/null || MISSING_BREW="${MISSING_BREW} cmake"
-        command -v gfortran &>/dev/null || MISSING_BREW="${MISSING_BREW} gcc"
-        brew list arpack &>/dev/null 2>&1 || MISSING_BREW="${MISSING_BREW} arpack"
+# -----------------------------------------------------------------------------
+# Platform detection
+# -----------------------------------------------------------------------------
+detect_platform() {
+    OS="$(uname -s)"
+    ARCH="$(uname -m)"
+    echo -e "Detected Platform: ${BOLD}${GREEN}${OS} (${ARCH})${NC}"
 
-        if [ -n "${MISSING_BREW}" ]; then
-            echo -e "${YELLOW}Missing packages:${NC}${MISSING_BREW}"
-            prompt_read "Install missing packages via Homebrew? [Y/n] " "Y" INSTALL_PKGS
-            if [[ "$INSTALL_PKGS" =~ ^[Yy]$ ]]; then
-                brew install ${MISSING_BREW}
-            fi
+    if [ "${OS}" = "Darwin" ] && [ "${ARCH}" != "arm64" ]; then
+        die "This project currently supports Apple Silicon macOS only (arm64)."
+    fi
+    if [ "${OS}" != "Darwin" ] && [ "${OS}" != "Linux" ]; then
+        die "Unsupported operating system: ${OS}"
+    fi
+
+    if [ -z "$NPROC" ]; then
+        if [ "${OS}" = "Darwin" ]; then
+            NPROC=$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
         else
-            echo -e "${GREEN}[OK] All macOS build tools and ARPACK found.${NC}"
-        fi
-
-    elif [ "${OS}" = "Linux" ]; then
-        if command -v apt-get &>/dev/null; then
-            MISSING_APT=""
-            command -v cmake &>/dev/null || MISSING_APT="${MISSING_APT} cmake"
-            command -v gfortran &>/dev/null || MISSING_APT="${MISSING_APT} gfortran"
-            command -v gcc &>/dev/null || MISSING_APT="${MISSING_APT} build-essential"
-            dpkg -l | grep -q "libopenblas-dev" || MISSING_APT="${MISSING_APT} libopenblas-dev"
-            dpkg -l | grep -q "liblapack-dev" || MISSING_APT="${MISSING_APT} liblapack-dev"
-            dpkg -l | grep -q "libarpack2-dev" || MISSING_APT="${MISSING_APT} libarpack2-dev"
-
-            if [ -n "${MISSING_APT}" ]; then
-                echo -e "${YELLOW}Missing build packages:${NC}${MISSING_APT}"
-                prompt_read "Install required packages via apt (requires sudo)? [Y/n] " "Y" INSTALL_PKGS
-                if [[ "$INSTALL_PKGS" =~ ^[Yy]$ ]]; then
-                    sudo apt-get update && sudo apt-get install -y ${MISSING_APT}
-                fi
-            else
-                echo -e "${GREEN}[OK] Base Linux build tools found.${NC}"
-            fi
-        elif command -v dnf &>/dev/null; then
-            MISSING_DNF=""
-            command -v cmake &>/dev/null || MISSING_DNF="${MISSING_DNF} cmake"
-            command -v gfortran &>/dev/null || MISSING_DNF="${MISSING_DNF} gcc-gfortran"
-            command -v gcc &>/dev/null || MISSING_DNF="${MISSING_DNF} gcc"
-
-            if [ -n "${MISSING_DNF}" ]; then
-                echo -e "${YELLOW}Missing build packages:${NC}${MISSING_DNF}"
-                prompt_read "Install required packages via dnf (requires sudo)? [Y/n] " "Y" INSTALL_PKGS
-                if [[ "$INSTALL_PKGS" =~ ^[Yy]$ ]]; then
-                    sudo dnf install -y ${MISSING_DNF} openblas-devel lapack-devel arpack-devel
-                fi
-            fi
-        elif command -v pacman &>/dev/null; then
-            # Determine the best Arch package manager (AUR helper preferred)
-            ARCH_INSTALLER="sudo pacman -S --needed"
-            if command -v paru &>/dev/null; then
-                ARCH_INSTALLER="paru -S --needed"
-            elif command -v yay &>/dev/null; then
-                ARCH_INSTALLER="yay -S --needed"
-            fi
-            MISSING_PAC=""
-            command -v cmake &>/dev/null || MISSING_PAC="${MISSING_PAC} cmake"
-            command -v gfortran &>/dev/null || MISSING_PAC="${MISSING_PAC} gcc-fortran"
-            command -v gcc &>/dev/null || MISSING_PAC="${MISSING_PAC} base-devel"
-            pacman -Qq openblas &>/dev/null || pacman -Qq blas &>/dev/null || MISSING_PAC="${MISSING_PAC} openblas"
-            pacman -Qq lapack &>/dev/null || MISSING_PAC="${MISSING_PAC} lapack"
-            pacman -Qq arpack &>/dev/null || MISSING_PAC="${MISSING_PAC} arpack"
-
-            if [ -n "${MISSING_PAC}" ]; then
-                echo -e "${YELLOW}Missing build packages:${NC}${MISSING_PAC}"
-                prompt_read "Install required packages via pacman/paru/yay (requires sudo)? [Y/n] " "Y" INSTALL_PKGS
-                if [[ "$INSTALL_PKGS" =~ ^[Yy]$ ]]; then
-                    $ARCH_INSTALLER ${MISSING_PAC}
-                fi
-            else
-                echo -e "${GREEN}[OK] Base Arch build tools, linear algebra, and ARPACK found.${NC}"
-            fi
+            NPROC=$(nproc 2>/dev/null || echo 4)
         fi
     fi
 }
 
-check_dependencies
-
 # -----------------------------------------------------------------------------
-# 4. Solver Backend Configuration & Dependencies
+# Linux package manager abstraction (single place for apt / dnf / pacman)
 # -----------------------------------------------------------------------------
-echo -e "\n${BOLD}${CYAN}--> Configuring Sparse Direct Solvers...${NC}"
+PM=""
+SUDO=""
+APT_UPDATED=0
 
-# 1. Initialize ALL solvers to OFF to prevent dirty CMake cache issues
-CMAKE_SOLVER_FLAGS="-DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=OFF -DCCX_USE_PARDISO=OFF -DCCX_USE_SPOOLES=OFF"
-SOLVER_NAME="None Selected (Fallback to internal)"
+detect_pm() {
+    if   command -v apt-get &>/dev/null; then PM=apt
+    elif command -v dnf     &>/dev/null; then PM=dnf
+    elif command -v pacman  &>/dev/null; then PM=pacman
+    else PM=""
+    fi
 
-if [ "${OS}" = "Darwin" ]; then
-    echo -e "${GREEN}[INFO] macOS Detected:${NC}"
-    echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (Native hardware acceleration, zero external dependencies)."
-    echo -e "  * An open-source solver (${BOLD}MUMPS 5.x${NC}) is also available as an option.\n"
-
-    prompt_read "Also build MUMPS 5.x as an additional open-source solver? [y/N]: " "N" ENABLE_MUMPS
-    if [[ "$ENABLE_MUMPS" =~ ^[Yy]$ ]]; then
-        CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=ON"
-        SOLVER_NAME="Apple Accelerate (Default) + vendored MUMPS 5.x"
+    if [ "$(id -u)" -eq 0 ]; then
+        SUDO=""
+    elif command -v sudo &>/dev/null; then
+        SUDO="sudo"
     else
-        CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_ACCELERATE=ON"
-        SOLVER_NAME="Apple Accelerate (Native)"
-    fi
-
-elif [ "${OS}" = "Linux" ]; then
-    echo -e "${GREEN}[INFO] Linux Detected:${NC}"
-    
-    # --- MUMPS ---
-    prompt_read "Enable MUMPS 5.x as an open-source multi-threaded direct solver? [Y/n]: " "Y" USE_MUMPS
-    if [[ "$USE_MUMPS" =~ ^[Yy]$ ]]; then
-        echo -e "${MAGENTA}Installing MUMPS...${NC}"
-        MUMPS_INSTALLED=true
-        if command -v apt-get &>/dev/null; then
-            dpkg -l | grep -q "libmumps-seq-dev" || sudo apt-get install -y libmumps-seq-dev || MUMPS_INSTALLED=false
-        elif command -v dnf &>/dev/null; then
-            rpm -q MUMPS-devel &>/dev/null || sudo dnf install -y MUMPS-devel || MUMPS_INSTALLED=false
-        elif command -v pacman &>/dev/null; then
-            # Checks for either mumps or mumps-seq
-            # Determine the best Arch package manager (AUR helper preferred)
-            ARCH_INSTALLER="sudo pacman -S --needed"
-            if command -v paru &>/dev/null; then
-                ARCH_INSTALLER="paru -S --needed"
-            elif command -v yay &>/dev/null; then
-                ARCH_INSTALLER="yay -S --needed"
-            fi
-            pacman -Qs mumps &>/dev/null || $ARCH_INSTALLER mumps-seq || MUMPS_INSTALLED=false
-        fi
-        
-        if [ "$MUMPS_INSTALLED" = true ]; then
-            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_MUMPS=ON"
-            SOLVER_NAME="MUMPS 5.x"
-        else
-            echo -e "${YELLOW}Warning: 'mumps' could not be installed (likely requires AUR on Arch: e.g., yay -S mumps). Skipping MUMPS.${NC}"
+        SUDO=""
+        if [ -n "$PM" ]; then
+            warn "'sudo' not found and not running as root; package installation will fail."
         fi
     fi
+}
 
-    if [ "${ARCH}" = "x86_64" ]; then
-        IS_AMD=false
-        if grep -q -i "authenticamd" /proc/cpuinfo 2>/dev/null || (command -v lscpu &>/dev/null && lscpu | grep -q -i "AMD"); then
-            IS_AMD=true
-        fi
+aur_helper() {
+    if   command -v paru &>/dev/null; then echo paru
+    elif command -v yay  &>/dev/null; then echo yay
+    fi
+}
 
-        CMAKE_BLAS_FLAGS=""
-        if [ "$IS_AMD" = true ]; then
-            echo -e "\n${BOLD}${YELLOW}AMD Zen CPU Architecture Detected (Ryzen/EPYC/Threadripper):${NC}"
-            echo -e "  AMD provides ${BOLD}AOCL-BLIS${NC} (open-source linear algebra tuned specifically for AMD CPUs)."
-            prompt_read "Would you like to install and enable AMD AOCL (BLIS)? [Y/n]: " "Y" USE_AOCL
-            if [[ "$USE_AOCL" =~ ^[Yy]$ ]]; then
-                echo -e "${MAGENTA}Installing AMD BLIS/AOCL linear algebra libraries...${NC}"
-                if command -v apt-get &>/dev/null; then
-                    sudo apt-get install -y libblis-openmp-dev libflame-dev || sudo apt-get install -y libblis-dev || true
-                elif command -v dnf &>/dev/null; then
-                    sudo dnf install -y blis-devel libflame-devel || true
-                elif command -v pacman &>/dev/null; then
-                    ARCH_INSTALLER="sudo pacman -S --needed"
-                    if command -v paru &>/dev/null; then
-                        ARCH_INSTALLER="paru -S --needed"
-                    elif command -v yay &>/dev/null; then
-                        ARCH_INSTALLER="yay -S --needed"
-                    fi
-                    $ARCH_INSTALLER blis || echo -e "${YELLOW}Note: 'blis' is an AUR package on Arch (e.g., paru -S blis or yay -S blis).${NC}"
-                fi
+# Maps a logical package name to the distribution package name(s).
+pkg_names() {
+    case "$PM:$1" in
+        apt:cmake)      echo "cmake" ;;
+        apt:gfortran)   echo "gfortran" ;;
+        apt:cc)         echo "build-essential" ;;
+        apt:make)       echo "make" ;;
+        apt:git)        echo "git" ;;
+        apt:pkgconf)    echo "pkg-config" ;;
+        apt:blas)       echo "libopenblas-dev liblapack-dev" ;;
+        apt:arpack)     echo "libarpack2-dev" ;;
+        apt:mumps)      echo "libmumps-seq-dev" ;;
+        apt:spooles)    echo "libspooles-dev" ;;
+        apt:blis)       echo "libblis-openmp-dev libflame-dev" ;;
+        apt:blis_alt)   echo "libblis-dev" ;;
+        apt:mkl)        echo "intel-oneapi-mkl-devel" ;;
+        apt:gnupg)      echo "gnupg" ;;
 
-                # Verify if BLIS is actually present on the system before enforcing -DCCX_BLAS=BLIS
-                BLIS_FOUND=false
-                if [ -d "/opt/AMD/aocl" ] || [ -n "$AOCL_ROOT" ]; then
-                    BLIS_FOUND=true
-                elif pkg-config --exists blis 2>/dev/null; then
-                    BLIS_FOUND=true
-                elif ldconfig -p 2>/dev/null | grep -q "libblis"; then
-                    BLIS_FOUND=true
-                elif ls /usr/lib*/libblis* &>/dev/null || ls /usr/local/lib*/libblis* &>/dev/null; then
-                    BLIS_FOUND=true
-                fi
+        dnf:cmake)      echo "cmake" ;;
+        dnf:gfortran)   echo "gcc-gfortran" ;;
+        dnf:cc)         echo "gcc" ;;
+        dnf:make)       echo "make" ;;
+        dnf:git)        echo "git" ;;
+        dnf:pkgconf)    echo "pkgconf-pkg-config" ;;
+        dnf:blas)       echo "openblas-devel lapack-devel" ;;
+        dnf:arpack)     echo "arpack-devel" ;;
+        dnf:mumps)      echo "MUMPS-devel" ;;
+        dnf:spooles)    echo "spooles-devel" ;;
+        dnf:blis)       echo "blis-devel libflame-devel" ;;
+        dnf:gnupg)      echo "gnupg2" ;;
 
-                if [ "$BLIS_FOUND" = true ]; then
-                    CMAKE_BLAS_FLAGS="-DCCX_BLAS=BLIS"
-                    echo -e "${GREEN}[OK] BLIS detected. Building with AMD AOCL-BLIS acceleration.${NC}"
-                else
-                    echo -e "${YELLOW}[INFO] BLIS was not found or failed to install. Falling back to OpenBLAS / auto-detection.${NC}"
-                fi
+        pacman:cmake)    echo "cmake" ;;
+        pacman:gfortran) echo "gcc-fortran" ;;
+        pacman:cc)       echo "base-devel" ;;
+        pacman:make)     echo "base-devel" ;;
+        pacman:git)      echo "git" ;;
+        pacman:pkgconf)  echo "pkgconf" ;;
+        pacman:blas)     echo "openblas lapack" ;;
+        pacman:arpack)   echo "arpack" ;;
+        pacman:mumps)    echo "mumps-seq" ;;
+        pacman:spooles)  echo "spooles" ;;
+        pacman:blis)     echo "blis" ;;
+        pacman:mkl)      echo "intel-oneapi-mkl" ;;
+        pacman:gnupg)    echo "gnupg" ;;
+        *) echo "" ;;
+    esac
+}
+
+pkg_installed() {
+    case "$PM" in
+        apt)    dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "install ok installed" ;;
+        dnf)    rpm -q "$1" &>/dev/null ;;
+        pacman) pacman -Qq "$1" &>/dev/null ;;
+        *)      return 1 ;;
+    esac
+}
+
+all_installed() {
+    local p
+    for p in "$@"; do pkg_installed "$p" || return 1; done
+    return 0
+}
+
+pm_install() {
+    case "$PM" in
+        apt)
+            if [ "$APT_UPDATED" -eq 0 ]; then
+                $SUDO apt-get update || warn "'apt-get update' failed; continuing with the existing package cache."
+                APT_UPDATED=1
             fi
-        fi
-
-        # Ensure system default BLAS alternative points to an optimized library on Debian/Ubuntu
-        if command -v update-alternatives &>/dev/null; then
-            ARCH_TRIPLET="$(uname -m)-linux-gnu"
-            CURRENT_BLAS=$(update-alternatives --query "libblas.so.3-${ARCH_TRIPLET}" 2>/dev/null | grep '^Value:' | awk '{print $2}' || true)
-            if [ -z "$CURRENT_BLAS" ]; then
-                CURRENT_BLAS=$(update-alternatives --query libblas.so.3 2>/dev/null | grep '^Value:' | awk '{print $2}' || true)
+            $SUDO apt-get install -y "$@" ;;
+        dnf)
+            $SUDO dnf install -y "$@" ;;
+        pacman)
+            if $SUDO pacman -S --needed --noconfirm "$@"; then
+                return 0
             fi
-            if [[ "$CURRENT_BLAS" == *"/blas/libblas.so"* ]]; then
-                if [ -f "/usr/lib/${ARCH_TRIPLET}/openblas-pthread/libblas.so.3" ]; then
-                    echo -e "${YELLOW}[INFO] Setting system BLAS alternative to OpenBLAS...${NC}"
-                    sudo update-alternatives --set "libblas.so.3-${ARCH_TRIPLET}" "/usr/lib/${ARCH_TRIPLET}/openblas-pthread/libblas.so.3" 2>/dev/null || true
-                elif [ -f "/usr/lib/${ARCH_TRIPLET}/blis-openmp/libblas.so.3" ]; then
-                    echo -e "${YELLOW}[INFO] Setting system BLAS alternative to BLIS...${NC}"
-                    sudo update-alternatives --set "libblas.so.3-${ARCH_TRIPLET}" "/usr/lib/${ARCH_TRIPLET}/blis-openmp/libblas.so.3" 2>/dev/null || true
-                fi
-            fi
-        fi
-
-        echo -e "\n${BOLD}${BLUE}Intel oneMKL PARDISO Solver Option:${NC}"
-        echo -e "  Intel oneMKL is ${BOLD}proprietary (not open-source)${NC}, but generally provides"
-        echo -e "  ${BOLD}higher performance${NC} on Intel and AMD x86_64 CPUs with AVX2/AVX-512 acceleration."
-        
-        HAS_MKL=false
-        if [ -n "$MKLROOT" ] || [ -d "/opt/intel/oneapi/mkl" ] || [ -f "/usr/include/mkl/mkl.h" ] || [ -f "/usr/include/mkl.h" ]; then
-            HAS_MKL=true
-        fi
-
-        if [ "$HAS_MKL" = true ]; then
-            prompt_read "Found Intel oneMKL on your system. Enable Intel oneMKL PARDISO? [Y/n]: " "Y" USE_MKL
-        else
-            prompt_read "Would you like to install and enable Intel oneMKL PARDISO? [y/N]: " "N" USE_MKL
-            if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
-                echo -e "${MAGENTA}Installing Intel oneMKL...${NC}"
-                if command -v apt-get &>/dev/null; then
-                    wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-                    echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-                    sudo apt-get update && sudo apt-get install -y intel-oneapi-mkl-devel || true
-                elif command -v dnf &>/dev/null; then
-                    sudo dnf install -y intel-oneapi-mkl-devel || true
-                elif command -v pacman &>/dev/null; then
-                    sudo pacman -S --needed intel-oneapi-mkl || echo -e "${YELLOW}Warning: 'intel-oneapi-mkl' may require AUR on Arch.${NC}"
-                fi
-                HAS_MKL=true
-            fi
-        fi
-
-        if [[ "$USE_MKL" =~ ^[Yy]$ ]]; then
-            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_PARDISO=ON"
-            if [[ "$SOLVER_NAME" == "MUMPS 5.x" ]]; then
-                SOLVER_NAME="Intel oneMKL PARDISO + MUMPS 5.x"
+            # Possibly an AUR package; AUR helpers must not run as root.
+            local aur
+            aur="$(aur_helper)"
+            if [ -n "$aur" ] && [ "$(id -u)" -ne 0 ]; then
+                "$aur" -S --needed --noconfirm "$@"
             else
-                SOLVER_NAME="Intel oneMKL PARDISO"
-            fi
-        elif [ -n "${CMAKE_BLAS_FLAGS}" ]; then
-            CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} ${CMAKE_BLAS_FLAGS}"
-        fi
+                return 1
+            fi ;;
+        *)
+            return 1 ;;
+    esac
+}
 
-        # --- SPOOLES (x86_64) ---
-        prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
-        if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
-            SPOOLES_INSTALLED=true
-            if command -v apt-get &>/dev/null; then
-                sudo apt-get install -y libspooles-dev || SPOOLES_INSTALLED=false
-            elif command -v dnf &>/dev/null; then
-                sudo dnf install -y spooles-devel || SPOOLES_INSTALLED=false
-            elif command -v pacman &>/dev/null; then
-            
-                # Determine the best Arch package manager (AUR helper preferred)
-                ARCH_INSTALLER="sudo pacman -S --needed"
-                if command -v paru &>/dev/null; then
-                    ARCH_INSTALLER="paru -S --needed"
-                elif command -v yay &>/dev/null; then
-                    ARCH_INSTALLER="yay -S --needed"
-                fi
-                    # Use -Qs to catch variations like 'spooles-pic' from AUR
-                pacman -Qs spooles &>/dev/null || $ARCH_INSTALLER spooles || SPOOLES_INSTALLED=false
-            fi
-            
-            # Ultimate Fallback: Check if headers exist on the filesystem anyway
-            if [ "$SPOOLES_INSTALLED" = false ] && [ -d "/usr/include/spooles" ]; then
-                SPOOLES_INSTALLED=true
-            fi
-            
-            if [ "$SPOOLES_INSTALLED" = true ]; then
-                CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
-                if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
-                    SOLVER_NAME="SPOOLES 2.2"
-                else
-                    SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
-                fi
-            else
-                echo -e "${YELLOW}Warning: 'spooles' could not be installed (likely requires AUR on Arch: e.g., yay -S spooles). Skipping SPOOLES.${NC}"
-            fi
-        fi
+# install_optional <logical>: installs the package(s) if missing; returns non-zero on failure.
+install_optional() {
+    local names
+    names="$(pkg_names "$1")"
+    [ -n "$names" ] || return 1
+    # shellcheck disable=SC2086
+    if all_installed $names; then return 0; fi
+    # Arch: the 'mumps' (MPI) package also satisfies the build
+    if [ "$PM:$1" = "pacman:mumps" ] && pacman -Qq mumps &>/dev/null; then return 0; fi
+    # shellcheck disable=SC2086
+    pm_install $names
+}
 
+# Installs missing base build tools and mandatory libraries (git, cmake, compilers, BLAS/LAPACK, ARPACK).
+install_linux_base() {
+    info "Checking prerequisites and build tools..."
+    local missing="" t logical cmd names l
+    for t in cmake:cmake gfortran:gfortran cc:gcc make:make git:git pkgconf:pkg-config; do
+        logical="${t%%:*}"; cmd="${t#*:}"
+        if ! command -v "$cmd" &>/dev/null; then
+            missing="${missing} $(pkg_names "$logical")"
+        fi
+    done
+    for l in blas arpack; do
+        names="$(pkg_names "$l")"
+        # shellcheck disable=SC2086
+        all_installed $names || missing="${missing} ${names}"
+    done
+    # de-duplicate
+    missing="$(echo "$missing" | tr ' ' '\n' | sed '/^$/d' | sort -u | tr '\n' ' ')"
+
+    if [ -z "$missing" ]; then
+        ok "Base Linux build tools, linear algebra, and ARPACK found."
+        return 0
+    fi
+
+    echo -e "${YELLOW}Missing build packages:${NC} ${missing}"
+    if [ -z "$PM" ]; then
+        die "No supported package manager (apt, dnf, pacman) found. Please install manually: cmake, gcc, gfortran, make, git, pkg-config, BLAS/LAPACK (OpenBLAS), ARPACK."
+    fi
+    if confirm "Install required packages via ${PM}$([ -n "$SUDO" ] && echo ' (requires sudo)')?" Y; then
+        # shellcheck disable=SC2086
+        pm_install $missing || die "Failed to install required packages: ${missing}"
     else
-        # Linux ARM64 (aarch64)
-        echo -e "\n${CYAN}[INFO] Linux ARM64 architecture detected.${NC}"
-        echo -e "  Intel oneMKL is not available on Linux ARM64."
+        die "Required packages are missing; cannot continue."
+    fi
+}
 
-        # --- SPOOLES (ARM64) ---
-        prompt_read "Also enable legacy SPOOLES solver via system library (libspooles-dev)? [y/N]: " "N" USE_SPOOLES
-        if [[ "$USE_SPOOLES" =~ ^[Yy]$ ]]; then
-            SPOOLES_INSTALLED=true
-            if command -v apt-get &>/dev/null; then
-                sudo apt-get install -y libspooles-dev || SPOOLES_INSTALLED=false
-            elif command -v pacman &>/dev/null; then
-                # Determine the best Arch package manager (AUR helper preferred)
-                ARCH_INSTALLER="sudo pacman -S --needed"
-                if command -v paru &>/dev/null; then
-                    ARCH_INSTALLER="paru -S --needed"
-                elif command -v yay &>/dev/null; then
-                    ARCH_INSTALLER="yay -S --needed"
-                fi
-                pacman -Qi spooles &>/dev/null || $ARCH_INSTALLER spooles || SPOOLES_INSTALLED=false
+# Adds the Intel oneAPI repository (apt) and installs oneMKL. Returns non-zero on failure.
+install_mkl() {
+    case "$PM" in
+        apt)
+            command -v gpg &>/dev/null || pm_install "$(pkg_names gnupg)" || return 1
+            curl -fsSL https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+                | gpg --dearmor | $SUDO tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null || return 1
+            echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+                | $SUDO tee /etc/apt/sources.list.d/oneAPI.list > /dev/null
+            APT_UPDATED=0
+            install_optional mkl ;;
+        pacman)
+            install_optional mkl ;;
+        *)
+            warn "Automatic oneMKL installation is not supported for this package manager (Intel repository setup required)."
+            return 1 ;;
+    esac
+}
+
+# -----------------------------------------------------------------------------
+# Questions (all prompts are asked here, before any installation work starts)
+# -----------------------------------------------------------------------------
+WANT_MUMPS=0
+WANT_SPOOLES=0
+WANT_AOCL=0
+WANT_MKL=0
+ADD_PATH=0
+HAVE_MKL=0
+
+ask_questions() {
+    echo ""
+    if [ "$PREFIX_SET" -eq 0 ]; then
+        ask_value "Install prefix (binary goes to <prefix>/bin)? [${PREFIX}]: " "${PREFIX}" PREFIX
+    fi
+    PREFIX="${PREFIX/#\~/$HOME}"
+    BIN_DIR="${PREFIX}/bin"
+
+    echo -e "\n${BOLD}${CYAN}--> Sparse direct solver selection${NC}"
+    if [ "${OS}" = "Darwin" ]; then
+        echo -e "${GREEN}[INFO] macOS Detected:${NC}"
+        echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (native, zero external dependencies)."
+        echo -e "  * An open-source solver (${BOLD}MUMPS 5.x${NC}) is available as an option.\n"
+        if confirm "Also build MUMPS 5.x as an additional open-source solver?" N; then WANT_MUMPS=1; fi
+    else
+        echo -e "${GREEN}[INFO] Linux Detected:${NC}"
+        if confirm "Enable MUMPS 5.x as an open-source multi-threaded direct solver?" Y; then WANT_MUMPS=1; fi
+
+        if [ "${ARCH}" = "x86_64" ]; then
+            if grep -qi "authenticamd" /proc/cpuinfo 2>/dev/null; then
+                echo -e "\n${BOLD}${YELLOW}AMD Zen CPU detected:${NC} AMD AOCL-BLIS is open-source linear algebra tuned for AMD CPUs."
+                if confirm "Install AMD BLIS/libflame (CMake selects it automatically when present)?" Y; then WANT_AOCL=1; fi
             fi
-            
-            if [ "$SPOOLES_INSTALLED" = true ]; then
-                CMAKE_SOLVER_FLAGS="${CMAKE_SOLVER_FLAGS} -DCCX_USE_SPOOLES=ON"
-                if [[ "$SOLVER_NAME" == "None Selected"* ]]; then
-                    SOLVER_NAME="SPOOLES 2.2"
-                else
-                    SOLVER_NAME="${SOLVER_NAME} + SPOOLES 2.2"
-                fi
+
+            echo -e "\n${BOLD}${BLUE}Intel oneMKL PARDISO (optional):${NC} proprietary, but often faster on x86_64 CPUs with AVX2/AVX-512."
+            if [ -n "$MKLROOT" ] || [ -d "/opt/intel/oneapi/mkl" ] || [ -f "/usr/include/mkl/mkl.h" ] || [ -f "/usr/include/mkl.h" ]; then
+                HAVE_MKL=1
+                if confirm "Found Intel oneMKL on your system. Enable PARDISO?" Y; then WANT_MKL=1; fi
             else
-                echo -e "${YELLOW}Warning: 'spooles' could not be installed (likely requires AUR on Arch). Skipping SPOOLES.${NC}"
+                if confirm "Install and enable Intel oneMKL PARDISO?" N; then WANT_MKL=1; fi
+            fi
+        else
+            echo -e "\n${CYAN}[INFO] Linux ${ARCH} detected: Intel oneMKL is not available on this architecture.${NC}"
+        fi
+
+        if confirm "Also enable legacy SPOOLES solver via system library?" N; then WANT_SPOOLES=1; fi
+    fi
+
+    # PATH setup question
+    SHELL_RC=""
+    case "$(basename "${SHELL:-}")" in
+        fish) SHELL_RC="${HOME}/.config/fish/config.fish" ;;
+        zsh)  SHELL_RC="${HOME}/.zshrc" ;;
+        bash) SHELL_RC="${HOME}/.bashrc" ;;
+    esac
+    if [ -n "$SHELL_RC" ]; then
+        case ":${PATH}:" in
+            *":${BIN_DIR}:"*) ;;  # already on PATH
+            *) if confirm "Add ${BIN_DIR} to PATH in ${SHELL_RC}?" Y; then ADD_PATH=1; fi ;;
+        esac
+    fi
+}
+
+# -----------------------------------------------------------------------------
+# Dependency installation (driven by the answers above)
+# -----------------------------------------------------------------------------
+install_macos_deps() {
+    info "Checking prerequisites and build tools..."
+    if ! command -v brew &>/dev/null; then
+        if   [ -x "/opt/homebrew/bin/brew" ]; then eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [ -x "/usr/local/bin/brew" ];    then eval "$(/usr/local/bin/brew shellenv)"
+        else
+            echo -e "\n${YELLOW}Homebrew is recommended to install build tools (cmake, gcc, arpack).${NC}"
+            if confirm "Install Homebrew now?" Y; then
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                if   [ -x "/opt/homebrew/bin/brew" ]; then eval "$(/opt/homebrew/bin/brew shellenv)"
+                elif [ -x "/usr/local/bin/brew" ];    then eval "$(/usr/local/bin/brew shellenv)"
+                fi
             fi
         fi
     fi
-fi
 
-echo -e "Configured Solver Backends: ${BOLD}${GREEN}${SOLVER_NAME}${NC}"
+    command -v brew &>/dev/null || die "Homebrew is required to install build tools on macOS."
 
-# -----------------------------------------------------------------------------
-# 5. Compilation & Build
-# -----------------------------------------------------------------------------
-echo -e "\n${BOLD}${CYAN}--> Configuring and building CalculiX (${NPROC} parallel jobs)...${NC}"
+    local missing=""
+    command -v cmake    &>/dev/null || missing="${missing} cmake"
+    command -v gfortran &>/dev/null || missing="${missing} gcc"
+    brew list arpack    &>/dev/null || missing="${missing} arpack"
 
-
-
-cd "${SOURCE_DIR}"
-
-rm -rf build
-
-cmake -B build ${CMAKE_SOLVER_FLAGS}
-cmake --build build -j"${NPROC}"
-
-# -----------------------------------------------------------------------------
-# 6. Installation
-# -----------------------------------------------------------------------------
-echo -e "\n${BOLD}${CYAN}--> Installing binary to ${INSTALL_DIR}...${NC}"
-
-cp "${SOURCE_DIR}/build/CalculiX" "${INSTALL_DIR}/ccx"
-chmod +x "${INSTALL_DIR}/ccx"
-
-echo -e "${GREEN}[OK] Installed executable: ${INSTALL_DIR}/ccx${NC}"
-
-# -----------------------------------------------------------------------------
-# 7. Shell Configuration (Aliases & PATH)
-# -----------------------------------------------------------------------------
-SHELL_RC=""
-if [[ "$SHELL" == *"fish"* ]] || [ -f "${HOME}/.config/fish/config.fish" ]; then
-    SHELL_RC="${HOME}/.config/fish/config.fish"
-elif [[ "$SHELL" == *"zsh"* ]] || [ -n "$ZSH_VERSION" ] || [ -f "${HOME}/.zshrc" ]; then
-    SHELL_RC="${HOME}/.zshrc"
-elif [[ "$SHELL" == *"bash"* ]] || [ -n "$BASH_VERSION" ] || [ -f "${HOME}/.bashrc" ]; then
-    SHELL_RC="${HOME}/.bashrc"
-fi
-
-if [ -n "$SHELL_RC" ]; then
-    echo -e ""
-    prompt_read "Add ${INSTALL_DIR} to PATH and create 'CalculiX' alias in ${SHELL_RC}? [Y/n] " "Y" ADD_ALIAS
-    if [[ "$ADD_ALIAS" =~ ^[Yy]$ ]]; then
-        echo -e "\n# CalculiX Multi-Solver" >> "${SHELL_RC}"
-        if [[ "$SHELL_RC" == *"fish"* ]]; then
-            echo -e "fish_add_path ${INSTALL_DIR}" >> "${SHELL_RC}"
-            echo -e "alias CalculiX 'ccx'" >> "${SHELL_RC}"
+    if [ -n "$missing" ]; then
+        echo -e "${YELLOW}Missing packages:${NC}${missing}"
+        if confirm "Install missing packages via Homebrew?" Y; then
+            # shellcheck disable=SC2086
+            brew install ${missing}
         else
-            echo -e "export PATH=\"${INSTALL_DIR}:\$PATH\"" >> "${SHELL_RC}"
-            echo -e "alias CalculiX='ccx'" >> "${SHELL_RC}"
+            die "Required packages are missing; cannot continue."
         fi
-        echo -e "${GREEN}[OK] Added to ${SHELL_RC}. Run 'source ${SHELL_RC}' or open a new terminal.${NC}"
+    else
+        ok "All macOS build tools and ARPACK found."
     fi
-fi
+}
 
-# -----------------------------------------------------------------------------
-# 8. Quick Sanity Check
-# -----------------------------------------------------------------------------
-echo -e "\n${BOLD}${CYAN}--> Running quick solver verification...${NC}"
-if [ -d "${SOURCE_DIR}/test" ] && [ -f "${SOURCE_DIR}/test/achtel2.inp" ]; then
-    (
-        cd "${SOURCE_DIR}/test"
-        "${INSTALL_DIR}/ccx" achtel2 >/dev/null 2>&1 || true
-        if [ -f "achtel2.dat" ]; then
-            echo -e "${GREEN}[OK] Verification test passed (achtel2.inp solved successfully)!${NC}"
-            rm -f achtel2.dat achtel2.frd achtel2.sta achtel2.cvg
+install_linux_solver_deps() {
+    if [ "$WANT_MUMPS" -eq 1 ]; then
+        info "Installing MUMPS..."
+        if ! install_optional mumps; then
+            warn "MUMPS could not be installed (on Arch it may require an AUR helper, e.g. 'yay -S mumps-seq'). Skipping MUMPS."
+            WANT_MUMPS=0
         fi
-    )
-fi
+    fi
+
+    if [ "$WANT_AOCL" -eq 1 ]; then
+        info "Installing AMD BLIS/libflame..."
+        if ! install_optional blis && ! install_optional blis_alt; then
+            echo -e "${YELLOW}[INFO] BLIS could not be installed. CMake will fall back to OpenBLAS.${NC}"
+        fi
+    fi
+
+    if [ "$WANT_MKL" -eq 1 ] && [ "$HAVE_MKL" -eq 0 ]; then
+        info "Installing Intel oneMKL..."
+        if ! install_mkl || [ ! -d "/opt/intel/oneapi/mkl" ]; then
+            warn "Intel oneMKL could not be installed. Skipping PARDISO."
+            WANT_MKL=0
+        fi
+    fi
+
+    if [ "$WANT_SPOOLES" -eq 1 ]; then
+        info "Installing SPOOLES..."
+        if ! install_optional spooles && [ ! -d "/usr/include/spooles" ]; then
+            warn "SPOOLES could not be installed (on Arch it may require an AUR helper, e.g. 'yay -S spooles'). Skipping SPOOLES."
+            WANT_SPOOLES=0
+        fi
+    fi
+}
 
 # -----------------------------------------------------------------------------
-# 9. Source Code Cleanup
+# Source checkout
 # -----------------------------------------------------------------------------
-if [ -n "$TEMP_BUILD_DIR" ] && [ -d "$TEMP_BUILD_DIR" ]; then
-    echo -e "\n${BOLD}${CYAN}--> Cleaning up temporary build files...${NC}"
-    rm -rf "$TEMP_BUILD_DIR"
-    TEMP_BUILD_DIR=""
-    echo -e "${GREEN}[OK] Temporary source code removed.${NC}"
-fi
+fetch_source() {
+    local script_dir=""
+    if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+        script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    fi
 
-echo -e "\n${BOLD}${BLUE}================================================================${NC}"
-echo -e "${BOLD}${GREEN}   CalculiX CrunchiX (CCX) Installed Successfully!              ${NC}"
-echo -e "${BOLD}${BLUE}================================================================${NC}"
-echo -e "To run a simulation:"
-echo -e "  ${CYAN}ccx input_deck_name${NC}  (without .inp extension)"
-echo -e "  or"
-echo -e "  ${CYAN}CalculiX input_deck_name${NC}"
-NUM_SOLVERS=0
-if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_ACCELERATE=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
-if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_MUMPS=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
-if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_PARDISO=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
-if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_SPOOLES=ON"* ]]; then NUM_SOLVERS=$((NUM_SOLVERS + 1)); fi
+    TEMP_ROOT="$(mktemp -d -t ccx_build_XXXXXX)"
+    BUILD_DIR="${TEMP_ROOT}/build"
 
-if [ "$NUM_SOLVERS" -gt 1 ]; then
-    echo -e "\n${BOLD}Selecting Solvers in Your Input Decks (*.inp):${NC}"
-    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_MUMPS=ON"* ]]; then
-        echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
+    if [ -n "$script_dir" ] && [ -f "${script_dir}/CMakeLists.txt" ] && [ -d "${script_dir}/src" ]; then
+        SOURCE_DIR="${script_dir}"
+        local ref
+        ref="$(git -C "${SOURCE_DIR}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo 'local')"
+        echo -e "Building from local repository: ${CYAN}${SOURCE_DIR}${NC} (branch/ref: ${BOLD}${GREEN}${ref}${NC})"
+    else
+        # NOTE (maintainer): fetch the latest GitHub Release instead of 'main' once official releases are published.
+        info "Cloning CalculiX repository (Ref: ${CCX_REF})..."
+        SOURCE_DIR="${TEMP_ROOT}/src"
+        if [ "$CCX_REF" = "main" ]; then
+            git clone --depth 1 "${GITHUB_REPO_URL}" "${SOURCE_DIR}"
+        elif ! git clone --depth 1 --branch "${CCX_REF}" "${GITHUB_REPO_URL}" "${SOURCE_DIR}" 2>/dev/null; then
+            # Not a branch/tag: assume a raw commit SHA
+            rm -rf "${SOURCE_DIR}"
+            git clone "${GITHUB_REPO_URL}" "${SOURCE_DIR}"
+            git -C "${SOURCE_DIR}" checkout "${CCX_REF}"
+        fi
     fi
-    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_PARDISO=ON"* ]]; then
-        echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)"
+}
+
+# -----------------------------------------------------------------------------
+# Build, install, verify
+# -----------------------------------------------------------------------------
+on_off() { if [ "$1" -eq 1 ]; then echo ON; else echo OFF; fi; }
+
+build_and_install() {
+    local flags="-DCCX_SOLVERS_STRICT=OFF"
+
+    if [ "${OS}" = "Darwin" ]; then
+        flags="${flags} -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=$(on_off $WANT_MUMPS)"
+    else
+        flags="${flags} -DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=$(on_off $WANT_MUMPS)"
+        flags="${flags} -DCCX_USE_PARDISO=$(on_off $WANT_MKL) -DCCX_USE_SPOOLES=$(on_off $WANT_SPOOLES)"
     fi
-    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_ACCELERATE=ON"* ]]; then
-        echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
+
+    info "Configuring and building CalculiX (${NPROC} parallel jobs)..."
+    # shellcheck disable=SC2086
+    cmake -S "${SOURCE_DIR}" -B "${BUILD_DIR}" ${flags}
+    cmake --build "${BUILD_DIR}" -j"${NPROC}"
+
+    info "Installing to ${BIN_DIR}..."
+    mkdir -p "${BIN_DIR}"
+    rm -f "${BIN_DIR}/ccx"   # replace any binary or link from a previous install
+    cmake --install "${BUILD_DIR}" --prefix "${PREFIX}"
+    ok "Installed executables: ${BIN_DIR}/CalculiX (and 'ccx')"
+
+    # Solvers actually compiled in (reported by CMake)
+    BUILT_SOLVERS=""
+    if [ -f "${BUILD_DIR}/ccx_solvers.txt" ]; then
+        BUILT_SOLVERS="$(tr -d '\n' < "${BUILD_DIR}/ccx_solvers.txt")"
     fi
-    if [[ "${CMAKE_SOLVER_FLAGS}" == *"-DCCX_USE_SPOOLES=ON"* ]]; then
-        echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"
+}
+
+verify_install() {
+    info "Running quick solver verification..."
+    local deck="${SOURCE_DIR}/test/achtel2.inp"
+    if [ ! -f "$deck" ]; then
+        warn "Verification deck not found; skipping."
+        return 0
     fi
-fi
-echo -e "\nSee README.md for complete solver benchmarks and documentation."
-echo -e "${BOLD}${BLUE}================================================================${NC}\n"
+    local vdir="${TEMP_ROOT}/verify"
+    mkdir -p "$vdir"
+    cp "$deck" "$vdir/"
+    if ( cd "$vdir" && "${BIN_DIR}/ccx" achtel2 > run.log 2>&1 ) && grep -q "Job finished" "$vdir/run.log"; then
+        ok "Verification test passed (achtel2.inp solved successfully)."
+    else
+        warn "Verification test FAILED. The installed binary may be broken; see output below."
+        tail -n 20 "$vdir/run.log" 2>/dev/null || true
+    fi
+}
+
+setup_path() {
+    [ "$ADD_PATH" -eq 1 ] || return 0
+    local marker="# CalculiX Multi-Solver (added by install.sh)"
+    mkdir -p "$(dirname "${SHELL_RC}")"
+    if [ -f "${SHELL_RC}" ] && grep -qF "$marker" "${SHELL_RC}"; then
+        ok "PATH entry already present in ${SHELL_RC}."
+        return 0
+    fi
+    {
+        echo ""
+        echo "$marker"
+        if [[ "$SHELL_RC" == *fish* ]]; then
+            echo "fish_add_path ${BIN_DIR}"
+        else
+            echo "export PATH=\"${BIN_DIR}:\$PATH\""
+        fi
+    } >> "${SHELL_RC}"
+    ok "Added to ${SHELL_RC}. Run 'source ${SHELL_RC}' or open a new terminal."
+}
+
+print_summary() {
+    echo -e "\n${BOLD}${BLUE}================================================================${NC}"
+    echo -e "${BOLD}${GREEN}   CalculiX CrunchiX (CCX) Installed Successfully!              ${NC}"
+    echo -e "${BOLD}${BLUE}================================================================${NC}"
+    echo -e "To run a simulation:"
+    echo -e "  ${CYAN}ccx input_deck_name${NC}  (without .inp extension)"
+    echo -e "  or"
+    echo -e "  ${CYAN}CalculiX input_deck_name${NC}"
+    echo -e "\nDirect solvers built: ${BOLD}${GREEN}${BUILT_SOLVERS:-none (internal fallback only)}${NC}"
+
+    # Warn about requested-but-missing solvers (CMake disables them in non-strict mode)
+    local s
+    for s in MUMPS:$WANT_MUMPS PARDISO:$WANT_MKL SPOOLES:$WANT_SPOOLES; do
+        if [ "${s#*:}" -eq 1 ] && [[ ",${BUILT_SOLVERS}," != *",${s%%:*},"* ]]; then
+            warn "${s%%:*} was requested but could not be enabled (see CMake warnings above)."
+        fi
+    done
+    if [ -z "$BUILT_SOLVERS" ]; then
+        warn "No sparse direct solver was built. Re-run the installer and enable MUMPS or another solver."
+    fi
+
+    if [[ "$BUILT_SOLVERS" == *,* ]]; then
+        echo -e "\n${BOLD}Selecting Solvers in Your Input Decks (*.inp):${NC}"
+        [[ ",${BUILT_SOLVERS}," == *",MUMPS,"*      ]] && echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
+        [[ ",${BUILT_SOLVERS}," == *",PARDISO,"*    ]] && echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)"
+        [[ ",${BUILT_SOLVERS}," == *",ACCELERATE,"* ]] && echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
+        [[ ",${BUILT_SOLVERS}," == *",SPOOLES,"*    ]] && echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"
+    fi
+    echo -e "\nSee README.md for complete solver benchmarks and documentation."
+    echo -e "${BOLD}${BLUE}================================================================${NC}\n"
+}
+
+banner() {
+    echo -e "${BOLD}${CYAN}"
+    echo -e "  ____  ____ __  __ "
+    echo -e " / ___|/ ___|\\ \\/ / "
+    echo -e "| |   | |     \\  /  "
+    echo -e "| |___| |___  /  \\  "
+    echo -e " \\____|\\____|/_/\\_\\ "
+    echo -e "${NC}"
+    echo -e "${BOLD}${BLUE}================================================================${NC}"
+    echo -e "${BOLD}${MAGENTA}   CalculiX CrunchiX (CCX) Multi-Solver — Universal Installer  ${NC}"
+    echo -e "${BOLD}${BLUE}================================================================${NC}"
+}
+
+main() {
+    parse_args "$@"
+    banner
+    detect_platform
+    if [ "${OS}" = "Linux" ]; then detect_pm; fi
+
+    # Phase 1: ask everything up front
+    ask_questions
+
+    # Phase 2: unattended installation
+    if [ "${OS}" = "Darwin" ]; then
+        install_macos_deps
+    else
+        install_linux_base
+        install_linux_solver_deps
+    fi
+    fetch_source
+    build_and_install
+    verify_install
+    setup_path
+    print_summary
+}
+
+main "$@"
