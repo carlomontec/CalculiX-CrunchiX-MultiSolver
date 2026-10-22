@@ -157,10 +157,10 @@ int main(int argc,char *argv[])
     json_init(jobnamec,
 #if defined(ACCELERATE_SOLVER)
       "ACCELERATE"
-#elif defined(MUMPS)
-      "MUMPS"
 #elif defined(PARDISO)
       "PARDISO"
+#elif defined(MUMPS)
+      "MUMPS"
 #elif defined(SPOOLES)
       "SPOOLES"
 #elif defined(PASTIX)

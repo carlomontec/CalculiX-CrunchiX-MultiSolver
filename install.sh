@@ -524,8 +524,10 @@ build_and_install() {
 
     # Solvers actually compiled in (reported by CMake)
     BUILT_SOLVERS=""
+    DEFAULT_SOLVER=""
     if [ -f "${BUILD_DIR}/ccx_solvers.txt" ]; then
-        BUILT_SOLVERS="$(tr -d '\n' < "${BUILD_DIR}/ccx_solvers.txt")"
+        BUILT_SOLVERS="$(sed -n '1p' "${BUILD_DIR}/ccx_solvers.txt" | tr -d '\r\n')"
+        DEFAULT_SOLVER="$(sed -n '2p' "${BUILD_DIR}/ccx_solvers.txt" | tr -d '\r\n')"
     fi
 }
 
@@ -575,7 +577,18 @@ print_summary() {
     echo -e "  ${CYAN}ccx input_deck_name${NC}  (without .inp extension)"
     echo -e "  or"
     echo -e "  ${CYAN}CalculiX input_deck_name${NC}"
-    echo -e "\nDirect solvers built: ${BOLD}${GREEN}${BUILT_SOLVERS:-none (internal fallback only)}${NC}"
+    echo -e "\nDirect solvers built : ${BOLD}${GREEN}${BUILT_SOLVERS:-none (internal fallback only)}${NC}"
+    if [ -n "$DEFAULT_SOLVER" ] && [ "$DEFAULT_SOLVER" != "NONE" ]; then
+        local def_desc="$DEFAULT_SOLVER"
+        case "$DEFAULT_SOLVER" in
+            ACCELERATE) def_desc="Apple Accelerate (macOS Hardware)" ;;
+            PARDISO)    def_desc="Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)" ;;
+            MUMPS)      def_desc="MUMPS 5.x (Open-Source Multi-Threaded)" ;;
+            SPOOLES)    def_desc="SPOOLES 2.2 (Classic Built-in)" ;;
+        esac
+        echo -e "Default solver       : ${BOLD}${CYAN}${def_desc}${NC}"
+        echo -e "                       (used automatically whenever an input deck omits 'SOLVER=')"
+    fi
 
     # Warn about requested-but-missing solvers (CMake disables them in non-strict mode)
     local s
@@ -589,7 +602,7 @@ print_summary() {
     fi
 
     if [[ "$BUILT_SOLVERS" == *,* ]]; then
-        echo -e "\n${BOLD}Selecting Solvers in Your Input Decks (*.inp):${NC}"
+        echo -e "\n${BOLD}Selecting Alternative Solvers in Your Input Decks (*.inp):${NC}"
         [[ ",${BUILT_SOLVERS}," == *",MUMPS,"*      ]] && echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
         [[ ",${BUILT_SOLVERS}," == *",PARDISO,"*    ]] && echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)"
         [[ ",${BUILT_SOLVERS}," == *",ACCELERATE,"* ]] && echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"

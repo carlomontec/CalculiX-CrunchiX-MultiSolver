@@ -802,8 +802,22 @@ foreach(_pair ACCELERATE MUMPS PARDISO SPOOLES)
     endif()
 endforeach()
 string(REPLACE ";" "," _ccx_solvers_csv "${_ccx_solvers}")
-file(WRITE ${CMAKE_BINARY_DIR}/ccx_solvers.txt "${_ccx_solvers_csv}\n")
+
+# Determine runtime default solver (matches src/ini_cal.c preprocessor hierarchy)
+set(_ccx_default_solver "NONE")
+if(CCX_USE_ACCELERATE)
+    set(_ccx_default_solver "ACCELERATE")
+elseif(CCX_USE_PARDISO)
+    set(_ccx_default_solver "PARDISO")
+elseif(CCX_USE_MUMPS)
+    set(_ccx_default_solver "MUMPS")
+elseif(CCX_USE_SPOOLES)
+    set(_ccx_default_solver "SPOOLES")
+endif()
+
+file(WRITE ${CMAKE_BINARY_DIR}/ccx_solvers.txt "${_ccx_solvers_csv}\n${_ccx_default_solver}\n")
 message(STATUS "Enabled direct solvers: ${_ccx_solvers_csv}")
+message(STATUS "Default direct solver:  ${_ccx_default_solver}")
 
 # -----------------------------------------------------------------------------
 # CTest Integration
