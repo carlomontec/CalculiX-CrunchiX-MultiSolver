@@ -375,6 +375,17 @@ ask_questions() {
         fi
 
         if confirm "Also enable legacy SPOOLES solver via system library?" N; then WANT_SPOOLES=1; fi
+
+        if [ "$WANT_MUMPS" -eq 0 ] && [ "$WANT_MKL" -eq 0 ] && [ "$WANT_SPOOLES" -eq 0 ]; then
+            echo -e "\n${BOLD}${RED}[WARNING] No direct sparse solver selected!${NC}"
+            echo -e "CalculiX requires at least one direct sparse solver (MUMPS, PARDISO, or SPOOLES) to solve standard FEA models."
+            echo -e "Without one, CCX falls back to an internal iterative solver that fails on most simulations.\n"
+            if confirm "Would you like to enable MUMPS 5.x (strongly recommended)?" Y; then
+                WANT_MUMPS=1
+            else
+                die "Installation aborted: At least one direct solver must be enabled to build a functional CCX installation."
+            fi
+        fi
     fi
 
     # PATH setup question
@@ -462,6 +473,10 @@ install_linux_solver_deps() {
             WANT_SPOOLES=0
         fi
     fi
+
+    if [ "$WANT_MUMPS" -eq 0 ] && [ "$WANT_MKL" -eq 0 ] && [ "$WANT_SPOOLES" -eq 0 ]; then
+        die "No direct sparse solver is installed or enabled (MUMPS/PARDISO/SPOOLES). Cannot build a functional CalculiX binary."
+    fi
 }
 
 # -----------------------------------------------------------------------------
@@ -511,9 +526,23 @@ build_and_install() {
         flags="${flags} -DCCX_USE_PARDISO=$(on_off $WANT_MKL) -DCCX_USE_SPOOLES=$(on_off $WANT_SPOOLES)"
     fi
 
-    info "Configuring and building CalculiX (${NPROC} parallel jobs)..."
+    info "Configuring CalculiX..."
     # shellcheck disable=SC2086
     cmake -S "${SOURCE_DIR}" -B "${BUILD_DIR}" ${flags}
+
+    # Solvers actually enabled by CMake
+    BUILT_SOLVERS=""
+    DEFAULT_SOLVER=""
+    if [ -f "${BUILD_DIR}/ccx_solvers.txt" ]; then
+        BUILT_SOLVERS="$(sed -n '1p' "${BUILD_DIR}/ccx_solvers.txt" | tr -d '\r\n')"
+        DEFAULT_SOLVER="$(sed -n '2p' "${BUILD_DIR}/ccx_solvers.txt" | tr -d '\r\n')"
+    fi
+
+    if [ -z "$BUILT_SOLVERS" ] || [ "$DEFAULT_SOLVER" = "NONE" ]; then
+        die "No sparse direct solver is enabled (MUMPS/PARDISO/SPOOLES/Accelerate). Refusing to compile a non-functional CCX binary."
+    fi
+
+    info "Building CalculiX (${NPROC} parallel jobs)..."
     cmake --build "${BUILD_DIR}" -j"${NPROC}"
 
     info "Installing to ${BIN_DIR}..."
@@ -521,14 +550,6 @@ build_and_install() {
     rm -f "${BIN_DIR}/ccx"   # replace any binary or link from a previous install
     cmake --install "${BUILD_DIR}" --prefix "${PREFIX}"
     ok "Installed executables: ${BIN_DIR}/CalculiX (and 'ccx')"
-
-    # Solvers actually compiled in (reported by CMake)
-    BUILT_SOLVERS=""
-    DEFAULT_SOLVER=""
-    if [ -f "${BUILD_DIR}/ccx_solvers.txt" ]; then
-        BUILT_SOLVERS="$(sed -n '1p' "${BUILD_DIR}/ccx_solvers.txt" | tr -d '\r\n')"
-        DEFAULT_SOLVER="$(sed -n '2p' "${BUILD_DIR}/ccx_solvers.txt" | tr -d '\r\n')"
-    fi
 }
 
 verify_install() {
