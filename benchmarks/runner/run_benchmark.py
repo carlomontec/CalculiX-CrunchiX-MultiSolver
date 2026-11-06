@@ -267,7 +267,13 @@ def main():
     parser.add_argument(
         "--level",
         default="fine",
-        help="Mesh discretization level name (e.g. coarse, medium, fine)",
+        choices=["coarse", "fine"],
+        help="Mesh discretization level name (coarse or fine)",
+    )
+    parser.add_argument(
+        "--remesh",
+        action="store_true",
+        help="Force re-running CGX remesher before executing benchmarks",
     )
     parser.add_argument(
         "--tag",
@@ -292,10 +298,26 @@ def main():
     print(f" Mesh Level   : {args.level}")
     print("-" * 80)
 
-    # Verify mesh files exist
+    # Verify mesh files and cyclic symmetry pairing integrity
     msh_file = ROTOR_DIR / "all.msh"
-    if not msh_file.exists():
-        print(f"[!] Warning: {msh_file.name} missing! Running CGX remesher first...")
+    cyc1_file = ROTOR_DIR / "CYC1.nam"
+    cyc2_file = ROTOR_DIR / "CYC2.nam"
+
+    need_remesh = args.remesh or not msh_file.exists() or not cyc1_file.exists() or not cyc2_file.exists()
+
+    if not need_remesh:
+        # Check node parity on cyclic boundaries
+        try:
+            n1 = sum(1 for line in open(cyc1_file) if line.strip() and not line.startswith("*"))
+            n2 = sum(1 for line in open(cyc2_file) if line.strip() and not line.startswith("*"))
+            if n1 != n2:
+                print(f"[!] Warning: Cyclic symmetry boundary mismatch (CYC1={n1}, CYC2={n2}). Remeshing...")
+                need_remesh = True
+        except Exception:
+            need_remesh = True
+
+    if need_remesh:
+        print(f"[*] Meshing rotor via CGX at '{args.level}' level...")
         from benchmarks.compressor_rotor.remesh import remesh
         remesh(level=args.level)
 
@@ -347,6 +369,10 @@ def main():
                     benchmark_data["metadata"]["equations"] = res.get("equations")
             else:
                 print(f" FAILED ({res['error']})")
+                if res.get("output"):
+                    err_lines = [l.strip() for l in res["output"].splitlines() if "*ERROR" in l]
+                    for el in err_lines[:4]:
+                        print(f"       {el}")
 
             solver_results[str(th)] = res
 

@@ -44,18 +44,13 @@ def find_cgx_binary():
 LEVEL_CONFIGS = {
     "coarse": {
         "div_cmd": "",  # Baseline mesh (1,352 C3D20R elements, ~38.4k equations)
-        "description": "Baseline resolution (~38k equations, ~500 MB RAM)",
+        "description": "Baseline resolution (~38.4k equations, ~500 MB RAM, ideal for quick validation & 8-10 GB VM)",
         "memory_target": "< 2 GB RAM",
     },
-    "medium": {
-        "div_cmd": "div all auto 2.5\n",  # Adaptive auto element sizing
-        "description": "Medium resolution (~100k equations, ~2-4 GB RAM, ideal for 8-10 GB VM)",
-        "memory_target": "< 6 GB RAM",
-    },
     "fine": {
-        "div_cmd": "div all mult 2\n",  # 2x all line divisions (~300k equations)
-        "description": "Fine resolution (~300k equations, ~8-12 GB RAM, ideal for 16 GB Mac & 32 GB Linux)",
-        "memory_target": "< 14 GB RAM",
+        "div_cmd": "div all mult 2\n",  # Uniform 2x multiplication preserving cyclic symmetry topology
+        "description": "Fine resolution (10,816 C3D20R elements, ~283k equations, ~6-8 GB RAM, ideal for 16 GB Mac & 32 GB Linux)",
+        "memory_target": "< 10 GB RAM",
     },
 }
 
