@@ -5,7 +5,7 @@
 **Element Type**: `C3D20R` (Quadratic 20-node Hexahedral with Reduced Integration)  
 
 <p align="center">
-  <img src="compressor_rotor/rotor.png" width="80%" alt="CalculiX GraphiX (GLFW Edition) - 7-Blade Turbocharger Compressor Rotor" />
+  <img src="compressor_rotor/rotor.jpg" width="80%" alt="CalculiX GraphiX (GLFW Edition) - 7-Blade Turbocharger Compressor Rotor" />
   <br>
   <em>Prestressed vibration stress contour on the 360° revolved 7-blade compressor rotor rendered in modernized CalculiX GraphiX (GLFW Edition).</em>
 </p>
@@ -19,7 +19,7 @@ benchmarks/
 ├── compressor_rotor/
 │   ├── lavff.fbd       # CGX geometric model (Klaus Wittig)
 │   ├── send.fbl        # CGX batch meshing script template
-│   ├── remesh.py       # CGX automated remeshing tool (coarse / medium / fine)
+│   ├── remesh.py       # CGX automated remeshing tool (coarse / fine)
 │   └── lavffcyc.inp    # CalculiX input deck (Static Centrifugal + Cyclic Frequency)
 ├── runner/
 │   └── run_benchmark.py # Multi-threaded automated harness (collects time & peak RAM)
@@ -38,15 +38,20 @@ Mesh resolution is controlled via CGX batch remeshing (`remesh.py`):
 
 | Preset | Target RAM | CGX Command | Approx. Equations | Recommended Host |
 | :--- | :---: | :---: | :---: | :--- |
-| **Coarse** (Baseline) | < 2 GB | Default divisions | ~38,400 | Rapid sanity testing / smoke check |
-| **Medium** | < 6 GB | `div all auto 2.5` | ~110,000 | **Linux ARM64 (Multipass VM, 8–10 GB)** |
-| **Fine** | < 14 GB | `div all mult 2` | ~300,000 | **macOS (16 GB)** & **Linux AMD64 (32 GB)** |
+| Preset | Elements | Approx. Equations | Target RAM | CGX Command | Recommended Host |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Coarse** (Baseline) | 1,352 C3D20R | ~38,400 | < 2 GB | Default divisions | Quick validation, Linux ARM64 VM (8–10 GB) |
+| **Fine** (Default) | 10,816 C3D20R | ~283,000 | < 10 GB | `div all mult 2` | macOS (16 GB) and Linux AMD64 (32 GB) |
+
+The fine level uses a uniform 2x division multiplier so the cyclic symmetry boundaries (`CYC1` / `CYC2`) keep matching node pairs.
 
 To generate or switch resolution:
 ```bash
 # In benchmarks/compressor_rotor:
-python3 remesh.py --level coarse    # or medium, or fine
+python3 remesh.py --level coarse    # or fine
 ```
+
+The benchmark runner remeshes automatically when `all.msh`, `CYC1.nam` or `CYC2.nam` is missing, or when the two cyclic boundary sets have different node counts. Use `--remesh` to force it.
 
 ---
 
@@ -54,7 +59,9 @@ python3 remesh.py --level coarse    # or medium, or fine
 
 Run the automated runner with thread sweeps:
 ```bash
-python3 benchmarks/runner/run_benchmark.py --threads 1 2 4
+python3 benchmarks/runner/run_benchmark.py --threads 1 2 4                  # fine mesh (default)
+python3 benchmarks/runner/run_benchmark.py --level coarse --threads 1 2 4   # coarse mesh
+python3 benchmarks/runner/run_benchmark.py --level fine --remesh            # force CGX remesh first
 ```
 
 On Linux or Windows, specify thread counts matching your physical core layout (e.g. `--threads 1 2 4 6 12`).
