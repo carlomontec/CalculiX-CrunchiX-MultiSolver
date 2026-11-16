@@ -117,6 +117,9 @@ This project is designed to work with [CalculiX GraphiX GLFW](https://github.com
 
 ## Repository Guide
 
+- [CHANGES_VS_CCX.md](CHANGES_VS_CCX.md): technical reference and architectural comparison vs upstream CalculiX CrunchiX.
+- [CONVENTION_PRESENTATION.md](CONVENTION_PRESENTATION.md): conference presentation outline, core thesis, slide deck structure, and Q&A defense.
+- [STATE_OF_THE_ART_CONDA_FEEDSTOCK.md](STATE_OF_THE_ART_CONDA_FEEDSTOCK.md): state-of-the-art analysis of Conda-Forge packaging patches and comparative study with Multi-Solver CCX.
 - [INSTALL.md](INSTALL.md): prerequisites, automated installation, manual CMake builds, and troubleshooting.
 - [VALIDATION.md](VALIDATION.md): official test-suite validation and result interpretation.
 - [JSON_EXPORT.md](JSON_EXPORT.md): direct JSON export guide and schema reference for Python, Julia, and MATLAB workflows.
