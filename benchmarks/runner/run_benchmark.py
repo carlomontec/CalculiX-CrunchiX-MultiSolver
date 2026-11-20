@@ -171,11 +171,11 @@ def execute_run(bin_path, deck_name, threads, cwd_dir):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=600,
+            timeout=1800,
         )
         elapsed = time.perf_counter() - t0
     except subprocess.TimeoutExpired:
-        return {"success": False, "error": "Timeout (>600s)", "time": None}
+        return {"success": False, "error": "Timeout (>1800s)", "time": None}
     except Exception as e:
         return {"success": False, "error": str(e), "time": None}
 
@@ -279,6 +279,17 @@ def main():
         "--tag",
         default=None,
         help="Custom machine tag for output JSON (default: hostname_os_arch)",
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=None,
+        help="Custom output directory for results (default: benchmarks/results)",
+    )
+    parser.add_argument(
+        "--save-frd",
+        action="store_true",
+        help="Copy one generated .frd file into the output directory for CGX screenshots",
     )
     args = parser.parse_args()
 
@@ -411,12 +422,26 @@ def main():
     print("=" * 80)
 
     # Save Results
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    out_file = RESULTS_DIR / f"{machine_tag}_{args.deck}.json"
+    out_dir = args.out_dir.resolve() if args.out_dir else RESULTS_DIR
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_file = out_dir / f"{machine_tag}_{args.deck}.json"
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(benchmark_data, f, indent=2)
 
-    print(f"\n[+] Saved complete benchmark metrics to: {out_file.relative_to(REPO_ROOT)}")
+    try:
+        rel_out = out_file.relative_to(REPO_ROOT)
+    except ValueError:
+        rel_out = out_file
+    print(f"\n[+] Saved complete benchmark metrics to: {rel_out}")
+
+    if args.save_frd:
+        frd_src = ROTOR_DIR / f"{args.deck}.frd"
+        if frd_src.exists():
+            frd_dst = out_dir / frd_src.name
+            shutil.copy2(frd_src, frd_dst)
+            print(f"[+] Copied FRD results for screenshots to: {frd_dst.name}")
+        else:
+            print(f"[!] Warning: {frd_src.name} not found to copy.")
 
 
 if __name__ == "__main__":
