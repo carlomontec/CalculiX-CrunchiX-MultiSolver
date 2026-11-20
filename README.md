@@ -1,7 +1,7 @@
 # CalculiX CrunchiX Multi-Solver Edition
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
-[![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#quick-install)
+[![Platform: Linux (x86_64, ARM64) | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20x86__64%20%2F%20ARM64%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#quick-install)
 [![Solvers: MUMPS | Accelerate | PARDISO | SPOOLES](https://img.shields.io/badge/Solvers-MUMPS%20%7C%20Accelerate%20%7C%20PARDISO%20%7C%20SPOOLES-orange.svg)](#solver-backends)
 [![SPOOLES x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles-x64.json)](#verification)
 [![SPOOLES ARM Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles-arm.json)](#verification)
@@ -10,21 +10,38 @@
 [![PARDISO x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/pardiso-x64.json)](#verification)
 [![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#verification)
 
-[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition keeps his solver code unchanged and makes it easier to build and run on modern systems:
-
-- **One-line installers** for Linux, macOS and Windows.
-- **Modern sparse direct solvers**: MUMPS 5.x, Apple Accelerate and Intel oneMKL PARDISO, next to the classic SPOOLES 2.2.
-- **A single cross-platform CMake build** with automatic BLAS/LAPACK selection.
-- **`arpack-ng`** for modal and buckling analyses, replacing the unmaintained ARPACK 96.
-- **Direct JSON result export** (`-j` / `--json`) for Python, Julia and MATLAB workflows.
-- **Verified against the official CalculiX test suite** (635 decks), and kept in sync with upstream CCX.
+[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition keeps his solver code unchanged and makes it easy to build and run fast on Linux, macOS and Windows.
 
 The finite-element formulations, material models, contact algorithms, input syntax (`.inp`) and legacy outputs (`.dat`, `.frd`) are those of upstream CalculiX.
+
+## Highlights
+
+- **Build it yourself in one command, on any OS.** No prebuilt executable to download and trust: the installer fetches the source, installs the dependencies and compiles CalculiX on your machine, linked against the libraries that suit your hardware.
+- **A real native Windows build.** The same source and the same CMake build as on Linux and macOS, compiled with MinGW-w64 (MSYS2 UCRT64) against MUMPS and OpenBLAS or AMD BLIS. No Cygwin, no virtual machine.
+- **x86_64 and ARM.** Linux on x86_64 and ARM64 (aarch64), macOS on Apple Silicon, Windows on x86_64. The Linux ARM64 build is compiled and run against the full test suite in CI with MUMPS and SPOOLES, so it also runs on ARM servers and boards.
+- **Hardware-aware linear algebra.** The build picks the fastest BLAS/LAPACK it can find: Apple Accelerate on Apple Silicon, **AMD AOCL-BLIS** on AMD Ryzen, Threadripper and EPYC, OpenBLAS elsewhere, or Intel oneMKL with PARDISO.
+- **Modern sparse direct solvers.** MUMPS 5.x, Apple Accelerate and Intel oneMKL PARDISO next to the classic SPOOLES 2.2, selectable per analysis step. `arpack-ng` replaces the unmaintained ARPACK 96 for modal and buckling analyses.
+- **Automated verification.** All 635 decks of Dr. Dhondt's official test suite run in parallel and are compared numerically against reference results, in about 3 minutes on an 8-core Apple Silicon machine. Every solver backend and every upstream merge is checked this way.
+- **JSON results for automated workflows.** One flag (`-j`) writes displacements, reaction forces, stresses and energies to a structured JSON file, ready for Python, Julia or MATLAB, with no `.dat` or `.frd` parsing ([example below](#json-export)).
+
+## Compared with upstream CalculiX
+
+Upstream CalculiX is the reference implementation, and this edition tracks it closely. The table shows what this edition adds, as of November 2026:
+
+| | Upstream CalculiX | This edition |
+|:---|:---|:---|
+| **Build** | Makefiles, and an official CMake build since November 2026 (documented for Linux) | One CMake build for Linux (x86_64 and ARM64), macOS and Windows, plus one-line installers |
+| **Sparse direct solvers** | SPOOLES, PARDISO, PaStiX | MUMPS, Apple Accelerate, PARDISO, SPOOLES |
+| **BLAS/LAPACK** | Chosen by the user | Selected for the hardware (Accelerate, AOCL-BLIS, OpenBLAS, oneMKL) |
+| **Windows** | Requires a manual toolchain setup | Installer sets up MSYS2 and builds natively |
+| **Test suite** | `test/compare` shell script, decks run one after another, text comparison | Parallel runner, numerical comparison against JSON references, reports in Markdown/CSV/JSON |
+| **Results** | `.dat`, `.frd` | `.dat`, `.frd`, and optional JSON |
 
 ## Contents
 
 - [Quick install](#quick-install)
 - [Solver backends](#solver-backends)
+- [JSON export](#json-export)
 - [Build system (CMake)](#build-system-cmake)
 - [Verification](#verification)
 - [Relationship to upstream CalculiX](#relationship-to-upstream-calculix)
@@ -72,6 +89,49 @@ Several backends can be compiled into one executable. A deck selects one explici
 ### Eigenvalue solver
 
 Modal, frequency and buckling analyses use [`arpack-ng`](https://github.com/opencollab/arpack-ng), the maintained successor of ARPACK, installed from the system package manager.
+
+## JSON export
+
+Run CalculiX with `-j` (or set `CCX_JSON=1`) and it writes `<job>.json` next to the usual `.dat` and `.frd` files. Every `*NODE PRINT` and `*EL PRINT` request appears as a named array. Abbreviated output of the test deck `tensor_ro_dry`:
+
+```bash
+ccx -j tensor_ro_dry
+```
+
+```js
+{
+  "meta": { "jobname": "tensor_ro_dry", "solver": "SPOOLES", "success": true, ... },
+  "steps": [{
+    "step_number": 1, "type": "STATIC", "converged": true,
+    "increments": [{
+      "increment_number": 10, "step_time": 1.0,
+      "node_sets": {
+        "NALLN_U": {
+          "field": "U", "nodes": [1, 2, 3, ...], "components": ["u1", "u2", "u3"],
+          "values": [[0.0, 0.0, 0.0], [0.010, 0.0, 0.003], [0.028, -0.005, 0.003], ...]
+        },
+        "NALLN_RF": { "field": "RF", ... }
+      },
+      "element_sets": {
+        "EALLE_S": {
+          "field": "S", "components": ["sxx", "syy", "szz", "sxy", "syz", "szx"],
+          "values": [{ "element": 1, "s": [1550.47, 895.85, 1201.44, 385.31, ...] }]
+        }
+      }
+    }]
+  }]
+}
+```
+
+Reading it in Python takes three lines:
+
+```python
+import json
+inc = json.load(open("tensor_ro_dry.json"))["steps"][0]["increments"][-1]
+u = inc["node_sets"]["NALLN_U"]["values"]   # list of [u1, u2, u3] per node
+```
+
+The full schema and Julia/MATLAB examples are in [docs/JSON_EXPORT.md](docs/JSON_EXPORT.md).
 
 ## Build system (CMake)
 
