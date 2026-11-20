@@ -17,7 +17,7 @@ The finite-element formulations, material models, contact algorithms, input synt
 ## Highlights
 
 - **Build it yourself in one command, on any OS.** No prebuilt executable to download and trust: the installer fetches the source, installs the dependencies and compiles CalculiX on your machine, linked against the libraries that suit your hardware.
-- **A real native Windows build.** The same source and the same CMake build as on Linux and macOS, compiled with MinGW-w64 (MSYS2 UCRT64) against MUMPS and OpenBLAS or AMD BLIS. No Cygwin, no virtual machine.
+- **A real native Windows build.** The same source and the same CMake build as on Linux and macOS, compiled with MinGW-w64 (MSYS2 UCRT64) against MUMPS and OpenBLAS (or Intel oneMKL). No Cygwin, no virtual machine.
 - **x86_64 and ARM.** Linux on x86_64 and ARM64 (aarch64), macOS on Apple Silicon, Windows on x86_64. The Linux ARM64 build is compiled and run against the full test suite in CI with MUMPS and SPOOLES, so it also runs on ARM servers and boards.
 - **Hardware-aware linear algebra.** The build picks the fastest BLAS/LAPACK it can find: Apple Accelerate on Apple Silicon, **AMD AOCL-BLIS** on AMD Ryzen, Threadripper and EPYC, OpenBLAS elsewhere, or Intel oneMKL with PARDISO.
 - **Modern sparse direct solvers.** MUMPS 5.x, Apple Accelerate and Intel oneMKL PARDISO next to the classic SPOOLES 2.2, selectable per analysis step. `arpack-ng` replaces the unmaintained ARPACK 96 for modal and buckling analyses.
@@ -65,10 +65,7 @@ The installer asks its questions first, then installs the required packages, bui
 The installer detects or installs MSYS2 and the MinGW-w64 toolchain. In a Windows PowerShell prompt:
 
 ```powershell
-$script = irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1
-$script | Out-File -FilePath install.ps1 -Encoding utf8
-Set-ExecutionPolicy Bypass -Scope Process -Force
-.\install.ps1
+irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
 ```
 
 Prerequisites, installer options and manual builds are described in [INSTALL.md](INSTALL.md).

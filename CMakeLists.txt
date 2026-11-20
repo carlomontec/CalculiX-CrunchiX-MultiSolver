@@ -112,68 +112,115 @@ if(CCX_USE_PARDISO)
         set(MKL_INTERFACE "lp64")
     endif()
 
-    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-        set(MKL_THREADING "GNU" CACHE STRING "MKL Threading library" FORCE)
-    endif()
-    if(CCX_INT64)
-        set(MKL_INTERFACE_FULL "ilp64" CACHE STRING "MKL Interface" FORCE)
-    else()
-        set(MKL_INTERFACE_FULL "lp64" CACHE STRING "MKL Interface" FORCE)
-    endif()
-
-    # 1. Try modern oneAPI MKL CMake config
-    find_package(MKL CONFIG QUIET PATHS $ENV{MKLROOT} $ENV{MKLROOT}/lib/cmake/mkl /opt/intel/oneapi/mkl/latest/lib/cmake/mkl)
-    if(TARGET MKL::MKL)
-        message(STATUS "Found Intel oneMKL via CMake Config: MKL::MKL")
-        list(APPEND EXTRA_LINK_LIBS MKL::MKL)
-        set(_pardiso_ok TRUE)
-    else()
-        # 2. Direct library and header discovery
+    if(WIN32)
+        # On Windows (including MinGW-w64), Intel oneMKL does not ship mkl_gnu_thread.
+        # Link the Single Dynamic Library (mkl_rt.lib), which dispatches LP64/OpenMP
+        # cleanly at runtime and avoids MSVC-only static CRT conflicts.
         find_path(MKL_INCLUDE_DIR
             NAMES mkl.h mkl_service.h
             PATHS
                 $ENV{MKLROOT}/include
                 "C:/Program Files (x86)/Intel/oneAPI/mkl/latest/include"
                 "C:/Program Files/Intel/oneAPI/mkl/latest/include"
-                /opt/intel/oneapi/mkl/latest/include
-                /usr/include/mkl
         )
-
         set(MKL_LIB_SEARCH_PATHS
-            $ENV{MKLROOT}/lib/intel64
             $ENV{MKLROOT}/lib
+            $ENV{MKLROOT}/lib/intel64
+            "C:/Program Files (x86)/Intel/oneAPI/mkl/latest/lib"
             "C:/Program Files (x86)/Intel/oneAPI/mkl/latest/lib/intel64"
+            "C:/Program Files/Intel/oneAPI/mkl/latest/lib"
             "C:/Program Files/Intel/oneAPI/mkl/latest/lib/intel64"
-            /opt/intel/oneapi/mkl/latest/lib/intel64
-            /opt/intel/oneapi/mkl/latest/lib
-            /usr/lib/x86_64-linux-gnu
-            /usr/lib
         )
 
-        find_library(MKL_INTERFACE_LIB NAMES mkl_intel_${MKL_INTERFACE} mkl_gf_${MKL_INTERFACE} PATHS ${MKL_LIB_SEARCH_PATHS})
-        if(CMAKE_C_COMPILER_ID MATCHES "Intel")
-            find_library(MKL_THREAD_LIB NAMES mkl_intel_thread PATHS ${MKL_LIB_SEARCH_PATHS})
-        else()
-            find_library(MKL_THREAD_LIB NAMES mkl_gnu_thread PATHS ${MKL_LIB_SEARCH_PATHS})
-        endif()
-        find_library(MKL_CORE_LIB NAMES mkl_core PATHS ${MKL_LIB_SEARCH_PATHS})
-
-        if(MKL_INCLUDE_DIR AND MKL_INTERFACE_LIB AND MKL_THREAD_LIB AND MKL_CORE_LIB)
-            message(STATUS "Found Intel MKL Include: ${MKL_INCLUDE_DIR}")
-            message(STATUS "Found Intel MKL Interface: ${MKL_INTERFACE_LIB}")
-            message(STATUS "Found Intel MKL Threading: ${MKL_THREAD_LIB}")
-            message(STATUS "Found Intel MKL Core: ${MKL_CORE_LIB}")
-            include_directories(${MKL_INCLUDE_DIR})
-            if(WIN32)
-                list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB})
-            else()
-                list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB} -lpthread -lm -ldl)
+        if(NOT CCX_INT64)
+            find_library(MKL_RT_LIB NAMES mkl_rt PATHS ${MKL_LIB_SEARCH_PATHS})
+            if(MKL_INCLUDE_DIR AND MKL_RT_LIB)
+                message(STATUS "Found Intel MKL Include: ${MKL_INCLUDE_DIR}")
+                message(STATUS "Found Intel MKL SDL (mkl_rt): ${MKL_RT_LIB}")
+                include_directories(${MKL_INCLUDE_DIR})
+                list(APPEND EXTRA_LINK_LIBS ${MKL_RT_LIB})
+                set(_pardiso_ok TRUE)
             endif()
-            set(_pardiso_ok TRUE)
-        elseif(CCX_SOLVERS_STRICT)
-            message(FATAL_ERROR "Intel MKL PARDISO requested (CCX_USE_PARDISO=ON) but MKL was not found.\nPlease ensure Intel oneAPI MKL is installed and set MKLROOT or source /opt/intel/oneapi/setvars.sh.")
+        endif()
+
+        if(NOT _pardiso_ok)
+            find_library(MKL_INTERFACE_LIB NAMES mkl_intel_${MKL_INTERFACE}_dll mkl_intel_${MKL_INTERFACE} PATHS ${MKL_LIB_SEARCH_PATHS})
+            find_library(MKL_THREAD_LIB    NAMES mkl_intel_thread_dll mkl_intel_thread PATHS ${MKL_LIB_SEARCH_PATHS})
+            find_library(MKL_CORE_LIB      NAMES mkl_core_dll mkl_core PATHS ${MKL_LIB_SEARCH_PATHS})
+            if(MKL_INCLUDE_DIR AND MKL_INTERFACE_LIB AND MKL_THREAD_LIB AND MKL_CORE_LIB)
+                message(STATUS "Found Intel MKL Include: ${MKL_INCLUDE_DIR}")
+                message(STATUS "Found Intel MKL Interface: ${MKL_INTERFACE_LIB}")
+                message(STATUS "Found Intel MKL Threading: ${MKL_THREAD_LIB}")
+                message(STATUS "Found Intel MKL Core: ${MKL_CORE_LIB}")
+                include_directories(${MKL_INCLUDE_DIR})
+                list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB})
+                set(_pardiso_ok TRUE)
+            endif()
+        endif()
+
+        if(NOT _pardiso_ok)
+            if(CCX_SOLVERS_STRICT)
+                message(FATAL_ERROR "Intel MKL PARDISO requested (CCX_USE_PARDISO=ON) but MKL was not found.\nPlease ensure Intel oneAPI MKL is installed and set MKLROOT.")
+            else()
+                message(WARNING "Intel MKL PARDISO requested but MKL was not found. Building without PARDISO.")
+            endif()
+        endif()
+    else()
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+            set(MKL_THREADING "GNU" CACHE STRING "MKL Threading library" FORCE)
+        endif()
+        if(CCX_INT64)
+            set(MKL_INTERFACE_FULL "ilp64" CACHE STRING "MKL Interface" FORCE)
         else()
-            message(WARNING "Intel MKL PARDISO requested but MKL was not found. Building without PARDISO.")
+            set(MKL_INTERFACE_FULL "lp64" CACHE STRING "MKL Interface" FORCE)
+        endif()
+
+        # 1. Try modern oneAPI MKL CMake config
+        find_package(MKL CONFIG QUIET PATHS $ENV{MKLROOT} $ENV{MKLROOT}/lib/cmake/mkl /opt/intel/oneapi/mkl/latest/lib/cmake/mkl)
+        if(TARGET MKL::MKL)
+            message(STATUS "Found Intel oneMKL via CMake Config: MKL::MKL")
+            list(APPEND EXTRA_LINK_LIBS MKL::MKL)
+            set(_pardiso_ok TRUE)
+        else()
+            # 2. Direct library and header discovery
+            find_path(MKL_INCLUDE_DIR
+                NAMES mkl.h mkl_service.h
+                PATHS
+                    $ENV{MKLROOT}/include
+                    /opt/intel/oneapi/mkl/latest/include
+                    /usr/include/mkl
+            )
+
+            set(MKL_LIB_SEARCH_PATHS
+                $ENV{MKLROOT}/lib/intel64
+                $ENV{MKLROOT}/lib
+                /opt/intel/oneapi/mkl/latest/lib/intel64
+                /opt/intel/oneapi/mkl/latest/lib
+                /usr/lib/x86_64-linux-gnu
+                /usr/lib
+            )
+
+            find_library(MKL_INTERFACE_LIB NAMES mkl_intel_${MKL_INTERFACE} mkl_gf_${MKL_INTERFACE} PATHS ${MKL_LIB_SEARCH_PATHS})
+            if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+                find_library(MKL_THREAD_LIB NAMES mkl_intel_thread PATHS ${MKL_LIB_SEARCH_PATHS})
+            else()
+                find_library(MKL_THREAD_LIB NAMES mkl_gnu_thread PATHS ${MKL_LIB_SEARCH_PATHS})
+            endif()
+            find_library(MKL_CORE_LIB NAMES mkl_core PATHS ${MKL_LIB_SEARCH_PATHS})
+
+            if(MKL_INCLUDE_DIR AND MKL_INTERFACE_LIB AND MKL_THREAD_LIB AND MKL_CORE_LIB)
+                message(STATUS "Found Intel MKL Include: ${MKL_INCLUDE_DIR}")
+                message(STATUS "Found Intel MKL Interface: ${MKL_INTERFACE_LIB}")
+                message(STATUS "Found Intel MKL Threading: ${MKL_THREAD_LIB}")
+                message(STATUS "Found Intel MKL Core: ${MKL_CORE_LIB}")
+                include_directories(${MKL_INCLUDE_DIR})
+                list(APPEND EXTRA_LINK_LIBS ${MKL_INTERFACE_LIB} ${MKL_THREAD_LIB} ${MKL_CORE_LIB} -lpthread -lm -ldl)
+                set(_pardiso_ok TRUE)
+            elseif(CCX_SOLVERS_STRICT)
+                message(FATAL_ERROR "Intel MKL PARDISO requested (CCX_USE_PARDISO=ON) but MKL was not found.\nPlease ensure Intel oneAPI MKL is installed and set MKLROOT or source /opt/intel/oneapi/setvars.sh.")
+            else()
+                message(WARNING "Intel MKL PARDISO requested but MKL was not found. Building without PARDISO.")
+            endif()
         endif()
     endif()
 
