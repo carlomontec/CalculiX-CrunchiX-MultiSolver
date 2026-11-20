@@ -3,7 +3,7 @@
 **Author**: Dr. Carlo Monjaraz-Tec  
 **Base Project**: CalculiX CrunchiX (CCX) by Dr. Guido Dhondt  
 **Focus**: Comparative Technical Study between Conda-Forge Feedstock (`calculix-feedstock`) and CalculiX CrunchiX Multi-Solver Edition  
-**Audience**: Finite Element Developers, CalculiX Community, Conference & Convention Presentations  
+**Audience**: Finite-element developers and the CalculiX community  
 
 ---
 
@@ -119,11 +119,11 @@ The table below contrasts the technical architecture, capabilities, and design g
 
 ---
 
-## 5. Synthesis & Value for CalculiX Convention Presentation
+## 5. Synthesis
 
-When presenting this work to the CalculiX community, contrasting the Conda-Forge packaging initiative with the Multi-Solver modernization demonstrates a deep understanding of the broader ecosystem:
+The Conda-Forge packaging effort and the Multi-Solver edition approach the same code base from different directions and complement each other:
 
-### Key Presentation Insights
+### Key observations
 
 1. **Two Complementary Modernization Vectors**:
    - The **Conda-Forge community** approached CalculiX from an *external software engineering perspective*: packaging, toolchain modernization, compiler standards conformance, and AddressSanitizer testing for GUI users (FreeCAD).
@@ -138,7 +138,7 @@ When presenting this work to the CalculiX community, contrasting the Conda-Forge
      - The **`springforc_f2f.f` array dimension correction (`xl(3,19)`)** fixes an active buffer overrun that corrupts high-optimization (`-O3`) builds.
      - The **`compfluidfem.c` node thresholding** prevents severe multithreading degradation on small fluid meshes.
 
-4. **The Ultimate Modernized CalculiX Vision**:
+4. **Outlook**:
    - A unified architecture combining the **Multi-Solver engine** (MUMPS, Accelerate, PARDISO, JSON export, modern CMake) with the **Conda-Forge defensive safeguards** (locale locks, AddressSanitizer fixes, and fuzzing-hardened card parsing) delivers the most performant, robust, and portable CalculiX distribution available to the engineering community.
 
 ---
