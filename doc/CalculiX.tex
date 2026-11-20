@@ -6633,7 +6633,7 @@ Example files: restrictor, restrictor-oil.
 Properties: adiabatic, not isentropic, directional, inlet based restrictor
 
 In a joint the flow from two gas pipes is united and redirected
-through a third pipe. So in principal three network elements of type GAS PIPE
+through a third pipe. So in principle, three network elements of type GAS PIPE
 have one node in common in a joint. The fluid  elements of type BRANCH JOINT represent the
 extra energy loss due to the merging of the flows and have to be inserted on
 the incoming branches of the joint. This is represented schematically in
@@ -6744,7 +6744,7 @@ Example files: branchjoint1, branchjoint2, branchjoint3, branchjoint4.
 Properties: adiabatic, not isentropic, directional, inlet based restrictor
 
 In a split the flow from a gas pipe is split and redirected
-through two other pipes. So in principal three network elements of type GAS PIPE
+through two other pipes. So in principle, three network elements of type GAS PIPE
 have one node in common in a split. The fluid  elements of type BRANCH SPLIT represent the
 extra energy loss due to the splitting of the flow and have to be inserted in
 the outward branches of the split. This is represented schematically in
@@ -6986,7 +6986,7 @@ by
 
 Finally, the
 parameter $T_{\text{flag}}$ controls the temperature increase due to the vortex. In
-principal, the rotational energy transferred to the gas also leads to a
+principle, the rotational energy transferred to the gas also leads to a
 temperature increase. If the user does not want to take that into account
 $T_{\text{flag}}=0$ should be selected, else $T_{\text{flag}}=1$ or $T_{\text{flag}}=-1$ should be
 specified, depending on whether the vortex is defined in the absolute
@@ -10866,7 +10866,25 @@ should be used to define the value of absolute zero temperature.
 \subsubsection{\label{hel}Hyperelastic and hyperfoam materials}
 
 Hyperelastic materials are materials for which a potential function exists such that the second Piola-Kirchhoff stress tensor can be written as the derivative of this potential with respect to the Lagrangian strain tensor. This definition includes linear elastic materials, although the term hyperelastic material is usually reserved for proper nonlinear elastic materials. 
-One important class constitutes the isotropic hyperelastic materials, for which the potential function is a function of the strain invariants only. All rubber material models presently included in CalculiX are of that type (Arruda-Boyce, Mooney-Rivlin, Neo Hooke, Ogden, Polynomial, Reduced Polynomial and Yeoh). They are selected by the keyword \htmlref{*HYPERELASTIC}{hyperelastic}. Rubber materials are virtually incompressible (virtually no dependence on the third Lagrangian strain invariant which takes values close to 1). The dependence on the third invariant (the compressibility) is separated from the dependence on the first two invariants and is governed by so called compressibility coefficients, taking the value 0 for perfectly incompressible materials. Perfectly incompressible materials require the use of hybrid finite elements, in which the pressure is taken as an additional independent variable (in addition to the displacements). CalculiX does not provide such elements. Consequently, a slight amount of compressibility is required for CalculiX to work. If the user inserts zero compressibility coefficients, CalculiX uses a default value corresponding to an initial value of the Poisson coefficient of 0.475.
+One important class constitutes the isotropic hyperelastic materials, for
+which the potential function is a function of the strain invariants only. All
+rubber material models presently included in CalculiX are of that type
+(Arruda-Boyce, Mooney-Rivlin, Neo Hooke, Ogden, Polynomial, Reduced Polynomial
+and Yeoh). They are selected by the keyword
+\htmlref{*HYPERELASTIC}{hyperelastic}. Rubber materials are virtually
+incompressible (virtually no dependence on the third Lagrangian strain
+invariant which takes values close to 1). The dependence on the third
+invariant (the compressibility) is separated from the dependence on the first
+two invariants and is governed by so called compressibility coefficients,
+taking the value 0 for perfectly incompressible materials. Perfectly
+incompressible materials require the use of hybrid finite elements, in which
+the pressure is taken as an additional independent variable (in addition to
+the displacements). CalculiX does not provide such elements. Consequently, a
+slight amount of compressibility is required for CalculiX to work. If the user
+inserts a zero compressibility coefficient $D_1$ (actually $< 1.e-30$), CalculiX uses a default
+value corresponding to an initial value of the Poisson coefficient of
+0.475. If the compressibility coefficient $D_2$ or $D_3$ is zero (actually $< 1.e-30$), the program
+throws an error and stops.
 
 Another example of isotropic hyperelastic materials are the hyperfoam materials, which are also implemented in CalculiX (activated by the keyword \htmlref{*HYPERFOAM}{hyperfoam}). Hyperfoam materials are very compressible.
 
@@ -10883,7 +10901,8 @@ strain. Because tensile and compressive test results coincide well when
 plotting the Cauchy (true) stress versus the logarithmic strain, these quantities are generally used in the deformation plasticity law. 
 The implementation in CalculiX (keyword card \htmlref{*DEFORMATION
   PLASTICITY}{deformationplasticity}) implicitly uses the Abaqus interface in
-CalculiX for large deformations. The three-dimensional extension of the
+CalculiX for large deformations, i.e. the parameter NLGEOM on the *STEP card
+is automatically activated. The three-dimensional extension of the
 Ramberg-Osgood law reads \cite{ABAQUS}:
 
 \begin{equation}
@@ -10910,7 +10929,11 @@ $\sigma_0$, $n$ and $\alpha$ directly (by plotting a Cauchy stress versus logari
 The implementation of incremental plasticity for nonlinear geometrical
 calculations in CalculiX (routine incplas.f) follows the algorithms in \cite{Simo3} and \cite{Simo4} and is based on the notion of an intermediate stress-free configuration. The deformation is viewed as a plastic flow due to dislocation motion followed by elastic stretching and rotation of the crystal lattice. This is synthesized by a local multiplicative decomposition of the deformation gradient $\textbf{F}=\textbf{F}^e \textbf{F}^p$ where $F_{kK}=x_{k,K}$ in Cartesian coordinates.
 
-In the present implementation, the elastic response is isotropic and is deduced from a stored-energy function (hyperelastic response). Furthermore, the plastic flow is isochoric (the volume is conserved) and the classical von Mises-Huber yield condition applies. This condition can be visualized as a sphere in principal deviatoric stress space. 
+In the present implementation, the elastic response is isotropic and is
+deduced from a stored-energy function (hyperelastic response). Furthermore,
+the plastic flow is isochoric (the volume is conserved) and the classical von
+Mises-Huber yield condition applies. This condition can be visualized as a
+sphere in principal deviatoric stress space. 
 
 The hardening can consist of isotropic hardening, resulting in an expansion or contraction of the yield surface, of kinematic hardening, resulting in a translation of the yield surface, or of a combination of both. The hardening curve should yield the von Mises true stress versus the equivalent plastic logarithmic strain (cf. deformation plasticity for its definition). 
 
@@ -10976,7 +10999,7 @@ it has been implemented as a Abaqus Material User Subroutine in CalculiX
 establishing a relationship between the corotational Cauchy stress and the
 corotational logarithmic strain it can also be used for large deformations.
 
-In principal, the Johnson-Cook model \cite{Johnson} proposes a yield curve for a conventional
+In principle, the Johnson-Cook model \cite{Johnson} proposes a yield curve for a conventional
 plasticity model with isotropic hardening in the form:
 
 \begin{equation}
@@ -18948,6 +18971,30 @@ containing the eigenfrequencies, the eigenmodes, the stiffness and the mass
 matrix with the name jobname.eig. If the step is a *MODAL DYNAMIC or *STEADY
 STATE DYNAMICS step, CalculiX will look for a file with that name. If any of the files it needs does not exist, an error message is generated and CalculiX will stop.
 
+\begin{table}
+\caption{Maximum length in characters of some entities.\label{maxlen}}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+ entity & maximum number of characters\\
+\hline
+integer number & 10 \\
+real number & 20 \\
+\hline
+dflux, dload, film &  \\
+MPC, radiate labels & 20 \\
+\hline
+amplitude, objective  & \\
+set, surface, tie labels & 80 \\
+\hline
+any line & 1320 \\
+any field on a line &  \\
+(separated by commata) & 132  \\
+\hline
+\end{tabular}
+\end{center}        
+\end{table}
+
 The input deck basically consists of a set of keywords, followed by
 data required by the keyword on lines underneath the keyword. The
 keywords can be accompanied by parameters on the same line, separated
@@ -18958,7 +19005,10 @@ alphanumeric information can be written in upper
 case, lower case, or any mixture. The input deck is case insensitive:
 internally, all alphanumeric characters are changed into upper
 case. The data do not follow a fixed format and are to be separated by
-a comma. A line can only contain as many data as dictated by the keyword definition. The maximum length for user-defined names, e.g. for materials or sets, is 80 characters, unless specified otherwise.The structure of an input deck consists of geometric, topological and material data before the first step definition, and loading data (mechanical, thermal, or prescribed displacements) in one or more subsequent steps. The user must make sure that all data are given in consistent units (the units do not appear in the calculation).
+a comma. A line can only contain as many data as dictated by the keyword
+definition. The maximum length for user-defined names, e.g. for materials or
+sets, is 80 characters, unless specified otherwise. The reader is referred to
+Table \ref{maxlen} for the character length of other fields. The structure of an input deck consists of geometric, topological and material data before the first step definition, and loading data (mechanical, thermal, or prescribed displacements) in one or more subsequent steps. The user must make sure that all data are given in consistent units (the units do not appear in the calculation).
 
 A keyword can be of type step or model definition. Model Definition
 cards must be used before the first *STEP card. Step keywords can only
@@ -24137,7 +24187,7 @@ first degree of freedom and last degree of freedom. This triggers the
 deletion of all equations for which the dependent degree of freedom
 corresponds to the range from the first to the last degree of freedom of
 the selected node. If the last degree of freedom was omitted, it equals the
-first degree of freedom. 
+first degree of freedom.
 
 The parameter REMOVE ALL is used to remove all equations. Notice
 that the latter option removes all linear and nonlinear equations,
@@ -25665,6 +25715,12 @@ Denoting the principal stretches by $\lambda_1$, $\lambda_2$ and $\lambda_3$ ($\
 \begin{equation}
 U=\sum_{i=1}^{N} \frac{2 \mu_i}{\alpha_i^2}(\bar{\lambda}_1^{\alpha_i}+\bar{\lambda}_2^{\alpha_i}+\bar{\lambda}_3^{\alpha_i}-3)+\sum_{i=1}^{N}\frac{1}{D_i}(J-1)^{2i}.
 \end{equation}
+
+The parameters $D_i$ are the compressibility coefficients. If the user enters
+$D_1<1.e-30$, $D_1$ is replaced by a default corresponding to a Poisson
+coefficient of 0.475 in the initial state  \cite{Dhondt}. If
+$D_2<1.e-30$ (for $N>1$) or $D_3<1.e-30$ (for $N>2$), the program throws an
+error and stops.
 
 The input deck for a hyperelastic material looks as follows:
 \bigskip
@@ -37493,7 +37549,7 @@ on any edge) the mesh is smoothed. To this end three routines are called:
 \paragraph{catnodes.f}
 
 In the smoothing procedure the position of a node i is replaced by a weighted
-average of the position of its neighbors. In principal, all nodes belonging to
+average of the position of its neighbors. In principle, all nodes belonging to
 the ball of node i (the ball of a node is by definition the set of element to
 which this node belongs \cite{George}) are neighbors. However, for some nodes
 this set is further restricted. In general, a node j belonging to the ball of
@@ -38579,6 +38635,7 @@ variable & meaning \\
             &         if 0: only temperature DOF  \\
             &         if 3: temperature + displacements \\
             &         if 4: temperature + displacements/velocities + pressure \\
+!     mi(3)   &           max \# of layers in any element \\
       kon(i) &         field containing the connectivity lists of the 
                       elements in successive order \\
                &      for 1d and 2d elements (no composites) the 3d-expansion

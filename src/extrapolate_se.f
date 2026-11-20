@@ -658,10 +658,10 @@
                 ze=gauss3d7(3,j)
                 weight=weight3d7(j)
               elseif(lakon(i)(1:4).eq.'F3D6') then
-                xi=gauss3d14(1,j)
-                et=gauss3d14(2,j)
-                ze=gauss3d14(3,j)
-                weight=weight3d14(j)
+                xi=gauss3d11(1,j)
+                et=gauss3d11(2,j)
+                ze=gauss3d11(3,j)
+                weight=weight3d11(j)
               endif
 !     
               if(nope.eq.20) then
@@ -1073,7 +1073,7 @@ c     Bernhardi end
 !     
       if((cflag.ne.' ').and.(cflag.ne.'E')) then
         call map3dto1d2d(yn,ipkon,inum,kon,lakon,nfield,nk,ne,cflag,
-     &       co,vold,iforce,mi)
+     &       co,vold,iforce,mi,ielprop,prop)
       endif
 !     
       return

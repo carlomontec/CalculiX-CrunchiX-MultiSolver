@@ -56,7 +56,7 @@ beam_sens_stress_coord1_explicit;YES;SPOOLES;PASS;Clean numerical match;0.0;2.70
 beam_sens_stress_coord1_implicit;YES;SPOOLES;PASS;Clean numerical match;0.0;2.77;{'SPOOLES': 'PASS (Clean numerical match)'}
 beam_sens_stress_coord2;YES;SPOOLES;PASS;Clean numerical match;0.0;2.60;{'SPOOLES': 'PASS (Clean numerical match)'}
 beamabq;YES;SPOOLES;PASS;Clean numerical match;0.0;2.38;{'SPOOLES': 'PASS (Clean numerical match)'}
-beamabqnl;YES;SPOOLES;PASS;Clean numerical match;0.0;2.26;{'SPOOLES': 'PASS (Clean numerical match)'}
+beamabqnl;YES;SPOOLES;PASS;Clean numerical match;0.0;0.29;{'SPOOLES': 'PASS (Clean numerical match)'}
 beamb;YES;SPOOLES;PASS;Clean numerical match;0.0;2.69;{'SPOOLES': 'PASS (Clean numerical match)'}
 beamb2;YES;SPOOLES;PASS;Clean numerical match;0.0;2.58;{'SPOOLES': 'PASS (Clean numerical match)'}
 beamcom;YES;SPOOLES;PASS;Clean numerical match;0.0;2.36;{'SPOOLES': 'PASS (Clean numerical match)'}
@@ -489,6 +489,7 @@ planestress4;YES;SPOOLES;PASS;Clean numerical match;0.0;1.60;{'SPOOLES': 'PASS (
 plate;YES;SPOOLES;PASS;Clean numerical match;0.0;1.76;{'SPOOLES': 'PASS (Clean numerical match)'}
 poi2dturb;YES;SPOOLES;PASS;Clean numerical match;0.0;3.97;{'SPOOLES': 'PASS (Clean numerical match)'}
 potied;YES;SPOOLES;PASS;Clean numerical match;0.0;1.90;{'SPOOLES': 'PASS (Clean numerical match)'}
+press_expl_c3d8i;YES;SPOOLES;PASS;Clean numerical match;0.0;0.25;{'SPOOLES': 'PASS (Clean numerical match)'}
 pret1;YES;SPOOLES;PASS;Clean numerical match;0.0;1.52;{'SPOOLES': 'PASS (Clean numerical match)'}
 pret2;YES;SPOOLES;PASS;Clean numerical match;0.0;1.46;{'SPOOLES': 'PASS (Clean numerical match)'}
 pret3;YES;SPOOLES;PASS;Clean numerical match;0.0;1.51;{'SPOOLES': 'PASS (Clean numerical match)'}
@@ -618,6 +619,10 @@ substructure;YES;SPOOLES;PASS;Clean numerical match;0.0;0.69;{'SPOOLES': 'PASS (
 substructure2;YES;SPOOLES;PASS;Clean numerical match;0.0;0.66;{'SPOOLES': 'PASS (Clean numerical match)'}
 swing;YES;SPOOLES;PASS;Clean numerical match;0.0;0.57;{'SPOOLES': 'PASS (Clean numerical match)'}
 tempdiscon;YES;SPOOLES;PASS;Clean numerical match;0.0;0.65;{'SPOOLES': 'PASS (Clean numerical match)'}
+tensor_elastic_full;YES;SPOOLES;PASS;Clean numerical match;0.0;0.22;{'SPOOLES': 'PASS (Clean numerical match)'}
+tensor_elastic_rotated;YES;SPOOLES;PASS;Clean numerical match;0.0;0.22;{'SPOOLES': 'PASS (Clean numerical match)'}
+tensor_ro_dry;YES;SPOOLES;PASS;Clean numerical match;0.0;0.22;{'SPOOLES': 'PASS (Clean numerical match)'}
+tensor_ro_rotated;YES;SPOOLES;PASS;Clean numerical match;0.0;0.22;{'SPOOLES': 'PASS (Clean numerical match)'}
 testmortar;YES;SPOOLES;PASS;Clean numerical match;0.0;0.63;{'SPOOLES': 'PASS (Clean numerical match)'}
 thermomech;YES;SPOOLES;PASS;Clean numerical match;0.0;18.15;{'SPOOLES': 'PASS (Clean numerical match)'}
 thermomech2;YES;SPOOLES;PASS;Clean numerical match;0.0;4.07;{'SPOOLES': 'PASS (Clean numerical match)'}

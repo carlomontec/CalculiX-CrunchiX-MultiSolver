@@ -67,6 +67,8 @@ On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives:
 | **arpack-ng** | System package (`arpack` / `libarpack2-dev`) | Linux, macOS, Windows | Maintained Arnoldi eigenvalue solver for modal dynamics, frequency, and buckling analysis. Replaces legacy ARPACK 96. |
 
 
+> **Note on upstream build files:** since November 2026, upstream CalculiX (Dr. Guido Dhondt) ships its own CMake build (`cmake/`, `CMakePresets.json`). These files are kept in this repository for reference only and are not used. The supported build for this fork is the top-level `CMakeLists.txt` driven by `install.sh` / `install.ps1`. Upstream's original installation instructions are archived in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md).
+
 ## Quick install for Linux, MacOS and Windows (Recommended)
 
 Run this snippet in the terminal:
