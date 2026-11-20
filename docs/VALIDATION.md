@@ -51,7 +51,7 @@ build_mumps/CalculiX
 build_spooles/CalculiX
 ```
 
-See [INSTALL.md](INSTALL.md) for platform prerequisites and other build configurations.
+See [INSTALL.md](../INSTALL.md) for platform prerequisites and other build configurations.
 
 ## Run the Official Suite
 

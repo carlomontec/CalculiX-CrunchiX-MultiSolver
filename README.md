@@ -1,141 +1,150 @@
 # CalculiX CrunchiX Multi-Solver Edition
 
-An effort of solver backend modernization for [CalculiX CrunchiX](https://www.dhondt.de/), the open-source finite-element solver created by Dr. Guido Dhondt and other collaborators. The project preserves the original CalculiX numerical code with a more performant open-source options for solver backends, and multi-platform. Single codebase compiles in Linux, MacOS, and Windows.
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](LICENSE)
+[![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#quick-install)
+[![Solvers: MUMPS | Accelerate | PARDISO | SPOOLES](https://img.shields.io/badge/Solvers-MUMPS%20%7C%20Accelerate%20%7C%20PARDISO%20%7C%20SPOOLES-orange.svg)](#solver-backends)
+[![SPOOLES x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles-x64.json)](#verification)
+[![SPOOLES ARM Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles-arm.json)](#verification)
+[![MUMPS x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps-x64.json)](#verification)
+[![MUMPS ARM Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps-arm.json)](#verification)
+[![PARDISO x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/pardiso-x64.json)](#verification)
+[![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#verification)
 
-<!-- [![CI Multi-Solver Matrix](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml/badge.svg)](https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver/actions/workflows/ci.yml) -->
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](COPYING)
-[![Platform: Linux | macOS | Windows](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](#platform-support--roadmap)
-[![Solvers: SPOOLES | Intel MKL PARDISO | MUMPS | Accelerate](https://img.shields.io/badge/Solvers-SPOOLES%20%7C%20PARDISO%20%7C%20MUMPS%20%7C%20Accelerate-orange.svg)](#multi-solver-architecture)
-[![PARDISO x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/pardiso-x64.json)](#solver-benchmarks--verification-pass-rates)
-[![SPOOLES x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles-x64.json)](#solver-benchmarks--verification-pass-rates)
-[![SPOOLES ARM Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/spooles-arm.json)](#solver-benchmarks--verification-pass-rates)
-[![MUMPS x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps-x64.json)](#solver-benchmarks--verification-pass-rates)
-[![MUMPS ARM Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/mumps-arm.json)](#solver-benchmarks--verification-pass-rates)
-[![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#solver-benchmarks--verification-pass-rates)
+[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition keeps his solver code unchanged and makes it easier to build and run on modern systems:
 
+- **One-line installers** for Linux, macOS and Windows.
+- **Modern sparse direct solvers**: MUMPS 5.x, Apple Accelerate and Intel oneMKL PARDISO, next to the classic SPOOLES 2.2.
+- **A single cross-platform CMake build** with automatic BLAS/LAPACK selection.
+- **`arpack-ng`** for modal and buckling analyses, replacing the unmaintained ARPACK 96.
+- **Direct JSON result export** (`-j` / `--json`) for Python, Julia and MATLAB workflows.
+- **Verified against the official CalculiX test suite** (635 decks), and kept in sync with upstream CCX.
 
-## Table of Contents
+The finite-element formulations, material models, contact algorithms, input syntax (`.inp`) and legacy outputs (`.dat`, `.frd`) are those of upstream CalculiX.
 
-- [Goal](#goal)
-- [Project Status](#project-status)
-- [Solver Backends](#solver-backends)
-  - [Linear Equation Solvers](#linear-equation-solvers)
-  - [Eigenvalue Solver (arpack-ng)](#eigenvalue-solver-modal-analysis--buckling)
-- [Quick Installation](#quick-install-for-linux-macos-and-windows-recommended)
-  - [Linux & macOS One-Liner](#quick-install-for-linux-macos-and-windows-recommended)
-  - [Windows (PowerShell)](#quick-install-for-windows-powershell)
-- [Companion Project: CalculiX GraphiX GLFW](#companion-project-calculix-graphix-glfw)
-- [Quick Installation](#quick-install-for-linux-macos-and-windows-recommended)
-  - [Linux & macOS One-Liner](#quick-install-for-linux-macos-and-windows-recommended)
-  - [Windows (PowerShell)](#quick-install-for-windows-powershell)
-- [Repository Guide](#repository-guide)
-- [Attribution and License](#attribution-and-license)
+## Contents
 
+- [Quick install](#quick-install)
+- [Solver backends](#solver-backends)
+- [Build system (CMake)](#build-system-cmake)
+- [Verification](#verification)
+- [Relationship to upstream CalculiX](#relationship-to-upstream-calculix)
+- [Companion project: CalculiX GraphiX GLFW](#companion-project-calculix-graphix-glfw)
+- [Documentation](#documentation)
+- [About this project](#about-this-project)
+- [Attribution and license](#attribution-and-license)
 
-## Goal
+## Quick install
 
-This work is an exploration of agent-assisted scientific-software development. The newly written code is AI generated. The original CalculiX implementation and its authors remain credited below. At the same time, it is intended to provide a robust implementation of CalculiX that leverages from modern linear solvers and it is very easy to compile and install in the major Operative Systems.
-
-## Project Status
-
-- **Multi-Solver Architecture**: Unified codebase supporting four sparse direct backends: 
-  - **MUMPS 5.x** (recommended open-source default)
-  - **Apple Accelerate** (native macOS)
-  - **Intel oneMKL PARDISO** (Linux/Windows)
-  - **SPOOLES 2.2** (legacy baseline).
-- **Modern Eigenvalue Solver**: Integrated **`arpack-ng`** eigenvalue solverfor modal and buckle analyses, replacing the legacy ARPACK 96 archive.
-- **Direct JSON Export (`-j` / `--json`)**: Results export as JSON export for better automation in Python/Julia/MATLAB workflows (see [JSON_EXPORT.md](JSON_EXPORT.md)).
-- **High Performance & Compatibility**: Delivers performance improvement over SPOOLES while maintaining >95% pass rate across the official 630-deck verification suite.
-
-## Solver Backends
-
-### Linear Equation Solvers
-
-| Backend | Linux | macOS | Windows | Role |
-|:---|:---:|:---:|:---:|:---|
-| **MUMPS 5.x** | System package (**recommended**) | Vendored archive | System/MSYS2 (**recommended**) package | Primary modern open-source candidate (accelerated via OpenBLAS / AMD AOCL-BLIS; see [INSTALL.md](INSTALL.md)) |
-| **Apple Accelerate** | No | Native framework (**recommended**) | No | macOS sparse solver |
-| **Intel oneMKL PARDISO** | Optional | No | Optional | High-performance oneMKL backend |
-| **SPOOLES 2.2** | System package | Vendored archive | System package when available | Legacy compatibility and comparison baseline |
-
-On Apple Silicon macOS, MUMPS and SPOOLES are built from pinned source archives: [MUMPS vendor package](third_party/mumps/README.md),  [SPOOLES vendor package](third_party/spooles/README.md)
-
-### Eigenvalue Solver (Modal Analysis & Buckling)
-
-| Solver | Distribution | Platform Support | Role |
-|:---|:---|:---:|:---|
-| **arpack-ng** | System package (`arpack` / `libarpack2-dev`) | Linux, macOS, Windows | Maintained Arnoldi eigenvalue solver for modal dynamics, frequency, and buckling analysis. Replaces legacy ARPACK 96. |
-
-
-> **Note on upstream build files:** since November 2026, upstream CalculiX (Dr. Guido Dhondt) ships its own CMake build (`cmake/`, `CMakePresets.json`). These files are kept in this repository for reference only and are not used. The supported build for this fork is the top-level `CMakeLists.txt` driven by `install.sh` / `install.ps1`. Upstream's original installation instructions are archived in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md).
-
-## Quick install for Linux, MacOS and Windows (Recommended)
-
-Run this snippet in the terminal:
+### Linux and macOS
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 ```
-After installation, the `ccx` executable is ready to use from the directory you selected. If you accept the shell-configuration prompt, that directory is added to your `PATH` and the `CalculiX` alias is created as well. See [INSTALL.md](INSTALL.md) for more details in installation with different solvers.
 
-#### Quick install for Windows (PowerShell)
-For Windows users, use the automated PowerShell installer. It will automatically detect or install MSYS2 and the required MinGW-w64 toolchains. Open a standard **Windows PowerShell** prompt and paste this entire block:
+The installer asks its questions first, then installs the required packages, builds with CMake and installs the `ccx` executable (default `~/.local/bin`). If you accept the shell-configuration prompt, that directory is added to your `PATH`.
+
+### Windows (PowerShell)
+
+The installer detects or installs MSYS2 and the MinGW-w64 toolchain. In a Windows PowerShell prompt:
 
 ```powershell
-# 1. Download the script into memory (using the main branch)
 $script = irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1
-
-# 2. Save it to disk with forced UTF-8 encoding (prevents Windows parsing errors)
 $script | Out-File -FilePath install.ps1 -Encoding utf8
-
-# 3. Temporarily allow script execution for this session and run it
 Set-ExecutionPolicy Bypass -Scope Process -Force
 .\install.ps1
 ```
 
-### Verification and Testing
+Prerequisites, installer options and manual builds are described in [INSTALL.md](INSTALL.md).
 
-To verify your installation against official CalculiX test suite (630+ verification decks):
+## Solver backends
+
+### Linear equation solvers
+
+| Backend | Linux | macOS (Apple Silicon) | Windows | Notes |
+|:---|:---:|:---:|:---:|:---|
+| **MUMPS 5.x** | System package (default) | Built from vendored source | MSYS2 package (default) | Recommended open-source solver. Performance depends on the BLAS library (see [INSTALL.md](INSTALL.md#blas-and-lapack-selection)). |
+| **Apple Accelerate** | - | System framework (default) | - | Native macOS sparse solver. |
+| **Intel oneMKL PARDISO** | Optional | - | Optional | Requires Intel oneMKL. |
+| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver; reference baseline. |
+
+Several backends can be compiled into one executable. A deck selects one explicitly with, for example, `*STATIC, SOLVER=MUMPS`; otherwise the build's default solver is used.
+
+### Eigenvalue solver
+
+Modal, frequency and buckling analyses use [`arpack-ng`](https://github.com/opencollab/arpack-ng), the maintained successor of ARPACK, installed from the system package manager.
+
+## Build system (CMake)
+
+This edition is built with a single top-level [`CMakeLists.txt`](CMakeLists.txt) on all three platforms. The installers are thin wrappers around it, and it can be used directly:
 
 ```bash
-# 1. Quick verification run (tests 20 decks in parallel using your CPU threads)
-python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --limit 20
-
-# 2. Complete official test suite (runs all 600+ decks across all CPU threads)
-python3 test_NewLib/run_official_testsuite.py --custom-bin ccx
-
-# 3. Filter specific test deck patterns
-python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --pattern "beam*" "achtel*"
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
 ```
 
-Reports (Markdown table, CSV data, JSON export, and comparison charts) are automatically saved to `test_NewLib/testsuite_results/`. See [VALIDATION.md](VALIDATION.md) for full options and solver-to-solver comparative benchmarking.
+What the build does:
 
-## Companion Project: CalculiX GraphiX GLFW
-![CalculiX CrunchiX FEA Simulation](pictures/cgx_glfw.png)
+- **Reads the source list from upstream's `src/Makefile.inc`**, so new or removed CalculiX source files are picked up automatically after each upstream sync.
+- **Selects solvers per platform** through `CCX_USE_MUMPS`, `CCX_USE_ACCELERATE`, `CCX_USE_PARDISO` and `CCX_USE_SPOOLES`, and reports the enabled solvers and the default one at configure time.
+- **Builds MUMPS and SPOOLES from pinned, checksum-verified source archives** on macOS, where no suitable system packages exist ([third_party/](third_party/)).
+- **Chooses a BLAS/LAPACK library for the hardware** (`CCX_BLAS=AUTO`): Accelerate on Apple Silicon, AMD AOCL-BLIS on AMD Zen, OpenBLAS elsewhere, or oneMKL with PARDISO.
 
-This project is designed to work with [CalculiX GraphiX GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW), a flavor of CalculiX GraphiX with modern 3D GLFW rendering library. It also runs in Linux, MacOs and Windows. Binaries available.
+**Upstream CalculiX now has its own CMake build.** Since November 2026, Dr. Dhondt's CalculiX ships an official CMake build (`cmake/`, `CMakePresets.json`) with presets for GCC or Intel compilers, 32- or 64-bit integers, and the SPOOLES, PARDISO and PaStiX solvers. This is an important step for the CalculiX community. The build in this repository was developed independently and earlier, for a different scope (multiple solver backends, macOS and Windows). Both are kept in the tree: this edition's `CMakeLists.txt` is the supported build here, and upstream's files and instructions ([doc/INSTALL_upstream.md](doc/INSTALL_upstream.md)) are preserved unchanged for reference.
 
+All build options are listed in [INSTALL.md](INSTALL.md#building-with-cmake).
 
+## Verification
 
-## Repository Guide
+Every change is checked against Dr. Dhondt's official test suite (the decks in [`test/`](test/)). The runner in [`test_NewLib/`](test_NewLib/) runs the decks in parallel and compares the results numerically against golden JSON references, with a fallback to the classic `.dat` / `.frd` comparison:
 
-- [CHANGES_VS_CCX.md](CHANGES_VS_CCX.md): technical reference and architectural comparison vs upstream CalculiX CrunchiX.
-- [CONVENTION_PRESENTATION.md](CONVENTION_PRESENTATION.md): conference presentation outline, core thesis, slide deck structure, and Q&A defense.
-- [STATE_OF_THE_ART_CONDA_FEEDSTOCK.md](STATE_OF_THE_ART_CONDA_FEEDSTOCK.md): state-of-the-art analysis of Conda-Forge packaging patches and comparative study with Multi-Solver CCX.
-- [INSTALL.md](INSTALL.md): prerequisites, automated installation, manual CMake builds, and troubleshooting.
-- [VALIDATION.md](VALIDATION.md): official test-suite validation and result interpretation.
-- [JSON_EXPORT.md](JSON_EXPORT.md): direct JSON export guide and schema reference for Python, Julia, and MATLAB workflows.
-- [MODERNIZATION.md](MODERNIZATION.md): architecture and roadmap.
-- [test_NewLib/run_official_testsuite.py](test_NewLib/run_official_testsuite.py): full correctness comparison runner.
-- [test_NewLib/benchmark_solvers.py](test_NewLib/benchmark_solvers.py): focused performance benchmark.
+```bash
+# Quick check: 20 decks
+python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --limit 20
 
+# Full suite
+python3 test_NewLib/run_official_testsuite.py --custom-bin ccx
+```
 
-## Attribution and License
+Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. The badges at the top show the latest pass rates per solver and platform. Full details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
-CalculiX CrunchiX is free software distributed under the GNU General Public License version 2. The original project is maintained by Dr. Guido Dhondt. CalculiX GraphiX was created by Klaus Wittig. This work of this repository is mantained by Dr. Carlo Monjaraz-Tec
+## Relationship to upstream CalculiX
+
+This repository is a fork of [Dhondtguido/CalculiX](https://github.com/Dhondtguido/CalculiX) and follows its development. Upstream changes are merged regularly with a real merge (not a copy), so upstream history and authorship are preserved. Each merge is verified against the full test suite and recorded in [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md#10-upstream-synchronization-log). Last synchronized: November 2026 (upstream commit `57a4e71`).
+
+The upstream `test/` directory is never modified; this edition's tests and tools live in `test_NewLib/`.
+
+## Companion project: CalculiX GraphiX GLFW
+
+![CalculiX GraphiX GLFW](pictures/cgx_glfw.png)
+
+[CalculiX GraphiX GLFW](https://github.com/carlomontec/CalculiX-GraphiX-GLFW) is a version of the CalculiX pre- and post-processor (CGX) with a modern GLFW/OpenGL renderer. It also runs on Linux, macOS and Windows, and binaries are available.
+
+## Documentation
+
+| Document | Content |
+|:---|:---|
+| [INSTALL.md](INSTALL.md) | Prerequisites, installers, CMake options, BLAS selection, troubleshooting |
+| [docs/VALIDATION.md](docs/VALIDATION.md) | Running the official test suite and reading the results |
+| [docs/JSON_EXPORT.md](docs/JSON_EXPORT.md) | JSON result export and schema |
+| [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md) | Technical reference: everything that differs from upstream CCX, and the upstream sync log |
+| [docs/MODERNIZATION.md](docs/MODERNIZATION.md) | Architecture and roadmap |
+| [docs/BENCHMARK_ACCELERATE.md](docs/BENCHMARK_ACCELERATE.md) | Apple Accelerate solver integration and benchmarks |
+| [docs/STATE_OF_THE_ART_CONDA_FEEDSTOCK.md](docs/STATE_OF_THE_ART_CONDA_FEEDSTOCK.md) | Comparison with the conda-forge CalculiX package |
+| [benchmarks/](benchmarks/README.md) | Solver performance benchmarks |
+| [doc/](doc/) | Upstream CalculiX documentation (Dr. Dhondt) |
+
+## About this project
+
+The goal is a CalculiX that is easy to install on any major operating system and runs on modern, maintained numerical libraries, without changing the solver's validated physics.
+
+The project was also developed as a practical exploration of the potential and the limitations of AI-assisted programming in a large scientific code base. AI tools were used for much of the new build, solver-interface and tooling code; every change is reviewed and verified against the official CalculiX test suite before it is merged.
+
+## Attribution and license
+
+CalculiX CrunchiX is free software under the GNU General Public License version 2 ([LICENSE](LICENSE)). CalculiX CrunchiX is written and maintained by Dr. Guido Dhondt; CalculiX GraphiX was created by Klaus Wittig. This edition is maintained by Dr. Carlo Monjaraz-Tec.
 
 - CalculiX: [calculix.de](https://www.calculix.de) and [dhondt.de](https://www.dhondt.de)
-- CalculiX community: [CalculiX Discourse](https://calculix.discourse.group)
-- Theory reference: G. Dhondt, *The Finite Element Method for Three-Dimensional Thermomechanical Applications*, Wiley, 2004.
+- Community: [CalculiX Discourse](https://calculix.discourse.group)
+- Theory: G. Dhondt, *The Finite Element Method for Three-Dimensional Thermomechanical Applications*, Wiley, 2004.
 
-Solver licensing is documented by each upstream project. The vendored MUMPS source is distributed under CeCILL-C; SPOOLES 2.2 is public domain; Intel oneMKL and Apple Accelerate remain subject to their respective upstream license agreements.
+The solver libraries keep their own licenses: MUMPS is distributed under CeCILL-C, SPOOLES 2.2 is public domain, and Intel oneMKL and Apple Accelerate are subject to their vendors' license terms.

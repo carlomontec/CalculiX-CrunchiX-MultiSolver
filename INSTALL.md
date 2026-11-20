@@ -1,47 +1,87 @@
 # Installation and Build Guide
 
-This guide contains the detailed setup instructions for the CalculiX CrunchiX Multi-Solver Edition. For an overview, see [README.md](README.md).
+This guide covers installing and building the CalculiX CrunchiX Multi-Solver Edition. For an overview of the project, see [README.md](README.md).
 
-> **Note on upstream build files:** since November 2026, upstream CalculiX (Dr. Guido Dhondt) ships its own CMake build (`cmake/`, `CMakePresets.json`). These files are kept in this repository for reference only and are not used. The supported build for this fork is the top-level `CMakeLists.txt` driven by `install.sh` / `install.ps1`. Upstream's original installation instructions are archived in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md).
+- [1. Automated installation](#1-automated-installation)
+- [2. Prerequisites](#2-prerequisites)
+- [3. Building with CMake](#3-building-with-cmake)
+- [4. BLAS and LAPACK selection](#blas-and-lapack-selection)
+- [5. Selecting a solver at run time](#5-selecting-a-solver-at-run-time)
+- [6. Upstream CMake build (Dr. Dhondt)](#6-upstream-cmake-build-dr-dhondt)
+- [7. Verifying a build](#7-verifying-a-build)
+- [8. Troubleshooting](#8-troubleshooting)
 
-## Requirements
+## 1. Automated installation
 
-### All platforms
+The installers ask all questions first, then install the required packages, configure and build with CMake, and install the `ccx` executable. Missing optional solvers produce a warning rather than an error, and the solvers that were actually built are reported at the end.
+
+### Linux and macOS
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
+```
+
+Options, when running a local copy of `install.sh`:
+
+| Option | Meaning |
+|:---|:---|
+| `--prefix <dir>` | Install prefix; the binary goes to `<dir>/bin` (default `~/.local`) |
+| `-b`, `--ref <ref>` | Git branch, tag or commit to build (default `main`, or environment variable `CCX_REF`) |
+| `-y`, `--yes` | Accept all defaults without prompting (or `NON_INTERACTIVE=1`) |
+| `-j`, `--jobs <n>` | Parallel build jobs (default: all cores) |
+
+With the one-line command, set the reference through the environment, e.g. `CCX_REF=<branch-or-tag> /bin/bash -c "$(curl -fsSL ...)"`.
+
+### Windows
+
+In a Windows PowerShell prompt:
+
+```powershell
+$script = irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1
+$script | Out-File -FilePath install.ps1 -Encoding utf8
+Set-ExecutionPolicy Bypass -Scope Process -Force
+.\install.ps1
+```
+
+Saving the script with UTF-8 encoding before running it avoids parsing errors in Windows PowerShell. The installer detects or installs MSYS2 and the MinGW-w64 UCRT64 toolchain.
+
+## 2. Prerequisites
+
+Only needed for manual builds; the installers take care of this.
+
+All platforms need:
 
 - CMake 3.20 or newer
-- A C compiler
-- A Fortran compiler with preprocessing support
-- ARPACK development files
-- OpenMP, when available and desired
+- C and Fortran compilers (Fortran with preprocessing support), with OpenMP when available
+- `arpack-ng` development files
+- BLAS/LAPACK and at least one sparse direct solver (see below)
 
-### macOS (Apple Silicon only)
+### macOS (Apple Silicon)
 
-The current macOS development target is Apple Silicon (`arm64`). Intel macOS is not supported by this project configuration, and Intel MKL/PARDISO is not used on macOS.
-
-Install the build tools with Homebrew:
+The macOS target is Apple Silicon (`arm64`); Intel Macs are not supported.
 
 ```bash
 brew install cmake gcc arpack
 ```
 
-Apple Accelerate is provided by macOS. MUMPS and SPOOLES are built from the pinned archives in `third_party/` when their vendor options are enabled. Homebrew is not required for either solver.
+Apple Accelerate is part of macOS. MUMPS and SPOOLES are built from the pinned source archives in [`third_party/`](third_party/), so no Homebrew packages are needed for them.
 
 ### Linux
 
-Ubuntu/Debian:
+Ubuntu / Debian:
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y build-essential gfortran cmake libopenblas-dev liblapack-dev libarpack2-dev libmumps-seq-dev
-# Optional for AMD Zen CPUs (Ryzen/EPYC/Threadripper):
+# Optional, for AMD Zen CPUs (Ryzen / EPYC / Threadripper):
 sudo apt-get install -y libblis-openmp-dev libflame-dev
 ```
 
-Fedora/RHEL:
+Fedora / RHEL:
 
 ```bash
 sudo dnf install -y gcc gcc-gfortran cmake openblas-devel lapack-devel arpack-devel MUMPS-devel
-# Optional for AMD Zen CPUs:
+# Optional, for AMD Zen CPUs:
 sudo dnf install -y blis-devel libflame-devel
 ```
 
@@ -51,171 +91,151 @@ Arch Linux:
 sudo pacman -S --needed base-devel gcc-fortran cmake openblas lapack arpack mumps
 ```
 
-For legacy SPOOLES on Linux, install the distribution package when available, for example `libspooles-dev`, `spooles-devel`, or `spooles`.
+For SPOOLES, install the distribution package when available (`libspooles-dev`, `spooles-devel` or `spooles`).
 
-### Windows
-
-From an MSYS2 UCRT64 shell:
+### Windows (MSYS2 UCRT64 shell)
 
 ```bash
-pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gcc-fortran mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-openblas mingw-w64-ucrt-x86_64-arpack mingw-w64-ucrt-x86_64-mumps
+pacman -S --needed mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-gcc-fortran \
+  mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja \
+  mingw-w64-ucrt-x86_64-openblas mingw-w64-ucrt-x86_64-arpack mingw-w64-ucrt-x86_64-mumps
 ```
 
-## Automated Installation
+## 3. Building with CMake
 
-Linux and macOS:
+The top-level [`CMakeLists.txt`](CMakeLists.txt) is the build for all platforms. A default build:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
 ```
 
-Windows PowerShell:
+The executable is `build/CalculiX`. At configure time CMake prints the enabled solvers and the default solver (`Enabled direct solvers: ...`, `Default direct solver: ...`).
 
-```powershell
-irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
-```
+The C and Fortran source list is read from upstream's `src/Makefile.inc`, so the build follows upstream source changes without edits. Files that upstream builds outside that list (currently `src/buildinfo.c`, which records the compile time) are added explicitly.
 
-The scripts detect the platform, configure the selected solver backend, build CalculiX, and install `ccx` into a user-local directory.
+### Options
 
-## Manual CMake Builds
+| Option | Default | Meaning |
+|:---|:---|:---|
+| `CCX_USE_MUMPS` | `ON` on Linux/Windows, `OFF` on macOS | MUMPS sparse direct solver |
+| `CCX_USE_ACCELERATE` | `ON` on macOS | Apple Accelerate sparse solver (macOS only) |
+| `CCX_USE_PARDISO` | `OFF` | Intel oneMKL PARDISO |
+| `CCX_USE_SPOOLES` | `OFF` | Classic SPOOLES 2.2 solver |
+| `CCX_MUMPS_VENDORED` | `ON` on macOS | Build MUMPS from `third_party/mumps` |
+| `CCX_SPOOLES_VENDORED` | `ON` on macOS | Build SPOOLES from `third_party/spooles` |
+| `CCX_USE_ARPACK` | `ON` | `arpack-ng` eigenvalue solver |
+| `CCX_USE_OPENMP` | `ON` | OpenMP multithreading |
+| `CCX_INT64` | `OFF` | 64-bit integers (only for very large models; all libraries must be 64-bit builds) |
+| `CCX_BLAS` | `AUTO` | BLAS/LAPACK: `AUTO`, `BLIS`, `OPENBLAS`, `MKL`, `NETLIB` |
+| `CCX_SOLVERS_STRICT` | `ON` | Fail if a requested solver is not found; `OFF` disables it with a warning |
 
-Use a separate build directory for each solver configuration. This avoids stale cache options and keeps solver binaries unambiguous.
+Several solvers can be enabled in one build. The default solver, used when a deck does not name one, is the first enabled in this order: Accelerate, PARDISO, MUMPS, SPOOLES.
 
-### macOS Apple Silicon Accelerate
+### Example configurations
+
+Use a separate build directory for each configuration; this avoids stale cache entries and keeps the binaries apart. The test-suite runner expects these `build_<solver>` names.
+
+macOS, Apple Accelerate (default):
 
 ```bash
-cmake -S . -B build_accelerate \
-  -DCCX_USE_ACCELERATE=ON \
-  -DCCX_USE_MUMPS=OFF \
-  -DCCX_USE_SPOOLES=OFF
+cmake -S . -B build_accelerate -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=OFF -DCCX_USE_SPOOLES=OFF
 cmake --build build_accelerate --parallel
 ```
 
-### macOS vendored MUMPS
+macOS, vendored MUMPS:
 
 ```bash
-cmake -S . -B build_mumps \
-  -DCCX_USE_ACCELERATE=OFF \
-  -DCCX_USE_MUMPS=ON \
-  -DCCX_MUMPS_VENDORED=ON \
-  -DCCX_USE_SPOOLES=OFF
+cmake -S . -B build_mumps -DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=ON -DCCX_MUMPS_VENDORED=ON -DCCX_USE_SPOOLES=OFF
 cmake --build build_mumps --parallel
 ```
 
-### macOS vendored SPOOLES
+macOS, vendored SPOOLES:
 
 ```bash
-cmake -S . -B build_spooles \
-  -DCCX_USE_ACCELERATE=OFF \
-  -DCCX_USE_MUMPS=OFF \
-  -DCCX_USE_SPOOLES=ON \
-  -DCCX_SPOOLES_VENDORED=ON
+cmake -S . -B build_spooles -DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=OFF -DCCX_USE_SPOOLES=ON -DCCX_SPOOLES_VENDORED=ON
 cmake --build build_spooles --parallel
 ```
 
-### Linux MUMPS and system SPOOLES
+Linux, MUMPS or system SPOOLES:
 
 ```bash
-cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_USE_ACCELERATE=OFF
+cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON
 cmake --build build_mumps --parallel
 
-cmake -S . -B build_spooles -DCCX_USE_SPOOLES=ON -DCCX_USE_ACCELERATE=OFF
+cmake -S . -B build_spooles -DCCX_USE_MUMPS=OFF -DCCX_USE_SPOOLES=ON
 cmake --build build_spooles --parallel
 ```
 
-### Intel oneMKL PARDISO
-
-Install oneMKL using your operating system's supported package or repository, then configure:
+Intel oneMKL PARDISO (Linux / Windows), after installing oneMKL:
 
 ```bash
 cmake -S . -B build_pardiso -DCCX_USE_PARDISO=ON
 cmake --build build_pardiso --parallel
 ```
 
-The executable is written to `build_<solver>/CalculiX`.
+### Makefile
 
-## BLAS & Linear Algebra Acceleration Strategy
+`src/Makefile` is upstream's classic Makefile with local paths for a macOS development setup. It is not maintained as a portable build; use CMake.
 
-CalculiX sparse direct solvers—especially **MUMPS 5.x**—rely on dense Level 3 BLAS operations (`DGEMM`, `DSYRK`, `DTRSM`) for 80% to 90% of their numerical factorization runtime. Linking an unoptimized reference BLAS library (such as Netlib reference BLAS) can degrade solver performance by 5× to 10×.
+<a id="blas-and-lapack-selection"></a>
+## 4. BLAS and LAPACK selection
 
-CalculiX includes a platform-adaptive, compile-time BLAS discovery engine controlled by the CMake cache option:
+Sparse direct solvers, MUMPS in particular, spend most of the factorization time in dense BLAS level-3 kernels (`DGEMM`, `DSYRK`, `DTRSM`). An unoptimized reference BLAS can make them several times slower, so the build selects an optimized library with `CCX_BLAS` (default `AUTO`):
 
-```bash
--DCCX_BLAS=AUTO|BLIS|OPENBLAS|MKL|NETLIB  # Default: AUTO
-```
+| Platform | `AUTO` selects |
+|:---|:---|
+| macOS (Apple Silicon) | Apple Accelerate |
+| Linux, AMD Zen CPUs | AMD AOCL-BLIS (fallback: OpenBLAS) |
+| Linux, other x86_64 and arm64 | OpenBLAS (fallback: Intel MKL) |
+| Windows (MSYS2 UCRT64) | OpenBLAS or BLIS |
+| Any platform with `CCX_USE_PARDISO=ON` | Intel oneMKL (for PARDISO and MUMPS) |
 
-### Hardware-Adaptive Defaults (`AUTO` Mode)
-
-| Platform & CPU Architecture | Default BLAS Backend | Key Characteristics |
-| :--- | :--- | :--- |
-| **macOS (Apple Silicon arm64)** | **Apple Accelerate Framework** | Native hardware AMX & Neon SIMD vectorization with unified memory. |
-| **Linux (AMD Zen / EPYC / Ryzen)** | **AMD AOCL-BLIS** (fallback: OpenBLAS) | Cache tiling tuned specifically for Zen Core Complex Die (CCD) and L3 cache boundaries. |
-| **Linux (Intel / General x86_64 / arm64)** | **OpenBLAS** (fallback: Intel MKL runtime) | Multi-architecture runtime dispatch with AVX2/AVX-512 and ARM Neon support. |
-| **Windows (MSYS2 UCRT64)** | **OpenBLAS** or **AMD BLIS** | Native Windows x64 DLL bundling (`libopenblas.dll` or `libblis.dll`). |
-| **When `-DCCX_USE_PARDISO=ON`** | **Intel oneMKL** | Intel oneMKL runtime provides full integrated BLAS/LAPACK to both PARDISO and MUMPS. |
-
-### Selecting a Specific BLAS Implementation at Compile Time
-
-To explicitly select a specific BLAS implementation, pass `-DCCX_BLAS=<CHOICE>` to CMake:
+To force a library:
 
 ```bash
-# Force AMD AOCL / BLIS with MUMPS
-cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=BLIS
-cmake --build build_mumps --parallel
-
-# Force OpenBLAS with MUMPS
-cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=OPENBLAS
-cmake --build build_mumps --parallel
-
-# Force Intel oneMKL runtime BLAS without PARDISO
-cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=MKL
-cmake --build build_mumps --parallel
+cmake -S . -B build_mumps -DCCX_USE_MUMPS=ON -DCCX_BLAS=BLIS      # or OPENBLAS, MKL
 ```
 
-### Linux Debian/Ubuntu System BLAS Alternatives Note
+On Debian and Ubuntu, the system MUMPS library resolves BLAS through `/etc/alternatives/libblas.so.3-<arch>`. `install.sh` checks that this points to an optimized library (`openblas-pthread` or `blis-openmp`) rather than the reference BLAS.
 
-On Debian and Ubuntu systems, system-packaged shared MUMPS (`libdmumps_seq.so`) dynamically resolves `dgemm` through `/etc/alternatives/libblas.so.3-<arch>`. The automated installer `install.sh` automatically checks and configures this alternative to ensure it points to an optimized library (`openblas-pthread` or `blis-openmp`) rather than the unvectorized reference Netlib BLAS (`/usr/lib/.../blas/libblas.so.3`).
+## 5. Selecting a solver at run time
 
-## Selecting a Solver
-
-A deck may select a compiled backend explicitly:
+A deck can request a compiled solver explicitly:
 
 ```text
 *STATIC, SOLVER=MUMPS
 ```
 
-Supported values are `MUMPS`, `ACCELERATE`, `SPOOLES`, and `PARDISO` when the corresponding backend was compiled.
+Valid values are `MUMPS`, `ACCELERATE`, `PARDISO` and `SPOOLES`, for solvers that were compiled in. Without `SOLVER=`, the build's default solver is used (see [Options](#options)).
 
-If no solver is specified, the compiled default is selected. The current CMake defaults are Apple Accelerate on macOS and MUMPS on Linux and Windows. MUMPS is the current macOS candidate for the primary open-source default; the official suite should be used to validate any default change.
+## 6. Upstream CMake build (Dr. Dhondt)
 
-## Verification
+Since November 2026, upstream CalculiX includes its own CMake build: `cmake/` (find modules and flags), `CMakePresets.json` (`gnu-lp64`, `gnu-ilp64`, `intel-llvm-lp64`, `intel-llvm-ilp64`) and its own `CMakeLists.txt`. It supports SPOOLES, PARDISO and PaStiX, and is tested upstream on Linux.
 
-The official runner requires a solver-specific binary in each `build_<solver>` directory:
+In this repository, the top-level `CMakeLists.txt` is this edition's build, which was developed independently and covers more solvers and platforms. Upstream's `cmake/` directory and `CMakePresets.json` are kept unchanged for reference, and upstream's build instructions are preserved in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md). To build plain upstream CalculiX with its own CMake, use the [upstream repository](https://github.com/Dhondtguido/CalculiX).
 
-```bash
-python3 test_NewLib/run_official_testsuite.py \
-  --solvers ACCELERATE MUMPS SPOOLES \
-  --threads-per-job 2
-```
+## 7. Verifying a build
 
-See all runner options and usage details with:
+Run the official test suite against a binary:
 
 ```bash
-python3 test_NewLib/run_official_testsuite.py --help
+python3 test_NewLib/run_official_testsuite.py --custom-bin build/CalculiX
 ```
 
-For focused timing experiments, use:
+Or compare several solver builds (expects `build_<solver>/CalculiX`):
 
 ```bash
-python3 test_NewLib/benchmark_solvers.py \
-  --solvers MUMPS ACCELERATE SPOOLES \
-  --threads 1 2 4 6
+python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE MUMPS SPOOLES --threads-per-job 2
 ```
 
-## Troubleshooting
+When running many small decks, parallelize by process and keep one thread per job (`OMP_NUM_THREADS=1`, `CCX_NPROC_EQUATION_SOLVER=1`). All options: `python3 test_NewLib/run_official_testsuite.py --help`. For timing experiments, use `test_NewLib/benchmark_solvers.py`. See [docs/VALIDATION.md](docs/VALIDATION.md) for details.
 
-- If CMake reports paths from an old directory, remove and recreate the affected `build_<solver>` directory.
-- Do not use one build directory for multiple solver configurations.
-- If a solver binary is missing, build the matching directory before running the official suite.
-- Use `NO_COLOR=1` when terminal output is being captured by a tool that does not support ANSI colors.
-- Check `failure_diagnostics.txt` in the generated results directory for solver runtime output.
+## 8. Troubleshooting
+
+- **CMake reports paths from an old directory:** delete and recreate that build directory.
+- **Wrong solver in a build:** do not reuse one build directory for different solver configurations.
+- **A requested solver is not found:** install its development package, or configure with `-DCCX_SOLVERS_STRICT=OFF` to build without it.
+- **Test runner reports a missing binary:** build the matching `build_<solver>` directory first.
+- **Garbled colors in captured output:** set `NO_COLOR=1`.
+- **Solver runtime errors in the test suite:** see `failure_diagnostics.txt` in the results directory.
