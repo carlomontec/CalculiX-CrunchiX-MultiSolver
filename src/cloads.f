@@ -23,7 +23,7 @@
      &     namtot_,namta,amta,nmethod,iaxial,iperturb,ipoinpc,
      &     maxsectors,idefforc,ipompc,nodempc,
      &     nmpc,ikmpc,ilmpc,labmpc,iamplitudedefault,namtot,ier,
-     &     edc,orab,coeffc,ikdc,ndc)
+     &     edc,orab,coeffc,ikdc,ndc,mi)
 !     
 !     reading the input deck: *CLOADS
 !     
@@ -44,7 +44,7 @@
      &     namtot_,namta(3,*),idelay,lc,nmethod,ndirforc(*),isector,
      &     iperturb(*),iaxial,ipoinpc(0:*),maxsectors,jsector,ndc,
      &     iglobstep,ipompc(*),nodempc(3,*),nmpc,ikmpc(*),ilmpc(*),
-     &     iamplitudedefault,ier,id,idof,idefforc(*),ikdc(*)
+     &     iamplitudedefault,ier,id,idof,idefforc(*),ikdc(*),mi(*)
 !     
       real*8 xforc(*),forcval,co(3,*),trab(7,*),amta(2,*),omega0,
      &     orab(7,*),coeffc(0:6,*),edc(12,*)
@@ -71,6 +71,13 @@
           do j=1,nforc
             xforc(j)=0.d0
           enddo
+        elseif(textpart(i)(1:6).eq.'OP=NEW') then
+          write(*,*)
+     &         '*INFO reading *CLOAD: OP=NEW only makes sense'
+          write(*,*)
+     &         '      on the first *CLOAD card within a step.'
+          write(*,*) '      No further action is taken.'
+          write(*,*)
         elseif(textpart(i)(1:10).eq.'AMPLITUDE=') then
           read(textpart(i)(11:90),'(a80)') amplitude
           do j=1,nam
@@ -280,10 +287,11 @@
 !     
         read(textpart(1)(1:10),'(i10)',iostat=istat) l
         if(istat.eq.0) then
-          if(l.gt.nk) then
+          if((l.lt.1).or.(l.gt.nk)) then
             write(*,*) '*ERROR reading *CLOAD: node ',l
-            write(*,*) '       is not defined'
-            ier=1
+            write(*,*) '       does not exist'
+            call inputerror(inpc,ipoinpc,iline,
+     &           "*CLOAD%",ier)
             return
           endif
           if(submodel) then

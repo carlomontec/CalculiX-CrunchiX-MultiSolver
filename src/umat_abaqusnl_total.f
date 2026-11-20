@@ -39,7 +39,7 @@
 !     logarithmic. The mechanical strain at the start of the increment is 
 !     left unchanged and so is the stress. So the constitutive equation 
 !     should be based solely on the mechanical strain at the end of the
-!     increment, on not on its change within the increment.
+!     increment, and not on its change within the increment.
 ! 
 !     emec is the mechanical Lagrange strain (excluding thermal effects)
 !     xkl is the total deformation gradient (including thermal effects)
@@ -64,17 +64,17 @@
       real*8 elconloc(*),stiff(21),emec(6),emec0(6),beta(6),stre(6),
      &     vj,t1l,dtime,xkl(3,3),xokl(3,3),voj,pgauss(3),orab(7,*),
      &     time,ttime,skl(3,3),scc(3,3),ya(3,3,3,3),z(3,3),depvisc,
-     &     xstateini(nstate_,mi(1),*),w(3),fv1(3),fv2(3),d(6),c(3,3),
-     &     v1,v2,v3,eln(6),e(3,3),tkl(3,3),u(6),c2(6),dd,um1(3,3),
+     &     xstateini(nstate_,mi(1),*),w(3),d(6),c(3,3),
+     &     eln(6),e(3,3),tkl(3,3),um1(3,3),
      &     expansion,ctot(3,3),ddsdde(6,6),spd,rpl,pnewdt,stran(6),temp,
      &     xstate(nstate_,mi(1),*),xm1(6),xm2(6),plconloc(802),
-     &     xm3(6),wum1(3),weln(3),um1new(3,3),xa(3,3),ym1(3,3),
+     &     xm3(6),wum1(3),weln(3),xa(3,3),ym1(3,3),
      &     ym2(3,3),ym3(3,3),sccum1(3,3),cm1(3,3),um1sccum1(3,3),
      &     c4(21),d4(21),dxm1dc(21),dxm2dc(21),dxm3dc(21),
      &     dum1dc(21),delndc(21),dum1dcexp(3,3,3,3),delndcexp(3,3,3,3),
      &     stiffexp(3,3,3,3),term1(36),term24(36),term3(36),
      &     stiffasym(36),aa(21),bb(21),dwum1(3),dweln(3),ym14(21),
-     &     ym24(21),ym34(21)
+     &     ym24(21),ym34(21),stressfactor,v1,v2,v3
 !     
       kal=reshape((/1,1,2,2,3,3,1,2,1,3,2,3/),(/2,6/))
 !     
@@ -109,7 +109,6 @@
       e(2,1)=emec(4)
       e(3,1)=emec(5)
       e(3,2)=emec(6)
-c      write(*,*) 'umat_abaqusnl_total ',(emec(i),i=1,6)
 !     
 !     calculating the eigenvalues and eigenvectors
 !     
@@ -125,9 +124,9 @@ c      write(*,*) 'umat_abaqusnl_total ',(emec(i),i=1,6)
       endif
 !     
 !     calculating the - principal stretches square at the end of the increment
-!                       = eigenvalues of the right Cauchy-Green tensor
-!                     - eigenvalues of the logarithmic strain
-!                     - eigenvalues of the inverse right stretch tensor
+!                       = eigenvalues of the right Cauchy-Green tensor: w(i)
+!                     - eigenvalues of the logarithmic strain: weln(i)
+!                     - eigenvalues of the inverse right stretch tensor: wum1(i)
 !     
       do i=1,3
         if(w(i).lt.-0.5d0) then
@@ -324,9 +323,15 @@ c      write(*,*) 'umat_abaqusnl_total ',(emec(i),i=1,6)
       endif
 !     
 !     rotating the stress into the global system
-!     S=J.U^(-1).s'.U^(-T)  (no orientation card) or
-!     S=J.T.U^(-1).s'.U^(-T).T^T (orientation card)
 !     
+!     for linear geometric applications:   
+!     S=J.U^(-1).s'.U^(-T)  (no orientation card) or
+!     S=J.U^(-1).T.s'.T^T.U^(-T) (orientation card)
+!     
+!     for nonlinear geometric applications:   
+!     Sm=Jm.Um^(-1).s'.Um^(-T)  (no orientation card) or
+!     Sm=Jm.Um^(-1).T.s'.T^T.Um^(-T) (orientation card)
+!     "m"=mechanical
 !     
 !     Here, U is the total right stretch tensor, i.e. the
 !     thermal effects have to be included.
@@ -349,15 +354,22 @@ c      write(*,*) 'umat_abaqusnl_total ',(emec(i),i=1,6)
 !     
 !     Ctot=C*(1+alpha*Delta T)**2
 !     expansion:=1+alpha*Delta T
-!     
-      expansion=dsqrt((ctot(1,1)/c(1,1)+ctot(2,2)/c(2,2)+
-     &     ctot(3,3)/c(3,3))/3.d0)
+!
+      if(iperturb(2).eq.0) then
+        expansion=dsqrt((ctot(1,1)/c(1,1)+ctot(2,2)/c(2,2)+
+     &       ctot(3,3)/c(3,3))/3.d0)
+        stressfactor=vj/expansion**2
+      else
+        stressfactor=dsqrt(w(1)*w(2)*w(3))
+      endif
 !     
       if(iorien.ne.0) then
         do i=1,3
           do j=1,3
-            tkl(i,j)=skl(i,1)*um1(1,j)+skl(i,2)*um1(2,j)+
-     &           skl(i,3)*um1(3,j)
+c            tkl(i,j)=skl(i,1)*um1(1,j)+skl(i,2)*um1(2,j)+
+c     &           skl(i,3)*um1(3,j)
+            tkl(i,j)=um1(i,1)*skl(1,j)+um1(i,2)*skl(2,j)+
+     &           um1(i,3)*skl(3,j)
           enddo
         enddo
       else
@@ -390,7 +402,7 @@ c      write(*,*) 'umat_abaqusnl_total ',(emec(i),i=1,6)
      &           scc(j3,j4)*tkl(j1,j3)*tkl(j2,j4)
           enddo
         enddo
-        stre(jj)=stre(jj)*vj/expansion**2
+        stre(jj)=stre(jj)*stressfactor
       enddo
 !     
 !     calculate the stiffness matrix (the matrix is symmetrized)
@@ -421,29 +433,6 @@ c      write(*,*) 'umat_abaqusnl_total ',(emec(i),i=1,6)
                enddo
             enddo
          endif
-c!     
-c!     rotating the stiffness coefficients into the global system
-c!     
-c        call anisotropic(stiff,ya)
-c!     
-c        do jj=1,21
-c          j1=kel(1,jj)
-c          j2=kel(2,jj)
-c          j3=kel(3,jj)
-c          j4=kel(4,jj)
-c          stiff(jj)=0.d0
-c          do j5=1,3
-c            do j6=1,3
-c              do j7=1,3
-c                do j8=1,3
-c                  stiff(jj)=stiff(jj)+ya(j5,j6,j7,j8)*
-c     &                 tkl(j1,j5)*tkl(j2,j6)*tkl(j3,j7)*tkl(j4,j8)
-c                enddo
-c              enddo
-c            enddo
-c          enddo
-c          stiff(jj)=stiff(jj)*vj/expansion**2
-c        enddo
 !     
 !       sccum1=scc*um1
 !
@@ -478,38 +467,38 @@ c        enddo
         um1sccum1(2,1)=um1sccum1(1,2)
         um1sccum1(3,1)=um1sccum1(1,3)
         um1sccum1(3,2)=um1sccum1(2,3)
-!     
-!       ym1, ym2 and ym3 are the structural tensors as matrices
-!     
-        ym1(1,1)=xm1(1)
-        ym1(1,2)=xm1(4)
-        ym1(1,3)=xm1(5)
-        ym1(2,1)=xm1(4)
-        ym1(2,2)=xm1(2)
-        ym1(2,3)=xm1(6)
-        ym1(3,1)=xm1(5)
-        ym1(3,2)=xm1(6)
-        ym1(3,3)=xm1(3)
-!     
-        ym2(1,1)=xm2(1)
-        ym2(1,2)=xm2(4)
-        ym2(1,3)=xm2(5)
-        ym2(2,1)=xm2(4)
-        ym2(2,2)=xm2(2)
-        ym2(2,3)=xm2(6)
-        ym2(3,1)=xm2(5)
-        ym2(3,2)=xm2(6)
-        ym2(3,3)=xm2(3)
-!     
-        ym3(1,1)=xm3(1)
-        ym3(1,2)=xm3(4)
-        ym3(1,3)=xm3(5)
-        ym3(2,1)=xm3(4)
-        ym3(2,2)=xm3(2)
-        ym3(2,3)=xm3(6)
-        ym3(3,1)=xm3(5)
-        ym3(3,2)=xm3(6)
-        ym3(3,3)=xm3(3)
+c!     
+c!       ym1, ym2 and ym3 are the structural tensors as matrices
+c!     
+c        ym1(1,1)=xm1(1)
+c        ym1(1,2)=xm1(4)
+c        ym1(1,3)=xm1(5)
+c        ym1(2,1)=xm1(4)
+c        ym1(2,2)=xm1(2)
+c        ym1(2,3)=xm1(6)
+c        ym1(3,1)=xm1(5)
+c        ym1(3,2)=xm1(6)
+c        ym1(3,3)=xm1(3)
+c!     
+c        ym2(1,1)=xm2(1)
+c        ym2(1,2)=xm2(4)
+c        ym2(1,3)=xm2(5)
+c        ym2(2,1)=xm2(4)
+c        ym2(2,2)=xm2(2)
+c        ym2(2,3)=xm2(6)
+c        ym2(3,1)=xm2(5)
+c        ym2(3,2)=xm2(6)
+c        ym2(3,3)=xm2(3)
+c!     
+c        ym3(1,1)=xm3(1)
+c        ym3(1,2)=xm3(4)
+c        ym3(1,3)=xm3(5)
+c        ym3(2,1)=xm3(4)
+c        ym3(2,2)=xm3(2)
+c        ym3(2,3)=xm3(6)
+c        ym3(3,1)=xm3(5)
+c        ym3(3,2)=xm3(6)
+c        ym3(3,3)=xm3(3)
 !
 !       calculating the derivative of the eigenvalue functions
 !
@@ -518,199 +507,239 @@ c        enddo
           dwum1(i)=-wum1(i)/(2.d0*w(i))
         enddo
 !
-!       calculating A, B, dM_i/dC, dU^{-1}/dC and dln(e)/dC
+!       calculating dU^{-1}/dC and dln(e)/dC
 !       (all of them symmetric, i.e. 21 constants)
 !
-c          write(*,*) 'eigenvalues ',w(1),w(2),w(3)
-        if((dabs(w(1)-w(2)).lt.1.d-10).and.
-     &       (dabs(w(2)-w(3)).lt.1.d-10)) then
-c          write(*,*) 'w(1)=w(2)=w(3) ',w(1),w(2),w(3)
+!       Touco start (still to check)
 !
-!         three equal eigenvalues
-!     
-        do jj=1,21
-            dum1dc(jj)=d4(jj)*dwum1(1)
-            delndc(jj)=d4(jj)*dweln(1)
-          enddo
-        elseif(dabs(w(1)-w(2)).lt.1.d-10) then
-c          write(*,*) 'w(1)=w(2)!=w(3) ',w(1),w(2),w(3)
-!
-!         first and second eigenvalue are equal    
-!         (M3 o I + I o M3)'    
-!         note: o is the dyadic product     
-!     
-          c4(1)=2.d0*ym3(1,1)
-          c4(2)=0.d0
-          c4(3)=2.d0*ym3(2,2)
-          c4(4)=0.d0
-          c4(5)=0.d0
-          c4(6)=2.d0*ym3(3,3)
-          c4(7)=ym3(2,1)
-          c4(8)=ym3(1,2)
-          c4(9)=0.d0
-          c4(10)=(ym3(2,2)+ym3(1,1))/2.d0
-          c4(11)=ym3(3,1)
-          c4(12)=0.d0
-          c4(13)=ym3(1,3)
-          c4(14)=ym3(3,2)/2.d0
-          c4(15)=(ym3(3,3)+ym3(1,1))/2.d0
-          c4(16)=0.d0
-          c4(17)=ym3(3,2)
-          c4(18)=ym3(2,3)
-          c4(19)=ym3(3,1)/2.d0
-          c4(20)=ym3(2,1)/2.d0
-          c4(21)=(ym3(3,3)+ym3(2,2))/2.d0
+!       evaluate the Frechet derivatives directly
+!       with spectral divided differences. This avoids cancellation in
+!       eigenprojector derivatives for nearly coincident eigenvalues.
+!       Use of the Daleckii-Krein theorem      
 !
           do jj=1,21
             j1=kel(1,jj)
             j2=kel(2,jj)
             j3=kel(3,jj)
             j4=kel(4,jj)
-            ym34(jj)=ym3(j1,j2)*ym3(j3,j4)
-            dum1dc(jj)=dwum1(3)*ym34(jj)+
-     &           (wum1(3)-wum1(1))/(w(3)-w(1))*(c4(jj)-2.d0*ym34(jj))+
-     &           dwum1(1)*(d4(jj)+ym34(jj)-c4(jj))
-            delndc(jj)=dweln(3)*ym34(jj)+
-     &           (weln(3)-weln(1))/(w(3)-w(1))*(c4(jj)-2.d0*ym34(jj))+
-     &           dweln(1)*(d4(jj)+ym34(jj)-c4(jj))
+            dum1dc(jj)=0.d0
+            delndc(jj)=0.d0
+            do i=1,3
+              do j=1,3
+                v1=z(j1,i)*z(j2,j)*
+     &               (z(j3,i)*z(j4,j)+z(j4,i)*z(j3,j))/2.d0
+                dum1dc(jj)=dum1dc(jj)-v1*wum1(i)*wum1(j)/
+     &               (dsqrt(w(i))+dsqrt(w(j)))
+!
+!               ln(w_i)-ln(w_j) = 2*atanh((w_i-w_j)/(w_i+w_j)).
+!               The short series is accurate to roundoff below 1.e-3,
+!               and includes the equal-eigenvalue limit.
+!
+                v2=(w(i)-w(j))/(w(i)+w(j))
+                if(dabs(v2).lt.1.d-3) then
+                  v3=(1.d0+v2**2/3.d0+v2**4/5.d0)/
+     &                 (w(i)+w(j))
+                else
+                  v3=(weln(i)-weln(j))/(w(i)-w(j))
+                endif
+                delndc(jj)=delndc(jj)+v1*v3
+              enddo
+            enddo
           enddo
-         elseif(dabs(w(2)-w(3)).lt.1.d-10) then
-c           write(*,*) 'w(1)!=w(2)=w(3) ',w(1),w(2),w(3)
 !
-!         second and third eigenvalue are equal    
-!         (M1 o I + I o M1)'    
-!         note: o is the dyadic product     
-!     
-          c4(1)=2.d0*ym1(1,1)
-          c4(2)=0.d0
-          c4(3)=2.d0*ym1(2,2)
-          c4(4)=0.d0
-          c4(5)=0.d0
-          c4(6)=2.d0*ym1(3,3)
-          c4(7)=ym1(2,1)
-          c4(8)=ym1(1,2)
-          c4(9)=0.d0
-          c4(10)=(ym1(2,2)+ym1(1,1))/2.d0
-          c4(11)=ym1(3,1)
-          c4(12)=0.d0
-          c4(13)=ym1(1,3)
-          c4(14)=ym1(3,2)/2.d0
-          c4(15)=(ym1(3,3)+ym1(1,1))/2.d0
-          c4(16)=0.d0
-          c4(17)=ym1(3,2)
-          c4(18)=ym1(2,3)
-          c4(19)=ym1(3,1)/2.d0
-          c4(20)=ym1(2,1)/2.d0
-          c4(21)=(ym1(3,3)+ym1(2,2))/2.d0
+!          Touco end
 !
-          do jj=1,21
-            j1=kel(1,jj)
-            j2=kel(2,jj)
-            j3=kel(3,jj)
-            j4=kel(4,jj)
-            ym14(jj)=ym1(j1,j2)*ym1(j3,j4)
-            dum1dc(jj)=dwum1(1)*ym14(jj)+
-     &           (wum1(1)-wum1(2))/(w(1)-w(2))*(c4(jj)-2.d0*ym14(jj))+
-     &           dwum1(2)*(d4(jj)+ym14(jj)-c4(jj))
-            delndc(jj)=dweln(1)*ym14(jj)+
-     &           (weln(1)-weln(2))/(w(1)-w(2))*(c4(jj)-2.d0*ym14(jj))+
-     &           dweln(2)*(d4(jj)+ym14(jj)-c4(jj))
-          enddo
-        elseif(dabs(w(3)-w(1)).lt.1.d-10) then
-c           write(*,*) 'w(2)!=w(1)=w(3) ',w(1),w(2),w(3)
+c!          to replace start
+c!
+c        if((dabs(w(1)-w(2)).lt.1.d-10).and.
+c     &       (dabs(w(2)-w(3)).lt.1.d-10)) then
+c!
+c!         three equal eigenvalues
+c!     
+c        do jj=1,21
+c            dum1dc(jj)=d4(jj)*dwum1(1)
+c            delndc(jj)=d4(jj)*dweln(1)
+c          enddo
+c        elseif(dabs(w(1)-w(2)).lt.1.d-10) then
+c!
+c!         first and second eigenvalue are equal    
+c!         (M3 o I + I o M3)'    
+c!         note: o is the dyadic product     
+c!     
+c          c4(1)=2.d0*ym3(1,1)
+c          c4(2)=0.d0
+c          c4(3)=2.d0*ym3(2,2)
+c          c4(4)=0.d0
+c          c4(5)=0.d0
+c          c4(6)=2.d0*ym3(3,3)
+c          c4(7)=ym3(2,1)
+c          c4(8)=ym3(1,2)
+c          c4(9)=0.d0
+c          c4(10)=(ym3(2,2)+ym3(1,1))/2.d0
+c          c4(11)=ym3(3,1)
+c          c4(12)=0.d0
+c          c4(13)=ym3(1,3)
+c          c4(14)=ym3(3,2)/2.d0
+c          c4(15)=(ym3(3,3)+ym3(1,1))/2.d0
+c          c4(16)=0.d0
+c          c4(17)=ym3(3,2)
+c          c4(18)=ym3(2,3)
+c          c4(19)=ym3(3,1)/2.d0
+c          c4(20)=ym3(2,1)/2.d0
+c          c4(21)=(ym3(3,3)+ym3(2,2))/2.d0
+c!
+c          do jj=1,21
+c            j1=kel(1,jj)
+c            j2=kel(2,jj)
+c            j3=kel(3,jj)
+c            j4=kel(4,jj)
+c            ym34(jj)=ym3(j1,j2)*ym3(j3,j4)
+c            dum1dc(jj)=dwum1(3)*ym34(jj)+
+c     &           (wum1(3)-wum1(1))/(w(3)-w(1))*(c4(jj)-2.d0*ym34(jj))+
+c     &           dwum1(1)*(d4(jj)+ym34(jj)-c4(jj))
+c            delndc(jj)=dweln(3)*ym34(jj)+
+c     &           (weln(3)-weln(1))/(w(3)-w(1))*(c4(jj)-2.d0*ym34(jj))+
+c     &           dweln(1)*(d4(jj)+ym34(jj)-c4(jj))
+c          enddo
+c         elseif(dabs(w(2)-w(3)).lt.1.d-10) then
+cc           write(*,*) 'w(1)!=w(2)=w(3) ',w(1),w(2),w(3)
+c!
+c!         second and third eigenvalue are equal    
+c!         (M1 o I + I o M1)'    
+c!         note: o is the dyadic product     
+c!     
+c          c4(1)=2.d0*ym1(1,1)
+c          c4(2)=0.d0
+c          c4(3)=2.d0*ym1(2,2)
+c          c4(4)=0.d0
+c          c4(5)=0.d0
+c          c4(6)=2.d0*ym1(3,3)
+c          c4(7)=ym1(2,1)
+c          c4(8)=ym1(1,2)
+c          c4(9)=0.d0
+c          c4(10)=(ym1(2,2)+ym1(1,1))/2.d0
+c          c4(11)=ym1(3,1)
+c          c4(12)=0.d0
+c          c4(13)=ym1(1,3)
+c          c4(14)=ym1(3,2)/2.d0
+c          c4(15)=(ym1(3,3)+ym1(1,1))/2.d0
+c          c4(16)=0.d0
+c          c4(17)=ym1(3,2)
+c          c4(18)=ym1(2,3)
+c          c4(19)=ym1(3,1)/2.d0
+c          c4(20)=ym1(2,1)/2.d0
+c          c4(21)=(ym1(3,3)+ym1(2,2))/2.d0
+c!
+c          do jj=1,21
+c            j1=kel(1,jj)
+c            j2=kel(2,jj)
+c            j3=kel(3,jj)
+c            j4=kel(4,jj)
+c            ym14(jj)=ym1(j1,j2)*ym1(j3,j4)
+c            dum1dc(jj)=dwum1(1)*ym14(jj)+
+c     &           (wum1(1)-wum1(2))/(w(1)-w(2))*(c4(jj)-2.d0*ym14(jj))+
+c     &           dwum1(2)*(d4(jj)+ym14(jj)-c4(jj))
+c            delndc(jj)=dweln(1)*ym14(jj)+
+c     &           (weln(1)-weln(2))/(w(1)-w(2))*(c4(jj)-2.d0*ym14(jj))+
+c     &           dweln(2)*(d4(jj)+ym14(jj)-c4(jj))
+c          enddo
+c        elseif(dabs(w(3)-w(1)).lt.1.d-10) then
+cc           write(*,*) 'w(2)!=w(1)=w(3) ',w(1),w(2),w(3)
+c!
+c!         third and first eigenvalue are equal    
+c!         (M2 o I + I o M2)'    
+c!         note: o is the dyadic product     
+c!     
+c          c4(1)=2.d0*ym2(1,1)
+c          c4(2)=0.d0
+c          c4(3)=2.d0*ym2(2,2)
+c          c4(4)=0.d0
+c          c4(5)=0.d0
+c          c4(6)=2.d0*ym2(3,3)
+c          c4(7)=ym2(2,1)
+c          c4(8)=ym2(1,2)
+c          c4(9)=0.d0
+c          c4(10)=(ym2(2,2)+ym2(1,1))/2.d0
+c          c4(11)=ym2(3,1)
+c          c4(12)=0.d0
+c          c4(13)=ym2(1,3)
+c          c4(14)=ym2(3,2)/2.d0
+c          c4(15)=(ym2(3,3)+ym2(1,1))/2.d0
+c          c4(16)=0.d0
+c          c4(17)=ym2(3,2)
+c          c4(18)=ym2(2,3)
+c          c4(19)=ym2(3,1)/2.d0
+c          c4(20)=ym2(2,1)/2.d0
+c          c4(21)=(ym2(3,3)+ym2(2,2))/2.d0
+c!
+c          do jj=1,21
+c            j1=kel(1,jj)
+c            j2=kel(2,jj)
+c            j3=kel(3,jj)
+c            j4=kel(4,jj)
+c            ym24(jj)=ym2(j1,j2)*ym2(j3,j4)
+c            dum1dc(jj)=dwum1(2)*ym24(jj)+
+c     &           (wum1(2)-wum1(3))/(w(2)-w(3))*(c4(jj)-2.d0*ym24(jj))+
+c     &           dwum1(3)*(d4(jj)+ym24(jj)-c4(jj))
+c            delndc(jj)=dweln(2)*ym24(jj)+
+c     &           (weln(2)-weln(3))/(w(2)-w(3))*(c4(jj)-2.d0*ym24(jj))+
+c     &           dweln(3)*(d4(jj)+ym24(jj)-c4(jj))
+c          enddo
+c       else
+c!
+c!         derivative of c*c w.r.t. c (symmetric 4th order tensor)     
+c!     
+c          c4(1)=2.d0*c(1,1)
+c          c4(2)=0.d0
+c          c4(3)=2.d0*c(2,2)
+c          c4(4)=0.d0
+c          c4(5)=0.d0
+c          c4(6)=2.d0*c(3,3)
+c          c4(7)=c(2,1)
+c          c4(8)=c(1,2)
+c          c4(9)=0.d0
+c          c4(10)=(c(2,2)+c(1,1))/2.d0
+c          c4(11)=c(3,1)
+c          c4(12)=0.d0
+c          c4(13)=c(1,3)
+c          c4(14)=c(3,2)/2.d0
+c          c4(15)=(c(3,3)+c(1,1))/2.d0
+c          c4(16)=0.d0
+c          c4(17)=c(3,2)
+c          c4(18)=c(2,3)
+c          c4(19)=c(3,1)/2.d0
+c          c4(20)=c(2,1)/2.d0
+c          c4(21)=(c(3,3)+c(2,2))/2.d0
+c!
+c          do jj=1,21
+c            j1=kel(1,jj)
+c            j2=kel(2,jj)
+c            j3=kel(3,jj)
+c            j4=kel(4,jj)
+c            ym14(jj)=ym1(j1,j2)*ym1(j3,j4)
+c            ym24(jj)=ym2(j1,j2)*ym2(j3,j4)
+c            ym34(jj)=ym3(j1,j2)*ym3(j3,j4)
+c            aa(jj)=d4(jj)-ym14(jj)-ym24(jj)-ym34(jj)
+c            bb(jj)=c4(jj)-2.d0*(w(1)*ym14(jj)
+c     &           +w(2)*ym24(jj)
+c     &           +w(3)*ym34(jj))
+c            dxm1dc(jj)=(bb(jj)-(w(2)+w(3))*aa(jj))/
+c     &           ((w(1)-w(2))*(w(1)-w(3)))
+c            dxm2dc(jj)=(bb(jj)-(w(1)+w(3))*aa(jj))/
+c     &           ((w(2)-w(1))*(w(2)-w(3)))
+c            dxm3dc(jj)=(bb(jj)-(w(1)+w(2))*aa(jj))/
+c     &           ((w(3)-w(1))*(w(3)-w(2)))
+c            dum1dc(jj)=ym14(jj)*dwum1(1)+wum1(1)*dxm1dc(jj)
+c     &           +ym24(jj)*dwum1(2)+wum1(2)*dxm2dc(jj)
+c     &           +ym34(jj)*dwum1(3)+wum1(3)*dxm3dc(jj)
+c            delndc(jj)=ym14(jj)*dweln(1)+weln(1)*dxm1dc(jj)
+c     &           +ym24(jj)*dweln(2)+weln(2)*dxm2dc(jj)
+c     &           +ym34(jj)*dweln(3)+weln(3)*dxm3dc(jj)
+c          enddo
+c        endif
+c!
+c!          to replace end
 !
-!         third and first eigenvalue are equal    
-!         (M2 o I + I o M2)'    
-!         note: o is the dyadic product     
-!     
-          c4(1)=2.d0*ym2(1,1)
-          c4(2)=0.d0
-          c4(3)=2.d0*ym2(2,2)
-          c4(4)=0.d0
-          c4(5)=0.d0
-          c4(6)=2.d0*ym2(3,3)
-          c4(7)=ym2(2,1)
-          c4(8)=ym2(1,2)
-          c4(9)=0.d0
-          c4(10)=(ym2(2,2)+ym2(1,1))/2.d0
-          c4(11)=ym2(3,1)
-          c4(12)=0.d0
-          c4(13)=ym2(1,3)
-          c4(14)=ym2(3,2)/2.d0
-          c4(15)=(ym2(3,3)+ym2(1,1))/2.d0
-          c4(16)=0.d0
-          c4(17)=ym2(3,2)
-          c4(18)=ym2(2,3)
-          c4(19)=ym2(3,1)/2.d0
-          c4(20)=ym2(2,1)/2.d0
-          c4(21)=(ym2(3,3)+ym2(2,2))/2.d0
-!
-          do jj=1,21
-            j1=kel(1,jj)
-            j2=kel(2,jj)
-            j3=kel(3,jj)
-            j4=kel(4,jj)
-            ym24(jj)=ym2(j1,j2)*ym2(j3,j4)
-            dum1dc(jj)=dwum1(2)*ym24(jj)+
-     &           (wum1(2)-wum1(3))/(w(2)-w(3))*(c4(jj)-2.d0*ym24(jj))+
-     &           dwum1(3)*(d4(jj)+ym24(jj)-c4(jj))
-            delndc(jj)=dweln(2)*ym24(jj)+
-     &           (weln(2)-weln(3))/(w(2)-w(3))*(c4(jj)-2.d0*ym24(jj))+
-     &           dweln(3)*(d4(jj)+ym24(jj)-c4(jj))
-          enddo
-       else
-c           write(*,*) 'w(1)!=w(2)!=w(3)!=w(1) ',w(1),w(2),w(3)
-!
-!         derivative of c*c w.r.t. c (symmetric 4th order tensor)     
-!     
-          c4(1)=2.d0*c(1,1)
-          c4(2)=0.d0
-          c4(3)=2.d0*c(2,2)
-          c4(4)=0.d0
-          c4(5)=0.d0
-          c4(6)=2.d0*c(3,3)
-          c4(7)=c(2,1)
-          c4(8)=c(1,2)
-          c4(9)=0.d0
-          c4(10)=(c(2,2)+c(1,1))/2.d0
-          c4(11)=c(3,1)
-          c4(12)=0.d0
-          c4(13)=c(1,3)
-          c4(14)=c(3,2)/2.d0
-          c4(15)=(c(3,3)+c(1,1))/2.d0
-          c4(16)=0.d0
-          c4(17)=c(3,2)
-          c4(18)=c(2,3)
-          c4(19)=c(3,1)/2.d0
-          c4(20)=c(2,1)/2.d0
-          c4(21)=(c(3,3)+c(2,2))/2.d0
-!
-          do jj=1,21
-            j1=kel(1,jj)
-            j2=kel(2,jj)
-            j3=kel(3,jj)
-            j4=kel(4,jj)
-            ym14(jj)=ym1(j1,j2)*ym1(j3,j4)
-            ym24(jj)=ym2(j1,j2)*ym2(j3,j4)
-            ym34(jj)=ym3(j1,j2)*ym3(j3,j4)
-            aa(jj)=d4(jj)-ym14(jj)-ym24(jj)-ym34(jj)
-            bb(jj)=c4(jj)-2.d0*(w(1)*ym14(jj)
-     &           +w(2)*ym24(jj)
-     &           +w(3)*ym34(jj))
-            dxm1dc(jj)=(bb(jj)-(w(2)+w(3))*aa(jj))/
-     &           ((w(1)-w(2))*(w(1)-w(3)))
-            dxm2dc(jj)=(bb(jj)-(w(1)+w(3))*aa(jj))/
-     &           ((w(2)-w(1))*(w(2)-w(3)))
-            dxm3dc(jj)=(bb(jj)-(w(1)+w(2))*aa(jj))/
-     &           ((w(3)-w(1))*(w(3)-w(2)))
-            dum1dc(jj)=ym14(jj)*dwum1(1)+wum1(1)*dxm1dc(jj)
-     &           +ym24(jj)*dwum1(2)+wum1(2)*dxm2dc(jj)
-     &           +ym34(jj)*dwum1(3)+wum1(3)*dxm3dc(jj)
-            delndc(jj)=ym14(jj)*dweln(1)+weln(1)*dxm1dc(jj)
-     &           +ym24(jj)*dweln(2)+weln(2)*dxm2dc(jj)
-     &           +ym34(jj)*dweln(3)+weln(3)*dxm3dc(jj)
-          enddo
-        endif
 !     
 !        expanding dum1dc(21), delndc(21) and stiff(21) into     
 !        dum1dcexp(3,3,3,3), delndcexp(3,3,3,3) and stiffexp(3,3,3,3) 
@@ -745,8 +774,8 @@ c           write(*,*) 'w(1)!=w(2)!=w(3)!=w(1) ',w(1),w(2),w(3)
                enddo
              enddo
            enddo
-           stiffasym(jj)=vj*(term1(jj)+2.d0*(term24(jj)+term3(jj)))/
-     &          expansion**2
+           stiffasym(jj)=(term1(jj)+2.d0*(term24(jj)+term3(jj)))*
+     &          stressfactor
          enddo
 !
 !        symmetrizing stiffasym -> stiff
@@ -772,16 +801,6 @@ c           write(*,*) 'w(1)!=w(2)!=w(3)!=w(1) ',w(1),w(2),w(3)
          stiff(19)=(stiffasym(19)+stiffasym(35))/2.d0
          stiff(20)=(stiffasym(20)+stiffasym(36))/2.d0
          stiff(21)=stiffasym(21)
-c
-c         write(*,*) 'umat_abaqusnl_total'
-c         do i=1,21
-cc     write(*,*) i,stiff(i),stiffasym(i)
-c           write(*,'(i5,5(1x,e11.4))') i,stiff(i),
-c     &          dabs(stiff(i)-stiffasym(i))/dabs(stiff(i)),
-c     &          vj*term1(i)/expansion**2,
-c     &          vj*2.d0*term24(i)/expansion**2,
-c     &          vj*2.d0*term3(i)/expansion**2
-c         enddo
 !     
        endif
 !     

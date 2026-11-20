@@ -298,10 +298,18 @@ void json_export_results(double *v, double *fn, double *stx, double *stn,
   int has_node_obj = 0;
   int has_elem_obj = 0;
 
+  /* Two passes: nodal sets first, element sets second, independent of the
+     order of *NODE PRINT / *EL PRINT in the input deck. The open/close logic
+     below relies on "node_sets" being written before "element_sets". */
+  for (int pass = 0; pass < 2; pass++)
   for (ITG i = 0; i < nprint; i++) {
     char label[8], setname[88];
     clean_name(label, &prlab[i * 6], 6);
     clean_name(setname, &prset[i * 81], 81);
+
+    int is_nodal = (strcmp(label, "U") == 0 || strcmp(label, "RF") == 0 ||
+                    strcmp(label, "NT") == 0 || strcmp(label, "HGN") == 0);
+    if ((pass == 0) != is_nodal) continue;
 
     ITG iset = -1;
     for (ITG s = 0; s < nset; s++) {

@@ -2,6 +2,8 @@
 
 This guide contains the detailed setup instructions for the CalculiX CrunchiX Multi-Solver Edition. For an overview, see [README.md](README.md).
 
+> **Note on upstream build files:** since November 2026, upstream CalculiX (Dr. Guido Dhondt) ships its own CMake build (`cmake/`, `CMakePresets.json`). These files are kept in this repository for reference only and are not used. The supported build for this fork is the top-level `CMakeLists.txt` driven by `install.sh` / `install.ps1`. Upstream's original installation instructions are archived in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md).
+
 ## Requirements
 
 ### All platforms

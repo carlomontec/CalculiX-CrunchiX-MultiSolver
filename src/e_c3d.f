@@ -45,8 +45,8 @@
 !     intscheme=0: use the integration scheme corresponding to the element     
 !     type, i.e. reduced integration for reduced integration    
 !     elements etc.
-!     intscheme=1: use for C3D8R and C3D20R elements the integration point
-!     schemes for C3D8 and C3D20, respectively, for all other    
+!     intscheme=1: use for C3D8R, C3D20R and C3D4 elements the integration point
+!     schemes for C3D8, C3D20 and C3D10 respectively, for all other    
 !     elements the the integration scheme corresponding to the
 !     element type     
 !     
@@ -99,7 +99,7 @@
      &     sax(60,60),ffax(60),gs(8,4),a,stress(6),stre(3,3),
      &     pslavsurf(3,*),pmastsurf(6,*),xmass,xsjmass,shpmass(4,20),
      &     shpjmass(4,20),smscalel,smfactor,shptil(4,20),aute(*),
-     &     shptil2(7,9),autf(16),doubleglob(*),pmastload(3,*)
+     &     shptil2(7,9),autf(16),doubleglob(*),pmastload(3,*),sumc3d8i
 !     
       include "gauss.f"
 !     
@@ -1196,6 +1196,7 @@ c     mortar end
         endif
 !     
 !     add hourglass control stiffnesses: C3D8R only. 
+!     
         if((lakonl(1:5).eq.'C3D8R').and.(intscheme.eq.0)) then 
           call hgstiffness(s,stiff,a,gs)
         endif
@@ -2295,14 +2296,21 @@ c     Bernhardi end
           alp=0.1203d0
         elseif(nope.eq.15) then
           alp=0.2141d0
-        elseif(nope.eq.11) then
-          alp=0.1852d0
         endif
 !     
         if((nope.eq.20).or.(nope.eq.10).or.
-     &       (nope.eq.15).or.(nope.eq.11)) then
+     &       (nope.eq.15)) then
           factore=summass*alp/(1.d0+alp)/sume
           factorm=summass/(1.d0+alp)/summ
+        elseif(nope.eq.11) then
+!
+!         C3D8I: summing the mass corresponding to shape function 9 to 11
+!
+          sumc3d8i=sm(25,25)+2.d0*sm(25,28)+2.d0*sm(25,31)
+     &                           +sm(28,28)+2.d0*sm(28,31)
+     &                                          +sm(31,31)
+          factore=summass/sume
+          factorm=sumc3d8i/summ
         else
           factore=summass/sume
         endif
@@ -2334,32 +2342,60 @@ c     Bernhardi end
      &     ((nmethod.eq.2).and.(mscalmethod.gt.0)))) then
         if((mscalmethod.eq.1).or.(mscalmethod.eq.3)) then
 !     
+!     C3D8I: separate treatment for "global" DOFs and "local" modes
+!     "global" DOFs are treated similar to C3D8 
+!     "local" modes do not contain rigid body translations; thus 
+!     simple scaling of the diagonal entries (O. Bernhardi)
+!     
+          if(nope.eq.11) then
+            smfactor=smscalel*summass*8.0d0/7.0d0
+            do i=1,24
+              sm(i,i)=sm(i,i)+7.0d0*smfactor
+            enddo
+            i=0
+            do j=0,23,3
+              i=i+1
+              do k=1,8-i
+                do l=1,3
+                  sm(j+l+k*3,j+l)=sm(j+l+k*3,j+l)-smfactor
+                  sm(j+l,j+l+k*3)=sm(j+l,j+l+k*3)-smfactor
+                enddo
+              enddo
+            enddo
+            smfactor=smscalel*sumc3d8i*3.0d0/2.0d0
+            do i=25,33
+              sm(i,i)=sm(i,i)+2.0d0*smfactor
+            enddo
+          else
+!     
 !     beta = smscalel
 !     
-          smfactor=smscalel*summass/((nope-1)*nope)
+            smfactor=smscalel*summass/((nope-1)*nope)
 !     
-          do i=1,3*nope
-            sm(i,i)=sm(i,i)+(nope-1)*smfactor
-          enddo
+            do i=1,3*nope
+              sm(i,i)=sm(i,i)+(nope-1)*smfactor
+            enddo
 !     
 !     nondiagonal terms of M for SMS
 !     
 !     no massless method: regular mass matrix was lumped     
 !     
-          i=0
-          do j=0,nope*3-1,3
-            i=i+1
-            do k=1,(nope-i)
-              do l=1,3
-                sm(j+l+k*3,j+l)=sm(j+l+k*3,j+l)-smfactor
-                sm(j+l,j+l+k*3)=sm(j+l,j+l+k*3)-smfactor
+            i=0
+            do j=0,nope*3-1,3
+              i=i+1
+              do k=1,(nope-i)
+                do l=1,3
+                  sm(j+l+k*3,j+l)=sm(j+l+k*3,j+l)-smfactor
+                  sm(j+l,j+l+k*3)=sm(j+l,j+l+k*3)-smfactor
+                enddo
               enddo
             enddo
-          enddo
+          endif
+!     
 !     to calculate additional energy in resultsmech.f:
+!     
           smscalel=smfactor
         endif
-!     
       endif
 !     
       return

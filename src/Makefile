@@ -30,7 +30,12 @@ LIBS = \
        -framework Accelerate
 
 CalculiX: $(OCCXMAIN) CalculiX.a
-	./date.pl; $(CC) $(CFLAGS) -c CalculiX.c; $(FC) $(FFLAGS) -o $@ $(OCCXMAIN) CalculiX.a $(LIBS)
+	$(FC) $(FFLAGS) -o $@ $(OCCXMAIN) CalculiX.a $(LIBS)
 
-CalculiX.a: $(OCCXF) $(OCCXC)
+CalculiX.a: $(OCCXF) $(OCCXC) buildinfo.o
 	ar vr $@ $?
+
+# buildinfo.c contains the compile time. It is not part of SCCXC, since it
+# has to be recompiled whenever any other object file changes
+
+buildinfo.o: $(OCCXMAIN) $(OCCXF) $(OCCXC)

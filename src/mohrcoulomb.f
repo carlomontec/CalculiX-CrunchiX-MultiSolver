@@ -672,6 +672,10 @@ c      write(*,*) 'mohrcoulomb ',iel,iint,iregion
           det=dhr(1,1)*(dhr(2,2)*dhr(3,3)-dhr(2,3)*dhr(3,2))
      &         -dhr(1,2)*(dhr(2,1)*dhr(3,3)-dhr(2,3)*dhr(3,1))
      &         +dhr(1,3)*(dhr(2,1)*dhr(3,2)-dhr(2,2)*dhr(3,1))
+          if(dabs(det).lt.1.d-30) then
+            pnewdt=0.25d0
+            return
+          endif
 !     
 !     solving the system
 !     
@@ -753,6 +757,10 @@ c      write(*,*) 'mohrcoulomb ',iel,iint,iregion
           det=a(1,1)*(a(2,2)*a(3,3)-a(2,3)*a(3,2))
      &         -a(1,2)*(a(2,1)*a(3,3)-a(2,3)*a(3,1))
      &         +a(1,3)*(a(2,1)*a(3,2)-a(2,2)*a(3,1))
+          if(dabs(det).lt.1.d-30) then
+            pnewdt=0.25d0
+            return
+          endif
           b(1,1)=(a(2,2)*a(3,3)-a(3,2)*a(2,3))/det
           b(1,2)=-(a(1,2)*a(3,3)-a(3,2)*a(1,3))/det
           b(1,3)=-(a(1,2)*a(2,3)-a(2,2)*a(1,3))/det

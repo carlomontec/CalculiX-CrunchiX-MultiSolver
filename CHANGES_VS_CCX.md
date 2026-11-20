@@ -362,3 +362,11 @@ The following card reader subroutines were updated to recognize `SOLVER=MUMPS` (
 | **`test_NewLib/originaltest_json/*.json.ref`** | Verification | Pre-computed golden reference JSON files for upstream verification suite. |
 | **`third_party/mumps/`** | Vendor Archive | Pinned source archive (`MUMPS_5.9.1.tar.gz`) with SHA-256 integrity check and macOS build rules. |
 | **`third_party/spooles/`** | Vendor Archive | Pinned source archive (`SPOOLES_2.2.tar.gz`) with SHA-256 integrity check for macOS. |
+
+---
+
+## 10. Upstream Synchronization Log
+
+| Date | Upstream range | Notes |
+|:---|:---|:---|
+| 2026-11-20 | `0787781..57a4e71` (39 commits) | Merged into branch `merge/upstream-2026-11`. Upstream's new native CMake build (`cmake/`, `CMakePresets.json`) is kept for reference only; this fork's `CMakeLists.txt` remains the supported build. `src/date.pl` was replaced upstream by `src/buildinfo.c` (`ccx_compiletime`), which is not listed in `Makefile.inc` and is therefore added explicitly in `CMakeLists.txt` and `src/Makefile`. Upstream `INSTALL.md` archived as `doc/INSTALL_upstream.md`. Fixed JSON export for decks that request `*EL PRINT` before `*NODE PRINT`. Details: `test_NewLib/merge_2026-11/REPORT.md`. |

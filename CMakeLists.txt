@@ -754,6 +754,15 @@ foreach(C_FILE ${C_LIST})
     endif()
 endforeach()
 
+# buildinfo.c (upstream, Nov 2026) defines ccx_compiletime, replacing date.pl.
+# It is not listed in Makefile.inc, so add it explicitly. As in upstream, it is
+# recompiled whenever any other source changes so the reported build date stays current.
+set(CCX_BUILDINFO_DEPS ${CCX_SOURCES} "src/CalculiX.c")
+list(TRANSFORM CCX_BUILDINFO_DEPS PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
+list(APPEND CCX_SOURCES "src/buildinfo.c")
+set_source_files_properties(src/buildinfo.c PROPERTIES
+    OBJECT_DEPENDS "${CCX_BUILDINFO_DEPS}")
+
 list(LENGTH CCX_SOURCES CCX_SOURCES_COUNT)
 message(STATUS "Discovered ${CCX_SOURCES_COUNT} source files from Makefile.inc")
 

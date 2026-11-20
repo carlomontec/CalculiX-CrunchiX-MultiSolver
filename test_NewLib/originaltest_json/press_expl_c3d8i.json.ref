@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "jobname": "press_expl_c3d8i",
+    "ccx_version": "2.21-multisolver",
+    "solver": "SPOOLES",
+    "num_threads": 1,
+    "success": true,
+    "exit_code": 0,
+    "timings": {
+      "total_wall_time_s": 0.04112
+    },
+    "mesh_statistics": {
+      "nodes": 11,
+      "elements": 1,
+      "equations": 33
+    }
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "type": "DYNAMIC",
+      "converged": true,
+      "increments": [
+        {
+          "increment_number": 100,
+          "step_time": 8.7390277658e-06,
+          "total_time": 0.0,
+          "node_sets": {
+            "NWN_U": {
+              "set": "NWN",
+              "field": "U",
+              "nodes": [
+                1
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -1.5991360182e-10,
+                  -1.3585338925e-07,
+                  -1.5991360182e-10
+                ]
+              ]
+            }
+          }
+        },
+        {
+          "increment_number": 115,
+          "step_time": 1e-05,
+          "total_time": 0.0,
+          "node_sets": {
+            "NWN_U": {
+              "set": "NWN",
+              "field": "U",
+              "nodes": [
+                1
+              ],
+              "components": [
+                "u1",
+                "u2",
+                "u3"
+              ],
+              "values": [
+                [
+                  -7.7118959665e-12,
+                  -1.7790458011e-07,
+                  -7.7118959665e-12
+                ]
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

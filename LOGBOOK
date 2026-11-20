@@ -5637,3 +5637,57 @@ Dec 2002        - started to work on single crystal plasticity
  25 Sept 2026   - added an ERROR message in bdfill.c
                 - check for surface-to-surface contact in contactprints.f
 		
+ 5 Oct 2026     - removed physcon from header of rcavi.f and rcavi2.f
+                - removed an error related to mcs in calinput.f
+		- removed an error in checkforhomnet.f
+		
+ 6 Oct 2026     - replaced gauss/weight3d14 by *3d11 (are identisch)
+                - made a change in *sections.f to take ANISO_CREEP and
+		  JOHNSONCOOK into account
+
+ 9 Oct 2026     - removed unused test examples
+                - removed errors for the multiplicative decomposition of
+		  the deformation gradient into a thermal and mechanical
+		  part, in combination with an orientation.
+
+ 10 Oct 2026    - made a correction in calcmechstrain for
+                  anorthotropic thermal expansions
+		  
+ 12 Oct 2026    - removed an error in allocation.f for dynamic mixed
+                  element input decks
+                - removed some small errors		  
+
+ 14 Oct 2026    - sharpened the *INFO for recurring OP=NEW flags within
+                  one and the same step
+		- changed dtheta=1. into dtheta=0.5 in radflowload.c
+
+ 16 Oct 2026    - modified the default values for D_i in hyperelastics.f
+                - made a correction in e_c3d.f for explicit dynamics
+		  with c3d8i-elements
+              
+ 23 Oct 2026    - made a correction in umat_abaqusnl_total.f: transformation
+                  has to be applied to the corotational stress before
+		  applying the pull-back with U^{-1}
+		- replaced the PK2-stress by the mechanical PK2-stress in
+		  umat_abaqusnl_total.f (only for large deformations)
+
+ 26 Oct 2026    - use of the Daleckii-Krein-Theorem to accelerate
+                  umat_abaqusnl_total.f
+                - corrected umat_abaqusnl.f based on umat_abaqusnl_total.f
+                - added a section in e_c3d.f for C3D8I with selective
+		  mass scaling
+                - added hourglassing control for thermal calculations with
+		  C3D8R
+		  
+ 27 Oct 2026    - changed the logic about small D1, D2 and D3 in
+                  hyperelastics.f
+
+ 30 Oct 2026    - made a correction in resultstherm.f for C3D8R.
+                - created additional input checks
+
+ 2 Nov 2026     - treated unknown types for *ELASTIC and *EXPANSION
+                - corrected OP=NEW for *TEMPERATURE
+
+ 7 Nov 2026     - made some changes in mohrcoulomb.f
+
+ 10 Nov 2026    - made a change in flowoutput.f
