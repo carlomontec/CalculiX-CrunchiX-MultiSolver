@@ -37,13 +37,21 @@ With the one-line command, set the reference through the environment, e.g. `CCX_
 In a Windows PowerShell prompt:
 
 ```powershell
-$script = irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1
-$script | Out-File -FilePath install.ps1 -Encoding utf8
-Set-ExecutionPolicy Bypass -Scope Process -Force
-.\install.ps1
+irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
 ```
 
-Saving the script with UTF-8 encoding before running it avoids parsing errors in Windows PowerShell. The installer detects or installs MSYS2 and the MinGW-w64 UCRT64 toolchain.
+The installer detects or installs MSYS2 and the MinGW-w64 UCRT64 toolchain, builds `ccx.exe` and `CalculiX.exe`, and bundles the required runtime DLLs for standalone execution.
+
+Options, when running a local copy of `install.ps1`:
+
+| Option | Env Var (for 1-liner) | Meaning |
+|:---|:---|:---|
+| `-Solver <name>` | `$env:CCX_SOLVER` | Solver preset: `auto` (default), `mumps`, `pardiso`, or `spooles` |
+| `-InstallDir <dir>` | `$env:CCX_INSTALL_DIR` | Target directory for `ccx.exe` (default `$env:USERPROFILE\.local\bin`) |
+| `-Ref <ref>` | `$env:CCX_REF` | Git branch, tag or commit to build (default `main`) |
+| `-NonInteractive` | `$env:CCX_NON_INTERACTIVE=1` | Accept defaults without prompting |
+
+With the one-line command, set options via environment variables beforehand, e.g. `$env:CCX_REF="<branch-or-tag>"; irm ... | iex`.
 
 ## 2. Prerequisites
 
@@ -188,7 +196,7 @@ Sparse direct solvers, MUMPS in particular, spend most of the factorization time
 | macOS (Apple Silicon) | Apple Accelerate |
 | Linux, AMD Zen CPUs | AMD AOCL-BLIS (fallback: OpenBLAS) |
 | Linux, other x86_64 and arm64 | OpenBLAS (fallback: Intel MKL) |
-| Windows (MSYS2 UCRT64) | OpenBLAS or BLIS |
+| Windows (MSYS2 UCRT64) | OpenBLAS (or oneMKL with PARDISO) |
 | Any platform with `CCX_USE_PARDISO=ON` | Intel oneMKL (for PARDISO and MUMPS) |
 
 To force a library:
