@@ -32,8 +32,37 @@ from pathlib import Path
 RUNNER_DIR = Path(__file__).resolve().parent
 BENCHMARKS_DIR = RUNNER_DIR.parent
 REPO_ROOT = BENCHMARKS_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 ROTOR_DIR = BENCHMARKS_DIR / "compressor_rotor"
+BEAM_DIR = BENCHMARKS_DIR / "cantilever_beam"
+BLADE_DIR = BENCHMARKS_DIR / "naca_blade"
 RESULTS_DIR = BENCHMARKS_DIR / "results"
+
+CASE_CONFIGS = {
+    "compressor_rotor": {
+        "dir": ROTOR_DIR,
+        "default_deck": "lavffcyc",
+        "title": "7-Blade Turbocharger Compressor Rotor (Klaus Wittig / CGX)",
+        "steps_desc": "Centrifugal Pre-load (110k RPM) -> Prestressed Cyclic Frequency",
+        "levels": ["coarse", "fine"],
+    },
+    "cantilever_beam": {
+        "dir": BEAM_DIR,
+        "default_deck": "beam_static",
+        "title": "3D Steel Cantilever Beam (20x20x200 mm, C3D20R)",
+        "steps_desc": "Pure Linear Static Bending (*STATIC, 0.2 MPa Pressure)",
+        "levels": ["coarse", "medium", "fine"],
+    },
+    "naca_blade": {
+        "dir": BLADE_DIR,
+        "default_deck": "blade_static",
+        "title": "3D Twisted & Tapered NACA Airfoil Blade (Ti-6Al-4V, C3D20R)",
+        "steps_desc": "Pure Linear Static Aerodynamic Bending & Torsion (*STATIC, 0.5 MPa)",
+        "levels": ["coarse", "medium", "fine", "ultra_fine"],
+    },
+}
 
 
 def get_system_profile():
@@ -230,7 +259,31 @@ def execute_run(bin_path, deck_name, threads, cwd_dir):
     eff_mass = step2.get("total_effective_mass", {})
     frac_totals = step2.get("fraction_of_totals", {})
 
-    return {
+    # Optional linear static verification metrics (*STATIC with NNTIP_U)
+    static_verif = None
+    for st in steps:
+        if st.get("type") == "STATIC":
+            incs = st.get("increments", [])
+            node_sets = incs[0].get("node_sets", {}) if incs else {}
+            nntip_u = node_sets.get("NNTIPN_U") or node_sets.get("NNTIP_U", {})
+            vals = [row for row in nntip_u.get("values", []) if isinstance(row, list) and len(row) >= 3]
+            if vals:
+                u1_vals = [row[0] for row in vals]
+                u2_vals = [row[1] for row in vals]
+                umag_vals = [(row[0] ** 2 + row[1] ** 2 + row[2] ** 2) ** 0.5 for row in vals]
+                static_verif = {
+                    "converged": bool(st.get("converged", False)),
+                    "tip_u1_mean": sum(u1_vals) / len(u1_vals),
+                    "tip_u2_min": min(u2_vals),
+                    "tip_u2_mean": sum(u2_vals) / len(u2_vals),
+                    "tip_u2_max": max(u2_vals),
+                    "tip_umag_max": max(umag_vals),
+                }
+            elif st.get("converged") is not None:
+                static_verif = {"converged": bool(st.get("converged", False))}
+            break
+
+    result = {
         "success": True,
         "wall_time": round(ccx_time, 4),
         "measured_time": round(elapsed, 4),
@@ -241,11 +294,57 @@ def execute_run(bin_path, deck_name, threads, cwd_dir):
         "total_effective_mass": eff_mass,
         "fraction_of_totals": frac_totals,
     }
+    if static_verif is not None:
+        result["static_verification"] = static_verif
+    return result
+
+
+def prepare_case_mesh(case_name, case_dir, level, force_remesh):
+    """Ensure required mesh files exist and are valid for the selected case."""
+    msh_file = case_dir / "all.msh"
+
+    if case_name == "compressor_rotor":
+        cyc1_file = case_dir / "CYC1.nam"
+        cyc2_file = case_dir / "CYC2.nam"
+        need_remesh = force_remesh or not msh_file.exists() or not cyc1_file.exists() or not cyc2_file.exists()
+        if not need_remesh:
+            try:
+                n1 = sum(1 for line in open(cyc1_file) if line.strip() and not line.startswith("*"))
+                n2 = sum(1 for line in open(cyc2_file) if line.strip() and not line.startswith("*"))
+                if n1 != n2:
+                    print(f"[!] Warning: Cyclic symmetry boundary mismatch (CYC1={n1}, CYC2={n2}). Remeshing...")
+                    need_remesh = True
+            except Exception:
+                need_remesh = True
+        if need_remesh:
+            print(f"[*] Meshing compressor_rotor via CGX at '{level}' level...")
+            from benchmarks.compressor_rotor.remesh import remesh
+            remesh(level=level)
+    elif case_name == "cantilever_beam":
+        req = [msh_file, case_dir / "NFIX.nam", case_dir / "NTIP.nam", case_dir / "TOP.dlo"]
+        need_remesh = force_remesh or any(not p.is_file() or p.stat().st_size == 0 for p in req)
+        if need_remesh:
+            print(f"[*] Meshing cantilever_beam via CGX at '{level}' level...")
+            from benchmarks.cantilever_beam.remesh import remesh
+            remesh(level=level)
+    elif case_name == "naca_blade":
+        req = [msh_file, case_dir / "NFIX.nam", case_dir / "NTIP.nam", case_dir / "PRES.dlo"]
+        need_remesh = force_remesh or any(not p.is_file() or p.stat().st_size == 0 for p in req)
+        if need_remesh:
+            print(f"[*] Meshing naca_blade via CGX at '{level}' level...")
+            from benchmarks.naca_blade.remesh import remesh
+            remesh(level=level)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run CalculiX Multi-Solver Turbomachinery Benchmarks"
+        description="Run CalculiX Multi-Solver Benchmarks"
+    )
+    parser.add_argument(
+        "--case",
+        choices=list(CASE_CONFIGS.keys()),
+        default="compressor_rotor",
+        help="Benchmark model case to execute",
     )
     parser.add_argument(
         "--solvers",
@@ -261,14 +360,14 @@ def main():
     )
     parser.add_argument(
         "--deck",
-        default="lavffcyc",
-        help="Name of deck in benchmarks/compressor_rotor",
+        default=None,
+        help="Deck name inside selected case directory (defaults to case default)",
     )
     parser.add_argument(
         "--level",
         default="fine",
-        choices=["coarse", "fine"],
-        help="Mesh discretization level name (coarse or fine)",
+        choices=["coarse", "medium", "fine", "ultra_fine"],
+        help="Mesh discretization level name (coarse, medium, fine, or ultra_fine)",
     )
     parser.add_argument(
         "--remesh",
@@ -278,7 +377,7 @@ def main():
     parser.add_argument(
         "--tag",
         default=None,
-        help="Custom machine tag for output JSON (default: hostname_os_arch)",
+        help="Custom machine tag for output JSON (default: hostname_os_arch_level)",
     )
     parser.add_argument(
         "--out-dir",
@@ -293,13 +392,20 @@ def main():
     )
     args = parser.parse_args()
 
+    case_cfg = CASE_CONFIGS[args.case]
+    if args.level not in case_cfg["levels"]:
+        parser.error(f"Case '{args.case}' supports --level choices {case_cfg['levels']}, got '{args.level}'")
+
+    case_dir = case_cfg["dir"]
+    deck_name = args.deck or case_cfg["default_deck"]
+
     sys_profile = get_system_profile()
     machine_tag = args.tag or f"{sys_profile['hostname']}_{sys_profile['os']}_{sys_profile['architecture']}_{args.level}".lower()
 
     print("=" * 80)
-    print(" CalculiX CrunchiX (CCX) Multi-Solver Turbomachinery Benchmark Suite")
-    print(" Model: 7-Blade Turbocharger Compressor Rotor (Klaus Wittig / CGX)")
-    print(" Steps: Centrifugal Pre-load (110k RPM) -> Prestressed Cyclic Frequency")
+    print(" CalculiX CrunchiX (CCX) Multi-Solver Benchmark Suite")
+    print(f" Case  : {args.case} — {case_cfg['title']}")
+    print(f" Steps : {case_cfg['steps_desc']}")
     print("=" * 80)
     print(f" Hostname     : {sys_profile['hostname']}")
     print(f" Platform     : {sys_profile['os']} {sys_profile['architecture']}")
@@ -309,28 +415,7 @@ def main():
     print(f" Mesh Level   : {args.level}")
     print("-" * 80)
 
-    # Verify mesh files and cyclic symmetry pairing integrity
-    msh_file = ROTOR_DIR / "all.msh"
-    cyc1_file = ROTOR_DIR / "CYC1.nam"
-    cyc2_file = ROTOR_DIR / "CYC2.nam"
-
-    need_remesh = args.remesh or not msh_file.exists() or not cyc1_file.exists() or not cyc2_file.exists()
-
-    if not need_remesh:
-        # Check node parity on cyclic boundaries
-        try:
-            n1 = sum(1 for line in open(cyc1_file) if line.strip() and not line.startswith("*"))
-            n2 = sum(1 for line in open(cyc2_file) if line.strip() and not line.startswith("*"))
-            if n1 != n2:
-                print(f"[!] Warning: Cyclic symmetry boundary mismatch (CYC1={n1}, CYC2={n2}). Remeshing...")
-                need_remesh = True
-        except Exception:
-            need_remesh = True
-
-    if need_remesh:
-        print(f"[*] Meshing rotor via CGX at '{args.level}' level...")
-        from benchmarks.compressor_rotor.remesh import remesh
-        remesh(level=args.level)
+    prepare_case_mesh(args.case, case_dir, args.level, args.remesh)
 
     # Discover binaries
     available_solvers = find_solver_binaries()
@@ -352,7 +437,8 @@ def main():
         "metadata": {
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "system_profile": sys_profile,
-            "deck": args.deck,
+            "case": args.case,
+            "deck": deck_name,
             "discretization": args.level,
             "nodes": None,
             "elements": None,
@@ -368,7 +454,7 @@ def main():
 
         for th in args.threads:
             print(f"    -> Running with {th} thread(s)...", end="", flush=True)
-            res = execute_run(sbin, args.deck, th, ROTOR_DIR)
+            res = execute_run(sbin, deck_name, th, case_dir)
 
             if res["success"]:
                 wall_t = res["wall_time"]
@@ -391,7 +477,7 @@ def main():
 
     # Summary Table
     print("\n" + "=" * 80)
-    print(f" BENCHMARK SUMMARY TABLE: {args.deck}")
+    print(f" BENCHMARK SUMMARY TABLE: {deck_name}")
     print("=" * 80)
     header = f"{'Solver':<14} | " + " | ".join([f"{th}T (s)" for th in args.threads]) + " | Peak RAM"
     print(header)
@@ -424,7 +510,7 @@ def main():
     # Save Results
     out_dir = args.out_dir.resolve() if args.out_dir else RESULTS_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_file = out_dir / f"{machine_tag}_{args.deck}.json"
+    out_file = out_dir / f"{machine_tag}_{deck_name}.json"
     with open(out_file, "w", encoding="utf-8") as f:
         json.dump(benchmark_data, f, indent=2)
 
@@ -435,7 +521,7 @@ def main():
     print(f"\n[+] Saved complete benchmark metrics to: {rel_out}")
 
     if args.save_frd:
-        frd_src = ROTOR_DIR / f"{args.deck}.frd"
+        frd_src = case_dir / f"{deck_name}.frd"
         if frd_src.exists():
             frd_dst = out_dir / frd_src.name
             shutil.copy2(frd_src, frd_dst)
