@@ -12,6 +12,7 @@
 *.json
 -j.*
 mesh_*.fbl
+mesh_*.fbd
 
 # Local benchmark results and plotting suites (kept locally, not published)
 results/
