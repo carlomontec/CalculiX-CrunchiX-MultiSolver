@@ -13,7 +13,7 @@ if(APPLE AND NOT CMAKE_OSX_SYSROOT)
     endif()
 endif()
 
-project(CalculiX VERSION 2.23 LANGUAGES C Fortran)
+project(CalculiX VERSION 2.24 LANGUAGES C Fortran)
 
 if(APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64)$")
     message(FATAL_ERROR "This macOS development target supports Apple Silicon only (arm64).")
@@ -46,6 +46,10 @@ set_property(CACHE CCX_BLAS PROPERTY STRINGS AUTO BLIS OPENBLAS MKL NETLIB)
 # Compiler Flags
 # -----------------------------------------------------------------------------
 # C Flags
+# USE_MT enables multithreaded SPOOLES (as upstream's Makefile_MT; upstream's
+# default Makefile and CMake leave it off). With more than one thread SPOOLES
+# results can vary slightly between runs; CCX_NPROC_EQUATION_SOLVER=1 gives
+# reproducible results identical to plain 2.24. See INSTALL.md.
 add_compile_definitions(
     ARCH=Linux
     MATRIXSTORAGE
