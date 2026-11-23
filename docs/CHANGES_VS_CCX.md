@@ -2,6 +2,7 @@
 
 **Author**: Dr. Carlo Monjaraz-Tec  
 **Base Project**: CalculiX CrunchiX (CCX) by Dr. Guido Dhondt  
+**Upstream base**: ccx 2.24 (upstream commit `57a4e71`, tag `ccx-2.24-upstream`; see [UPSTREAM_2.24.md](UPSTREAM_2.24.md))  
 **Project**: CalculiX CrunchiX Multi-Solver Edition  
 
 ---
@@ -41,7 +42,7 @@ The objective of the **CalculiX CrunchiX Multi-Solver Edition** is not to rewrit
 
 | Architectural Feature | Upstream CalculiX CCX (Vanilla) | Multi-Solver Modernized CCX |
 |:---|:---|:---|
-| **Build System** | Platform-specific Makefiles (`Makefile_MT`) with hardcoded library paths | Target-based `CMakeLists.txt` (CMake 3.20+) with auto-discovery and CTest support |
+| **Build System** | Makefiles (`Makefile_MT`) and, since 2.24, an official CMake build (Linux, CMake 3.28+, no install rules) | Target-based `CMakeLists.txt` (CMake 3.20+) with auto-discovery and CTest support |
 | **Source Discovery** | Static listing in individual Makefiles | Automated parser of upstream `src/Makefile.inc` generating static `CalculiX_lib` |
 | **Supported Platforms** | Primarily Linux x86_64; partial manual patches for Windows/macOS | Native out-of-the-box support for Linux (x86_64, ARM64), macOS (Apple Silicon), Windows |
 | **Default Linear Solver** | SPOOLES 2.2 (developed in 1999) | MUMPS 5.x (Linux/Win) or Apple Accelerate (macOS); SPOOLES & PARDISO selectable |
@@ -227,7 +228,38 @@ To maintain complete scientific and academic rigor, the test harness is explicit
 
 ## 8. Summary of Preserved Upstream Physics
 
-To eliminate any ambiguity regarding numerical validity, the following core CalculiX CrunchiX algorithms remain **100% unaltered**:
+### Changes that can affect results
+
+Compared with ccx 2.24, exactly one change can change numerical results: the
+stable time increment for explicit dynamics (`src/calcstabletimeincvol.f`, with
+the matching `smscale` allocation in `arpack.c`, `arpackcs.c` and `nonlingeo.c`).
+See section 9.3 B for the details. It affects only explicit dynamic analyses
+(`*DYNAMIC, EXPLICIT`) and mass scaling. This fix will be documented in full and
+proposed to upstream separately.
+
+`src/modaldynamics.f` also corrects an upstream typo (`SOLVER=PASTIX` on
+`*MODAL DYNAMIC` was compared against `'PARDISO'`). It changes behaviour only
+for decks that request PaStiX in that step.
+
+**Build setting: multithreaded SPOOLES (`USE_MT`).** This edition's CMake
+defines `USE_MT`, like upstream's `Makefile_MT`. Upstream's default `Makefile`
+and CMake don't. With more than one thread, SPOOLES results can then vary
+slightly from run to run, mostly in higher eigenvalues (around 1 %,
+occasionally more). Plain 2.24 built with `USE_MT` does the same. With
+`CCX_NPROC_EQUATION_SOLVER=1` (or `OMP_NUM_THREADS=1`), results are identical
+to plain 2.24. SPOOLES is not the recommended solver in this edition. See
+`test_NewLib/release_2.24/REPORT.md`.
+
+All other changes add solver backends or JSON output, or change performance
+(OpenMP in `opmain.c`, which keeps upstream's work split and summation order).
+On Linux with SPOOLES, all 642 decks of the official suite give byte-identical
+results to plain 2.24 on one thread, and with SPOOLES on one thread also when
+the rest of CalculiX runs on 4 threads (see the report for the 7 CFD decks that
+vary in upstream itself).
+
+### Preserved algorithms
+
+Apart from the change above, the following core CalculiX CrunchiX algorithms remain **100% unaltered**:
 
 1. **Element Formulations**:
    - Linear and quadratic hexahedra (C3D8, C3D8R, C3D20, C3D20R).
@@ -370,3 +402,4 @@ The following card reader subroutines were updated to recognize `SOLVER=MUMPS` (
 | Date | Upstream range | Notes |
 |:---|:---|:---|
 | 2026-11-20 | `0787781..57a4e71` (39 commits) | Merged into branch `merge/upstream-2026-11`. Upstream's new native CMake build (`cmake/`, `CMakePresets.json`) is kept for reference only; this fork's `CMakeLists.txt` remains the supported build. `src/date.pl` was replaced upstream by `src/buildinfo.c` (`ccx_compiletime`), which is not listed in `Makefile.inc` and is therefore added explicitly in `CMakeLists.txt` and `src/Makefile`. Upstream `INSTALL.md` archived as `doc/INSTALL_upstream.md`. Fixed JSON export for decks that request `*EL PRINT` before `*NODE PRINT`. Details: `test_NewLib/merge_2026-11/REPORT.md`. |
+| 2026-11-23 | `57a4e71` = ccx 2.24 | Verified that the official `ccx_2.24.src.tar.bz2` matches `57a4e71` (tag `ccx-2.24-upstream`); `tools/verify_upstream_release.py`. Version strings set to `Version 2.24` as in the release, with an extra `MultiSolver edition` banner line. Upstream's `CMakeLists.txt` and `CMakePresets.json` kept verbatim in `cmake/upstream/`. Release `v2.24-multisolver-0.2`. Details: [UPSTREAM_2.24.md](UPSTREAM_2.24.md). |

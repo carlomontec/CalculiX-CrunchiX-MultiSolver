@@ -10,7 +10,7 @@
 [![PARDISO x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/pardiso-x64.json)](#verification)
 [![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#verification)
 
-[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition keeps his solver code unchanged and makes it easy to build and run fast on Linux, macOS and Windows.
+[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition is based on the official **CalculiX 2.24** release ([provenance](docs/UPSTREAM_2.24.md)). It keeps his solver code unchanged, apart from one documented fix to the explicit stable time increment ([details](docs/CHANGES_VS_CCX.md#changes-that-can-affect-results)), and makes it easy to build and run fast on Linux, macOS and Windows.
 
 The finite-element formulations, material models, contact algorithms, input syntax (`.inp`) and legacy outputs (`.dat`, `.frd`) are those of upstream CalculiX.
 
@@ -79,7 +79,7 @@ Prerequisites, installer options and manual builds are described in [INSTALL.md]
 | **MUMPS 5.x** | System package (default) | Built from vendored source | MSYS2 package (default) | Recommended open-source solver. Performance depends on the BLAS library (see [INSTALL.md](INSTALL.md#blas-and-lapack-selection)). |
 | **Apple Accelerate** | - | System framework (default) | - | Native macOS sparse solver. |
 | **Intel oneMKL PARDISO** | Optional | - | Optional | Requires Intel oneMKL. |
-| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver; reference baseline. |
+| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver, kept for compatibility. **Not recommended**: use MUMPS, Accelerate or PARDISO. Built multithreaded; with more than one thread its results can vary slightly between runs ([details](INSTALL.md#spooles-and-multithreading)). |
 
 Several backends can be compiled into one executable. A deck selects one explicitly with, for example, `*STATIC, SOLVER=MUMPS`; otherwise the build's default solver is used.
 
@@ -146,7 +146,7 @@ What the build does:
 - **Builds MUMPS and SPOOLES from pinned, checksum-verified source archives** on macOS, where no suitable system packages exist ([third_party/](third_party/)).
 - **Chooses a BLAS/LAPACK library for the hardware** (`CCX_BLAS=AUTO`): Accelerate on Apple Silicon, AMD AOCL-BLIS on AMD Zen, OpenBLAS elsewhere, or oneMKL with PARDISO.
 
-**Upstream CalculiX now has its own CMake build.** Since November 2026, Dr. Dhondt's CalculiX ships an official CMake build (`cmake/`, `CMakePresets.json`) with presets for GCC or Intel compilers, 32- or 64-bit integers, and the SPOOLES, PARDISO and PaStiX solvers. This is an important step for the CalculiX community. The build in this repository was developed independently and earlier, for a different scope (multiple solver backends, macOS and Windows). Both are kept in the tree: this edition's `CMakeLists.txt` is the supported build here, and upstream's files and instructions ([doc/INSTALL_upstream.md](doc/INSTALL_upstream.md)) are preserved unchanged for reference.
+**Upstream CalculiX now has its own CMake build.** Since November 2026, Dr. Dhondt's CalculiX ships an official CMake build (`cmake/`, `CMakePresets.json`) with presets for GCC or Intel compilers, 32- or 64-bit integers, and the SPOOLES, PARDISO and PaStiX solvers. This is an important step for the CalculiX community. The build in this repository was developed independently and earlier, for a different scope (multiple solver backends, macOS and Windows). Both are kept in the tree: this edition's `CMakeLists.txt` is the supported build here, and upstream's `CMakeLists.txt` and `CMakePresets.json` ([cmake/upstream/](cmake/upstream/README.md)) and instructions ([doc/INSTALL_upstream.md](doc/INSTALL_upstream.md)) are preserved unchanged for reference.
 
 All build options are listed in [INSTALL.md](INSTALL.md#building-with-cmake).
 
@@ -166,7 +166,7 @@ Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. T
 
 ## Relationship to upstream CalculiX
 
-This repository is a fork of [Dhondtguido/CalculiX](https://github.com/Dhondtguido/CalculiX) and follows its development. Upstream changes are merged regularly with a real merge (not a copy), so upstream history and authorship are preserved. Each merge is verified against the full test suite and recorded in [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md#10-upstream-synchronization-log). Last synchronized: November 2026 (upstream commit `57a4e71`).
+This repository is a fork of [Dhondtguido/CalculiX](https://github.com/Dhondtguido/CalculiX) and follows its development. Upstream changes are merged regularly with a real merge (not a copy), so upstream history and authorship are preserved. Each merge is verified against the full test suite and recorded in [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md#10-upstream-synchronization-log). Last synchronized: November 2026 (upstream commit `57a4e71`, which is exactly the official ccx 2.24 release; see [docs/UPSTREAM_2.24.md](docs/UPSTREAM_2.24.md)).
 
 The upstream `test/` directory is never modified; this edition's tests and tools live in `test_NewLib/`.
 
