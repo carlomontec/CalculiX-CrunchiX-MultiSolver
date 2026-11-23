@@ -34,7 +34,7 @@
          version(i:i)=' '
       enddo
 !
-      version='Version DEVELOPMENT'
+      version='Version 2.24'
 !
       return
       end

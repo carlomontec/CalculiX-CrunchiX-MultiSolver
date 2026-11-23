@@ -27,6 +27,10 @@
 #include "CalculiX.h"
 #include "json_export.h"
 
+#ifndef CCX_EDITION
+#define CCX_EDITION "v2.24-multisolver-0.2"
+#endif
+
 #ifdef CALCULIX_MPI
 ITG myid = 0,nproc = 0;
 #endif
@@ -134,7 +138,8 @@ int main(int argc,char *argv[])
         continue;
       }
       if(strcmp1(argv[i],"-v")==0){
-        printf("\nThis is Version DEVELOPMENT\n\n");
+        printf("\nThis is Version 2.24\n");
+        printf("MultiSolver edition %s\n\n",CCX_EDITION);
         FORTRAN(stop,());
       }
       if(argv[i][0]!='-' && jin==0){
@@ -183,10 +188,11 @@ int main(int argc,char *argv[])
 
   printf("\n************************************************************\n\n");
 #ifdef INTSIZE64
-  printf("CalculiX Version DEVELOPMENT i8, Copyright(C) 1998-2015 Guido Dhondt\n");
+  printf("CalculiX Version 2.24 i8, Copyright(C) 1998-2026 Guido Dhondt\n");
 #else
-  printf("CalculiX Version DEVELOPMENT, Copyright(C) 1998-2015 Guido Dhondt\n");
+  printf("CalculiX Version 2.24, Copyright(C) 1998-2026 Guido Dhondt\n");
 #endif
+  printf("MultiSolver edition %s\n",CCX_EDITION);
   printf("CalculiX comes with ABSOLUTELY NO WARRANTY. This is free\n");
   printf("software, and you are welcome to redistribute it under\n");
   printf("certain conditions, see gpl.htm\n\n");
