@@ -140,6 +140,18 @@ The C and Fortran source list is read from upstream's `src/Makefile.inc`, so the
 
 Several solvers can be enabled in one build. The default solver, used when a deck does not name one, is the first enabled in this order: Accelerate, PARDISO, MUMPS, SPOOLES.
 
+### SPOOLES and multithreading
+
+SPOOLES is kept for compatibility with existing decks, but it is **not recommended**: MUMPS, Apple Accelerate and PARDISO are faster and actively maintained.
+
+This edition builds SPOOLES in multithreaded mode (`USE_MT`), like upstream's `Makefile_MT`. Upstream's default `Makefile` and upstream's CMake build it single-threaded. In multithreaded mode, SPOOLES results can change slightly from one run to the next when more than one thread is used, because the threads finish in a different order each time. Plain CalculiX 2.24 built with `USE_MT` does the same. The effect is mostly visible in eigenvalue analyses (`*FREQUENCY`, `*BUCKLE`, modal dynamics), where higher modes can move by around 1 % and occasionally more. See [test_NewLib/release_2.24/REPORT.md](test_NewLib/release_2.24/REPORT.md).
+
+For reproducible SPOOLES results that are identical to CalculiX 2.24, run SPOOLES on one thread. The rest of CalculiX keeps using all threads:
+
+```bash
+export CCX_NPROC_EQUATION_SOLVER=1
+```
+
 ### Example configurations
 
 Use a separate build directory for each configuration; this avoids stale cache entries and keeps the binaries apart. The test-suite runner expects these `build_<solver>` names.
@@ -221,7 +233,7 @@ Valid values are `MUMPS`, `ACCELERATE`, `PARDISO` and `SPOOLES`, for solvers tha
 
 Since November 2026, upstream CalculiX includes its own CMake build: `cmake/` (find modules and flags), `CMakePresets.json` (`gnu-lp64`, `gnu-ilp64`, `intel-llvm-lp64`, `intel-llvm-ilp64`) and its own `CMakeLists.txt`. It supports SPOOLES, PARDISO and PaStiX, and is tested upstream on Linux.
 
-In this repository, the top-level `CMakeLists.txt` is this edition's build, which was developed independently and covers more solvers and platforms. Upstream's `cmake/` directory and `CMakePresets.json` are kept unchanged for reference, and upstream's build instructions are preserved in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md). To build plain upstream CalculiX with its own CMake, use the [upstream repository](https://github.com/Dhondtguido/CalculiX).
+In this repository, the top-level `CMakeLists.txt` is this edition's build, which was developed independently and covers more solvers and platforms. Upstream's `cmake/` directory is kept unchanged, and upstream's `CMakeLists.txt` and `CMakePresets.json` are kept verbatim in [cmake/upstream/](cmake/upstream/README.md), for reference. Upstream's build instructions are preserved in [doc/INSTALL_upstream.md](doc/INSTALL_upstream.md). To build plain CalculiX 2.24 with its own CMake, export the `ccx-2.24-upstream` tag as described in [cmake/upstream/README.md](cmake/upstream/README.md).
 
 ## 7. Verifying a build
 
