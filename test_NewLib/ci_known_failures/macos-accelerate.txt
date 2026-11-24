@@ -1,0 +1,21 @@
+# macOS, Apple Accelerate. Used together with upstream.txt.
+# Results on macOS arm64 differ from Linux in a few more decks:
+beammrlin_diff DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
+sens_freq_disp_cyc_explicit DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
+sens_freq_disp_cyc_implicit DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
+substructure DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
+mohr1 FAIL SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24) (stops with exit code 201, too many cutbacks)
+
+# Massless contact is not implemented for Accelerate; ccx stops with
+# "*ERROR in massless: massless contact is not supported" (since 9891da1).
+changecontacttype2 FAIL Accelerate does not support massless contact
+contact15 FAIL Accelerate does not support massless contact
+contact15lin FAIL Accelerate does not support massless contact
+contact16 FAIL Accelerate does not support massless contact
+contact17 FAIL Accelerate does not support massless contact
+contact19 FAIL Accelerate does not support massless contact
+
+membrane2 FAIL Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (too many cutbacks)
+truss2 FAIL Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (too many cutbacks)
+contact9 DIFF Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (0.27 % in the .dat)
+segmentbeam DIFF Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (86 % in the .dat)

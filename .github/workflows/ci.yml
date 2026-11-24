@@ -2,9 +2,9 @@ name: CI Multi-Solver Matrix
 
 on:
   push:
-    branches: [ main, 'fix/**', 'fix_*', 'feat/**' ]
+    branches: [ main, 'release/**', 'fix/**', 'fix_*', 'feat/**' ]
   pull_request:
-    branches: [ main, 'fix/**', 'fix_*', 'feat/**' ]
+    branches: [ main, 'release/**', 'fix/**', 'fix_*', 'feat/**' ]
   workflow_dispatch:
 
 concurrency:
@@ -42,23 +42,32 @@ jobs:
 
       - name: Run Verification Test Suite
         run: |
-          export OMP_NUM_THREADS=1
-          export OMP_STACKSIZE=128M
-          
-          # We add '|| true' so the CI step doesn't crash if tests fail, 
-          # allowing us to extract the percentage anyway.
-          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE  --max-workers $(sysctl -n hw.ncpu)) || true
-          echo "$OUTPUT"
-          
-          # Extracts the final percentage from your "Overall Pass Rate: XX.X%" print statements
-          RATE=$(echo "$OUTPUT" | grep -oEi '[0-9.]+%' | tail -n 1)
-          echo "$RATE" > ACCELERATE.txt
+          # Every deck is checked against Dhondt's .dat.ref/.frd.ref files.
+          # The step fails if a deck does not pass and is not listed, with the
+          # same status, in the job's known-failures file.
+          set +e
+          python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers $(sysctl -n hw.ncpu) \
+            --known-failures test_NewLib/ci_known_failures/upstream.txt \
+            --known-failures test_NewLib/ci_known_failures/macos-accelerate.txt \
+            --write-known-failures nonpassing-macos-accelerate.txt 2>&1 | tee suite.log
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          grep -oE 'Overall Pass Rate: [0-9.]+%' suite.log | tail -n 1 | grep -oE '[0-9.]+%' > ACCELERATE.txt || true
+          exit $STATUS
 
       - name: Upload Accelerate Rate
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rate-ACCELERATE
           path: ACCELERATE.txt
+
+      - name: Upload non-passing decks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nonpassing-macos-accelerate
+          path: nonpassing-macos-accelerate.txt
 
   # ============================================================================
   # 2. Linux x86_64 - MUMPS 5.x, Intel oneMKL PARDISO, and Legacy SPOOLES
@@ -78,12 +87,17 @@ jobs:
           - solver: mumps
             solver_name: "MUMPS 5.x Open-Source"
             cmake_flags: "-DCCX_USE_MUMPS=ON -DCCX_USE_PARDISO=OFF -DCCX_USE_SPOOLES=OFF -DCCX_USE_ACCELERATE=OFF"
+            threads_per_job: 2
           - solver: pardiso
             solver_name: "Intel oneMKL PARDISO"
             cmake_flags: "-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=OFF -DCCX_USE_SPOOLES=OFF -DCCX_USE_ACCELERATE=OFF"
+            threads_per_job: 2
           - solver: spooles
             solver_name: "SPOOLES 2.2 (System Lib)"
             cmake_flags: "-DCCX_USE_SPOOLES=ON -DCCX_USE_MUMPS=OFF -DCCX_USE_PARDISO=OFF -DCCX_USE_ACCELERATE=OFF"
+            # multithreaded SPOOLES is not reproducible; one solver thread
+            # gives results identical to CalculiX 2.24
+            threads_per_job: 1
 
     steps:
       - name: Check out repository
@@ -125,23 +139,36 @@ jobs:
 
       - name: Run Verification Test Suite
         run: |
-          export OMP_NUM_THREADS=1
-          export OMP_STACKSIZE=128M
+          # See the macOS job: checked against Dhondt's reference files and
+          # the job's known-failures file.
           ulimit -s unlimited
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          
-          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" --max-workers $(nproc)) || true
-          echo "$OUTPUT"
-          
-          RATE=$(echo "$OUTPUT" | grep -oEi '[0-9.]+%' | tail -n 1)
-          # Combine OS and solver name to keep ARM and x64 separate!
-          echo "$RATE" > ${{ matrix.os }}-${{ matrix.solver }}.txt
+          JOB=${{ matrix.os }}-${{ matrix.solver }}
+          set +e
+          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
+            --threads-per-job ${{ matrix.threads_per_job }} --max-workers $(nproc) \
+            --known-failures test_NewLib/ci_known_failures/upstream.txt \
+            --known-failures test_NewLib/ci_known_failures/$JOB.txt \
+            --write-known-failures nonpassing-$JOB.txt 2>&1 | tee suite.log
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          # Combine OS and solver name to keep ARM and x64 separate
+          grep -oE 'Overall Pass Rate: [0-9.]+%' suite.log | tail -n 1 | grep -oE '[0-9.]+%' > $JOB.txt || true
+          exit $STATUS
 
       - name: Upload Linux Rate
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rate-${{ matrix.os }}-${{ matrix.solver }}
           path: ${{ matrix.os }}-${{ matrix.solver }}.txt
+
+      - name: Upload non-passing decks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nonpassing-${{ matrix.os }}-${{ matrix.solver }}
+          path: nonpassing-${{ matrix.os }}-${{ matrix.solver }}.txt
 
   # ============================================================================
   # 3. Windows (MSYS2 / MinGW-w64 UCRT64) - MUMPS
@@ -191,13 +218,17 @@ jobs:
           cmake --build build_${{ matrix.solver }} -j
 
       - name: Run Verification Test in MSYS2
+        # The runner stops at deck 98 of 635 on Windows (issue #1). Until that
+        # is fixed this step may fail without failing the job; the failure
+        # stays visible in the log and the run summary.
+        continue-on-error: true
         shell: msys2 {0}
         run: |
-          export OMP_NUM_THREADS=1
           export PYTHONIOENCODING=utf8
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          OUTPUT=$(python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG") || true
-          echo "$OUTPUT"
+          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
+            --known-failures test_NewLib/ci_known_failures/upstream.txt \
+            --known-failures test_NewLib/ci_known_failures/windows-${{ matrix.solver }}.txt
 
       - name: Verify Standalone Execution & Install Script
         shell: pwsh

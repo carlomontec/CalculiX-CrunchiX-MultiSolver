@@ -21,7 +21,7 @@ The finite-element formulations, material models, contact algorithms, input synt
 - **x86_64 and ARM.** Linux on x86_64 and ARM64 (aarch64), macOS on Apple Silicon, Windows on x86_64. The Linux ARM64 build is compiled and run against the full test suite in CI with MUMPS and SPOOLES, so it also runs on ARM servers and boards.
 - **Hardware-aware linear algebra.** The build picks the fastest BLAS/LAPACK it can find: Apple Accelerate on Apple Silicon, **AMD AOCL-BLIS** on AMD Ryzen, Threadripper and EPYC, OpenBLAS elsewhere, or Intel oneMKL with PARDISO.
 - **Modern sparse direct solvers.** MUMPS 5.x, Apple Accelerate and Intel oneMKL PARDISO next to the classic SPOOLES 2.2, selectable per analysis step. `arpack-ng` replaces the unmaintained ARPACK 96 for modal and buckling analyses.
-- **Automated verification.** All 635 decks of Dr. Dhondt's official test suite run in parallel and are compared numerically against reference results, in about 3 minutes on an 8-core Apple Silicon machine. Every solver backend and every upstream merge is checked this way.
+- **Automated verification.** All 635 decks of Dr. Dhondt's official test suite run in parallel and are compared against Dr. Dhondt's reference results (`.dat.ref`, `.frd.ref`, within 0.1 %), in about 3 minutes on an 8-core Apple Silicon machine. Every solver backend and every upstream merge is checked this way.
 - **JSON results for automated workflows.** One flag (`-j`) writes displacements, reaction forces, stresses and energies to a structured JSON file, ready for Python, Julia or MATLAB, with no `.dat` or `.frd` parsing ([example below](#json-export)).
 
 ## Compared with upstream CalculiX
@@ -34,7 +34,7 @@ Upstream CalculiX is the reference implementation, and this edition tracks it cl
 | **Sparse direct solvers** | SPOOLES, PARDISO, PaStiX | MUMPS, Apple Accelerate, PARDISO, SPOOLES |
 | **BLAS/LAPACK** | Chosen by the user | Selected for the hardware (Accelerate, AOCL-BLIS, OpenBLAS, oneMKL) |
 | **Windows** | Requires a manual toolchain setup | Installer sets up MSYS2 and builds natively |
-| **Test suite** | `test/compare` shell script, decks run one after another, text comparison | Parallel runner, numerical comparison against JSON references, reports in Markdown/CSV/JSON |
+| **Test suite** | `test/compare` shell script, decks run one after another, text comparison | Parallel runner, Dhondt's reference files and checkers, CI fails on any result not listed as a known difference, reports in Markdown/CSV/JSON |
 | **Results** | `.dat`, `.frd` | `.dat`, `.frd`, and optional JSON |
 
 ## Contents
@@ -152,7 +152,7 @@ All build options are listed in [INSTALL.md](INSTALL.md#building-with-cmake).
 
 ## Verification
 
-Every change is checked against Dr. Dhondt's official test suite (the decks in [`test/`](test/)). The runner in [`test_NewLib/`](test_NewLib/) runs the decks in parallel and compares the results numerically against golden JSON references, with a fallback to the classic `.dat` / `.frd` comparison:
+Every change is checked against Dr. Dhondt's official test suite (the decks in [`test/`](test/)). The runner in [`test_NewLib/`](test_NewLib/) runs the decks in parallel and checks every result against Dr. Dhondt's reference files (`test/<deck>.dat.ref`, `.frd.ref`) with his own `datcheck.pl` / `frdcheck.pl` (within 0.1 % of the largest value in each block, same number of lines). In CI, a job fails if any deck does not pass and is not listed, with a reason, in [`test_NewLib/ci_known_failures/`](test_NewLib/ci_known_failures/README.md). Some decks differ from the reference files in plain CalculiX 2.24 too; they are listed there.
 
 ```bash
 # Quick check: 20 decks
@@ -162,7 +162,7 @@ python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --limit 20
 python3 test_NewLib/run_official_testsuite.py --custom-bin ccx
 ```
 
-Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. The badges at the top show the latest pass rates per solver and platform. Full details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. The badges at the top show the share of decks within tolerance of the reference files, per solver and platform, from the latest CI run on `main`. Full details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## Benchmarks and verification reports
 

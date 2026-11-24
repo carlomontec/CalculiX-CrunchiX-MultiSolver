@@ -83,12 +83,29 @@ By default, reports are written to a sibling directory named `<repository>_tests
 
 The runner reports four main result categories:
 
-- `PASS`: the solver completed and the generated checked output agrees with the reference within the checker tolerance.
-- `DIFF`: the solver completed, but the generated `.dat` or `.frd` output differs from the reference beyond the checker tolerance.
+- `PASS`: the solver completed, the `.dat` and `.frd` output have the same number of lines as the reference files, and Dr. Dhondt's `datcheck.pl` / `frdcheck.pl` find every value within 0.1 % of the largest value in its block.
+- `DIFF`: the solver completed, but an output file is missing, has a different number of lines, or a value is outside that tolerance.
 - `FAIL`: the solver process exited unsuccessfully.
-- `UNVERIFIED`: the solver completed, but required output or checker evidence was unavailable or invalid.
+- `TIMEOUT`: the deck took longer than `--timeout` seconds.
+- `UNVERIFIED`: the solver completed, but a checker failed or the deck has no reference file.
+
+Only the reference files in `test/` decide the result. The JSON references in `test_NewLib/originaltest_json/` were generated from this edition's own output; when present they are compared as well, and a mismatch is noted in the detail column, but it never changes the result.
+
+The line-count check matters: both Perl checkers compare line by line and stop at the end of the generated file, so on their own they accept a truncated output.
 
 A high-quality solver comparison should report all categories. Do not treat `DIFF`, `FAIL`, or `UNVERIFIED` as passes.
+
+## Known Failures and CI
+
+Not every deck matches the reference files, even with plain CalculiX 2.24: on Linux, 14 decks of the 635 differ (for example mode shapes with the opposite sign, or a random field). CI therefore gates on a list instead of a pass rate:
+
+```bash
+python3 test_NewLib/run_official_testsuite.py --solvers MUMPS \
+  --known-failures test_NewLib/ci_known_failures/upstream.txt \
+  --known-failures test_NewLib/ci_known_failures/ubuntu-24.04-mumps.txt
+```
+
+The run exits with 0 only if every deck that does not pass is listed with the same status. Each entry needs a reason; `--write-known-failures FILE` writes the non-passing decks of a run in the same format. The file format and the list per CI job are described in [test_NewLib/ci_known_failures/README.md](../test_NewLib/ci_known_failures/README.md).
 
 ## Auxiliary Test Files
 
