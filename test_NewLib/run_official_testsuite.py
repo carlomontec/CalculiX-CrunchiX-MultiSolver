@@ -293,6 +293,42 @@ def find_test_decks(patterns=None):
     return decks, excluded_spooles, excluded_missing_files
 
 
+def load_known_failures(path):
+    """Read a known-failures file: 'deck STATUS reason', '#' starts a comment."""
+    known = {}
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.split("#", 1)[0].strip()
+            if not line:
+                continue
+            parts = line.split(None, 2)
+            if len(parts) < 3:
+                sys.exit(f"[-] {path}: every entry needs a deck, a status and a reason: {line!r}")
+            known[parts[0]] = parts[1].upper()
+    return known
+
+
+_JSON_SUPPORT = {}
+
+
+def supports_json(bin_path):
+    """True if the binary is a MultiSolver build with the JSON export."""
+    key = str(bin_path)
+    if key not in _JSON_SUPPORT:
+        try:
+            with open(bin_path, "rb") as f:
+                _JSON_SUPPORT[key] = b"CCX_JSON" in f.read()
+        except OSError:
+            _JSON_SUPPORT[key] = True
+    return _JSON_SUPPORT[key]
+
+
+def count_lines(path):
+    """Number of lines in a text file (the reference checkers compare line by line)."""
+    with open(path, "rb") as f:
+        return sum(1 for _ in f)
+
+
 def run_checker(command, cwd, timeout):
     """Run an output checker without allowing it to hang the test suite."""
     try:
@@ -342,8 +378,13 @@ def run_single_test(task):
                     }
 
         # Execute the solver-specific binary with -j / --json flag.
-        env["CCX_JSON"] = "1"
-        cmd = [str(bin_path), "-j", deck]
+        # Official CalculiX has no JSON export and no -j option; it is run
+        # with -i, like upstream's own test scripts.
+        if supports_json(bin_path):
+            env["CCX_JSON"] = "1"
+            cmd = [str(bin_path), "-j", deck]
+        else:
+            cmd = [str(bin_path), "-i", deck]
         t0 = time.perf_counter()
         try:
             proc = subprocess.run(
@@ -404,33 +445,15 @@ def run_single_test(task):
                 }
 
         # ---------------------------------------------------------------------
-        # 1. Primary Verification: Pure Python JSON Comparison (if reference exists)
+        # Verification against Dhondt's reference files
         # ---------------------------------------------------------------------
-        json_ref = JSON_REF_DIR / f"{deck}.json.ref"
-        if not force_dat and json_ref.exists() and json_test.exists() and json_compare_files:
-            j_status, j_detail, j_err = json_compare_files(json_test, json_ref, rel_tol=1e-3, abs_tol=1e-8)
-            if j_status == "PASS":
-                return {
-                    "deck": deck,
-                    "solver": solver_name,
-                    "status": "PASS",
-                    "time": elapsed,
-                    "detail": "JSON Verified",
-                }
-            elif j_status == "DIFF":
-                return {
-                    "deck": deck,
-                    "solver": solver_name,
-                    "status": "DIFF",
-                    "time": elapsed,
-                    "detail": f"JSON DIFF ({j_detail})",
-                }
-            # If j_status is UNVERIFIED/FAIL, fall through to legacy check
-
-        # ---------------------------------------------------------------------
-        # 2. Fallback Verification: Legacy Perl DAT/FRD Checkers
-        # ---------------------------------------------------------------------
-        # Substructure format conversion
+        # The verdict comes only from test/<deck>.dat.ref and test/<deck>.frd.ref,
+        # checked with Dhondt's datcheck.pl / frdcheck.pl (0.1 % of the largest
+        # value in each block). Both checkers compare line by line and silently
+        # accept a shorter output file, so the line counts are checked first.
+        # The JSON references in test_NewLib/originaltest_json were generated
+        # from this edition's own output; they are compared for information
+        # only and never decide the verdict.
         if deck in ["substructure", "substructure2", "beammrlin_diff", "beammrlin_same"]:
             mtx_f = sandbox_path / f"{deck}.mtx"
             dat_f = sandbox_path / f"{deck}.dat"
@@ -438,84 +461,41 @@ def run_single_test(task):
                 with open(mtx_f, "r") as fin, open(dat_f, "w") as fout:
                     fout.write(fin.read().replace(",", " "))
 
-        dat_ref = TEST_DIR / f"{deck}.dat.ref"
-        frd_ref = TEST_DIR / f"{deck}.frd.ref"
-        dat_test = sandbox_path / f"{deck}.dat"
-        frd_test = sandbox_path / f"{deck}.frd"
+        def result(status, detail):
+            return {"deck": deck, "solver": solver_name, "status": status, "time": elapsed, "detail": detail}
 
-        dat_res = ""
-        if dat_ref.exists() and not dat_test.exists():
-            return {
-                "deck": deck,
-                "solver": solver_name,
-                "status": "UNVERIFIED",
-                "time": elapsed,
-                "detail": f"Missing output {dat_test.name}",
-            }
-        if dat_ref.exists() and dat_test.exists():
-            cp = run_checker(["perl", str(TEST_DIR / "datcheck.pl"), deck], sandbox_path, timeout)
+        checked = []
+        for ext, checker in (("dat", "datcheck.pl"), ("frd", "frdcheck.pl")):
+            ref = TEST_DIR / f"{deck}.{ext}.ref"
+            out = sandbox_path / f"{deck}.{ext}"
+            if not ref.exists():
+                continue
+            if not out.exists():
+                return result("DIFF", f"Missing output {out.name}")
+            n_ref, n_out = count_lines(ref), count_lines(out)
+            if n_ref != n_out:
+                return result("DIFF", f"{ext.upper()} has {n_out} lines, reference {n_ref}")
+            cp = run_checker(["perl", str(TEST_DIR / checker), deck], sandbox_path, timeout)
             if cp is None:
-                return {"deck": deck, "solver": solver_name, "status": "UNVERIFIED", "time": elapsed, "detail": "DAT checker timeout"}
-            dat_res = cp.stdout.strip()
-            if cp.returncode != 0 and "deviation in file" not in dat_res:
-                return {
-                    "deck": deck,
-                    "solver": solver_name,
-                    "status": "UNVERIFIED",
-                    "time": elapsed,
-                    "detail": f"DAT checker failed (exit {cp.returncode})",
-                }
+                return result("UNVERIFIED", f"{ext.upper()} checker timeout")
+            text = cp.stdout.strip()
+            if "deviation in file" in text:
+                err = next((l.strip() for l in text.splitlines() if "relative error" in l), "")
+                return result("DIFF", f"{ext.upper()} DIFF ({err})" if err else f"{ext.upper()} DIFF")
+            if cp.returncode != 0:
+                return result("UNVERIFIED", f"{ext.upper()} checker failed (exit {cp.returncode})")
+            checked.append(ext.upper())
 
-        frd_res = ""
-        if frd_ref.exists() and not frd_test.exists():
-            return {
-                "deck": deck,
-                "solver": solver_name,
-                "status": "UNVERIFIED",
-                "time": elapsed,
-                "detail": f"Missing output {frd_test.name}",
-            }
-        if frd_ref.exists() and frd_test.exists():
-            cp = run_checker(["perl", str(TEST_DIR / "frdcheck.pl"), deck], sandbox_path, timeout)
-            if cp is None:
-                return {"deck": deck, "solver": solver_name, "status": "UNVERIFIED", "time": elapsed, "detail": "FRD checker timeout"}
-            frd_res = cp.stdout.strip()
-            if cp.returncode != 0 and "deviation in file" not in frd_res:
-                return {
-                    "deck": deck,
-                    "solver": solver_name,
-                    "status": "UNVERIFIED",
-                    "time": elapsed,
-                    "detail": f"FRD checker failed (exit {cp.returncode})",
-                }
+        if not checked:
+            return result("UNVERIFIED", "No reference file (.dat.ref or .frd.ref)")
 
-        if "deviation in file" in dat_res:
-            status = "DIFF"
-            err_line = ""
-            for l in dat_res.splitlines():
-                if "relative error" in l:
-                    err_line = l.strip()
-                    break
-            detail = f"DAT DIFF ({err_line})" if err_line else "DAT DIFF"
-        elif "deviation in file" in frd_res:
-            status = "DIFF"
-            err_line = ""
-            for l in frd_res.splitlines():
-                if "relative error" in l:
-                    err_line = l.strip()
-                    break
-            detail = f"FRD DIFF ({err_line})" if err_line else "FRD DIFF"
-        else:
-            status = "PASS"
-            detail = "DAT Verified"
-
-        return {
-            "deck": deck,
-            "solver": solver_name,
-            "status": status,
-            "time": elapsed,
-            "detail": detail,
-        }
+        detail = "+".join(checked) + " within tolerance of reference"
+        json_ref = JSON_REF_DIR / f"{deck}.json.ref"
+        if json_ref.exists() and json_test.exists() and json_compare_files:
+            j_status, j_detail, _ = json_compare_files(json_test, json_ref, rel_tol=1e-3, abs_tol=1e-8)
+            if j_status != "PASS":
+                detail += f"; JSON reference: {j_status} ({j_detail})"
+        return result("PASS", detail)
 
 # =============================================================================
 # Reporting & Visualization
@@ -770,7 +750,12 @@ def main():
     parser.add_argument("--limit", type=int, default=None, help="Limit total number of decks to test")
     parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory base (default: sibling of repository)")
     parser.add_argument("--custom-bin", type=str, default=None, help="Add a user-supplied CCX binary as the CUSTOM solver")
-    parser.add_argument("--force-dat", action="store_true", help="Force legacy DAT/FRD checking via Perl instead of JSON references")
+    parser.add_argument("--force-dat", action="store_true", help="No effect: results are always checked against the .dat.ref/.frd.ref files (kept for compatibility)")
+    parser.add_argument("--known-failures", action="append", default=None,
+                        help="File of decks expected not to pass (one per line: deck STATUS reason); repeatable. "
+                             "Exit 0 if every non-passing deck is listed with its status, 1 otherwise")
+    parser.add_argument("--write-known-failures", type=str, default=None,
+                        help="Write every non-passing deck of this run to FILE in --known-failures format")
     args = parser.parse_args()
 
     ensure_test_suite()
@@ -863,7 +848,7 @@ def main():
     threads_per_job = max(1, args.threads_per_job)
     max_workers = args.max_workers or max(1, cpu_count // threads_per_job)
 
-    mode_str = "Legacy Perl (DAT/FRD)" if args.force_dat else "JSON-First (with DAT/FRD Fallback)"
+    mode_str = "Dhondt reference files (.dat.ref / .frd.ref); JSON references for information only"
 
     print("=" * 80)
     print(" CalculiX Multi-Solver Official Verification Suite")
@@ -997,6 +982,44 @@ def main():
                     f.write(mdf.read())
         except Exception as e:
             print(f"[!] Note: Could not write GitHub Step Summary: {e}")
+
+    # Known-failures gate (CI): every deck that does not pass must be listed
+    # with the same status; anything else fails the run.
+    not_passing = [(d, sn, results[d][sn]) for d in decks for sn in active_solvers
+                   if results[d].get(sn) and results[d][sn]["status"] != "PASS"]
+    if args.write_known_failures:
+        with open(args.write_known_failures, "w", encoding="utf-8") as kf:
+            kf.write("# deck STATUS reason (generated; replace each reason with an explanation)\n")
+            for d, sn, res in not_passing:
+                kf.write(f"{d} {res['status']} {sn}: {res['detail']}\n")
+        print(f"[+] Non-passing decks written to {args.write_known_failures}")
+    if args.known_failures:
+        known = {}
+        for kf_path in args.known_failures:
+            known.update(load_known_failures(kf_path))
+        unexpected, now_passing = [], []
+        for d, sn, res in not_passing:
+            if known.get(d) != res["status"]:
+                expected = f"listed as {known[d]}" if d in known else "not listed"
+                unexpected.append(f"{sn} {d}: {res['status']} ({res['detail']}), {expected}")
+        for d in sorted(known):
+            if d in results and all(r["status"] == "PASS" for r in results[d].values()):
+                now_passing.append(d)
+        n_runs = len(decks) * len(active_solvers)
+        n_pass = n_runs - len(not_passing)
+        print(f"Overall Pass Rate: {100.0 * n_pass / n_runs if n_runs else 0:.1f}% ({n_pass}/{n_runs})")
+        print("=" * 80)
+        print(f" Known-failures check against {', '.join(args.known_failures)} ({len(known)} listed)")
+        print("=" * 80)
+        if now_passing:
+            print(colorize(f"[i] {len(now_passing)} listed deck(s) now pass; remove them from the list: {', '.join(now_passing)}", "yellow"))
+        if unexpected:
+            for u in unexpected:
+                print(f"::error title=Unexpected test result::{u}")
+            print(colorize(f"[-] {len(unexpected)} unexpected result(s).", "red"))
+            sys.exit(1)
+        print(colorize(f"[+] All {len(decks) - len(not_passing)} other decks are within tolerance of the reference files.", "green"))
+        sys.exit(0)
 
     # Exit code determination
     total_fails = sum(st["FAIL"] + st["ERROR"] + st["TIMEOUT"] + st.get("UNVERIFIED", 0) for st in stats.values())

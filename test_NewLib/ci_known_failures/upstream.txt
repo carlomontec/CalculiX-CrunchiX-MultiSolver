@@ -1,0 +1,18 @@
+# Decks on which plain CalculiX 2.24 itself is outside the tolerance of
+# Dhondt's reference files. Checked on Linux x86_64 (GCC 16, SPOOLES, one
+# solver thread) on 2026-11-24: this edition built the same way gives the
+# same 14 decks with identical deviations. Used by every job.
+acou1 DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 1.03 % in the .dat
+beamfsh1 DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 0.22 % in the .dat
+beammrlin_same DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 51 % in the .dat
+beamprand DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 200 % in the .frd (random field: values change sign)
+beamptied5 DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 16.6 % in the .dat
+beamptied6 DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 15.3 % in the .dat
+beamt6 DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 0.104 % in the .dat
+circ10dload DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 3.8 % in the .frd
+circ10p DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 2.3 % in the .frd
+induction2 DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 1.0 % in the .frd
+oneel20fi3 FAIL plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): stops with exit code 201
+segment DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 200 % in the .frd (mode shape with opposite sign)
+segmenttemp DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 200 % in the .frd (mode shape with opposite sign)
+sens_modalstress DIFF plain CalculiX 2.24 differs from the reference in the same way (Linux, SPOOLES, 1 thread, 2026-11-24): 1.6 % in the .frd

@@ -34,7 +34,7 @@ The objective of the **CalculiX CrunchiX Multi-Solver Edition** is not to rewrit
    - Provide high-throughput RFC 8259 JSON serialization directly from solver memory, enabling zero-overhead integration with Python, Julia, MATLAB, and optimization pipelines.
 
 6. **Isolated and Automated Verification Framework**:
-   - Maintain Dr. Dhondt's official 630+ verification test suite untouched in its upstream directory while providing a parallelized, sandboxed test harness (`test_NewLib`) with automated golden reference comparisons.
+   - Maintain Dr. Dhondt's official 630+ verification test suite untouched in its upstream directory while providing a parallelized, sandboxed test harness (`test_NewLib`) that checks every deck against Dr. Dhondt's reference files and fails CI on any unexplained difference.
 
 ---
 
@@ -51,7 +51,7 @@ The objective of the **CalculiX CrunchiX Multi-Solver Edition** is not to rewrit
 | **BLAS / LAPACK** | Often Netlib or statically hardcoded paths | Platform-adaptive: AMD AOCL-BLIS, OpenBLAS, Intel oneMKL, or Apple Accelerate |
 | **Stack Size Management** | Default system thread stack (frequent crash on macOS with large models) | Embedded 256 MB stack configuration (`-Wl,-stack_size,0x10000000`) on macOS |
 | **Data Export** | Fixed-width ASCII `.dat` and binary/ASCII `.frd` | Full `.dat` and `.frd` preserved + direct in-memory RFC 8259 JSON export (`-j` / `--json`) |
-| **Test Verification** | Manual sequential shell/Perl scripts modifying working directory in-place | Sandboxed parallel runner (`test_NewLib`), process isolation, in-memory JSON comparisons |
+| **Test Verification** | Manual sequential shell/Perl scripts modifying working directory in-place | Sandboxed parallel runner (`test_NewLib`), process isolation, Dhondt's reference files and checkers, CI gate with listed known differences |
 | **Repository Separation** | Single monolithic tree | Upstream `test/` directory strictly untouched; modernized tooling isolated in `test_NewLib/` |
 
 ---
@@ -212,11 +212,11 @@ To maintain complete scientific and academic rigor, the test harness is explicit
 
 ### 7.2 Automated Test Runner (`test_NewLib/run_official_testsuite.py`)
 - **Process Sandboxing**: Every test deck runs inside an isolated temporary directory to prevent file collisions during concurrent execution.
-- **Process Parallelism**: Automatically leverages all CPU cores (`OMP_NUM_THREADS=1` per worker) to run hundreds of verification decks in minutes.
-- **JSON-First In-Memory Verification**:
-  - Compares test outputs directly against pre-computed golden JSON references (`test_NewLib/originaltest_json/<deck>.json.ref`).
-  - Utilizes strict relative (`1e-3`) and absolute (`1e-8`) numerical tolerances.
-  - Automatically falls back to legacy Perl `.dat` / `.frd` checking for decks without JSON references.
+- **Process Parallelism**: Runs many decks at once (`--threads-per-job` threads each, default 2) to finish the suite in minutes.
+- **Verification against Dr. Dhondt's reference files**:
+  - Every deck is checked with Dhondt's `datcheck.pl` / `frdcheck.pl` against `test/<deck>.dat.ref` and `.frd.ref` (0.1 % of the largest value in each block), and the output must have the same number of lines as the reference.
+  - The JSON references in `test_NewLib/originaltest_json/` come from this edition's own output; they are compared for information only.
+- **CI gate**: a job fails if a deck does not pass and is not listed, with a reason, in `test_NewLib/ci_known_failures/` (decks on which plain CalculiX 2.24 also differs, and solver-specific differences).
 - **Exclusion Management**: Automatically identifies and tracks auxiliary dependency decks (such as missing radiation view-factor files `.vwf` or restart files `.rin`), preventing false-positive failure reports.
 
 ### 7.3 Multi-Solver Performance Benchmarking (`test_NewLib/benchmark_solvers.py`)
@@ -292,7 +292,7 @@ This section provides a detailed audit comparing the repository directly against
 - **Total C/Fortran files in upstream CCX (`src/`)**: ~1,180 files.
 - **Files Added in `src/`**: 9 files (4 C source, 3 C headers, 2 standalone Makefiles).
 - **Files Modified in `src/`**: 41 files (19 C source/headers, 22 Fortran subroutines/Makefiles).
-- **Files Added in Tooling & Build (`test_NewLib/`, root)**: CMake build system, CI/CD, installers, test runner, benchmark suite, and golden JSON references.
+- **Files Added in Tooling & Build (`test_NewLib/`, root)**: CMake build system, CI/CD, installers, test runner, benchmark suite, and JSON references of the test suite.
 - **Core Physics Code Preserved**: > 96% of files in `src/` remain completely untouched.
 
 ### 9.2 Newly Added Files in `src/`
@@ -397,9 +397,9 @@ The following card reader subroutines were updated to recognize `SOLVER=MUMPS` (
 | **`.github/workflows/ci.yml`** | CI/CD | GitHub Actions multi-solver testing matrix across Ubuntu x86_64, macOS Apple Silicon, and Windows MSYS2. |
 | **`test_NewLib/run_official_testsuite.py`** | Verification | Sandboxed multi-process test runner validating against 630+ official decks. |
 | **`test_NewLib/benchmark_solvers.py`** | Benchmarking | Automated thread-scaling benchmark script measuring wall time, peak memory (RSS), and physical accuracy. |
-| **`test_NewLib/generate_json_references.py`** | Verification | Tool to generate golden `.json.ref` references from baseline solver runs. |
+| **`test_NewLib/generate_json_references.py`** | Verification | Tool to generate `.json.ref` files from this edition's output, after checking it against Dhondt's reference files. |
 | **`test_NewLib/json_checker.py`** | Verification | Pure Python in-memory numerical comparator for JSON output validation. |
-| **`test_NewLib/originaltest_json/*.json.ref`** | Verification | Pre-computed golden reference JSON files for upstream verification suite. |
+| **`test_NewLib/originaltest_json/*.json.ref`** | Verification | JSON export of the official test decks, from this edition's output; compared for information only (Dhondt's `.dat.ref` / `.frd.ref` decide the result). |
 | **`third_party/mumps/`** | Vendor Archive | Pinned source archive (`MUMPS_5.9.1.tar.gz`) with SHA-256 integrity check and macOS build rules. |
 | **`third_party/spooles/`** | Vendor Archive | Pinned source archive (`SPOOLES_2.2.tar.gz`) with SHA-256 integrity check for macOS. |
 
