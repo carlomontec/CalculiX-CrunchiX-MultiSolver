@@ -1,21 +1,15 @@
-# macOS, Apple Accelerate. Used together with upstream.txt.
-# Results on macOS arm64 differ from Linux in a few more decks:
-beammrlin_diff DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
-sens_freq_disp_cyc_explicit DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
-sens_freq_disp_cyc_implicit DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
-substructure DIFF SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24)
-mohr1 FAIL SPOOLES on one thread, whose results equal plain CalculiX 2.24, differs in the same way on macOS (Apple M3, 2026-11-24) (stops with exit code 201, too many cutbacks)
+# macOS, Apple Accelerate. Used together with upstream.txt and arm64.txt.
 
-# Massless contact is not implemented for Accelerate; ccx stops with
-# "*ERROR in massless: massless contact is not supported" (since 9891da1).
-changecontacttype2 FAIL Accelerate does not support massless contact
-contact15 FAIL Accelerate does not support massless contact
-contact15lin FAIL Accelerate does not support massless contact
-contact16 FAIL Accelerate does not support massless contact
-contact17 FAIL Accelerate does not support massless contact
-contact19 FAIL Accelerate does not support massless contact
+# Massless contact has no Accelerate path; ccx stops with
+# "*ERROR in massless: massless contact is not supported" (issue #7).
+changecontacttype2 FAIL Accelerate does not support massless contact: issue #7
+contact15 FAIL Accelerate does not support massless contact: issue #7
+contact15lin FAIL Accelerate does not support massless contact: issue #7
+contact16 FAIL Accelerate does not support massless contact: issue #7
+contact17 FAIL Accelerate does not support massless contact: issue #7
+contact19 FAIL Accelerate does not support massless contact: issue #7
 
-membrane2 FAIL Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (too many cutbacks)
-truss2 FAIL Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (too many cutbacks)
-contact9 DIFF Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (0.27 % in the .dat)
-segmentbeam DIFF Accelerate only: SPOOLES on one thread passes on the same machine; see the Accelerate issue (86 % in the .dat)
+membrane2 FAIL too many cutbacks; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+truss2 FAIL too many cutbacks; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+contact9 DIFF 0.27 % in the .dat; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+segmentbeam DIFF 86 % in the .dat; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7

@@ -1,1 +1,7 @@
-# ubuntu-24.04-pardiso. Used together with upstream.txt.
+# Linux x86_64, Intel oneMKL PARDISO. Used together with upstream.txt.
+beammrlin_diff DIFF 4.0 % with MUMPS and PARDISO on x86_64 (SPOOLES passes); substructure matrix, cause not yet known: issue #8
+acou2 DIFF 0.116 %, just over the 0.1 % tolerance; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
+cube2 DIFF 28,355 % relative to a block maximum, probably near-zero values; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
+shell5a DIFF 11 % in the .frd; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
+shell5b DIFF 19 % in the .frd; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
+truss2 FAIL stops with exit code 201; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6

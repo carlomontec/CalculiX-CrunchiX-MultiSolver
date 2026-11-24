@@ -1,1 +1,4 @@
-# ubuntu-24.04-mumps. Used together with upstream.txt.
+# Linux x86_64, MUMPS. Used together with upstream.txt.
+beammrlin_diff DIFF 4.0 % with MUMPS and PARDISO on x86_64 (SPOOLES passes); substructure matrix, cause not yet known: issue #8
+hueeber1_mortar DIFF mortar contact with MUMPS: automatic scaling is off for unsymmetric systems, see issue #4
+hueeber2_mortar DIFF mortar contact with MUMPS: automatic scaling is off for unsymmetric systems, see issue #4 (the percentage is relative to a block maximum near zero)

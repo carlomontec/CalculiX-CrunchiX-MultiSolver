@@ -1,1 +1,2 @@
-# ubuntu-24.04-spooles. Used together with upstream.txt.
+# Linux x86_64, SPOOLES on one solver thread. Used together with upstream.txt.
+# Nothing beyond upstream.txt: results equal plain CalculiX 2.24.

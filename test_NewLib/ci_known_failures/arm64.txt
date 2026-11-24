@@ -1,0 +1,9 @@
+# arm64 (macOS Apple M3 and the CI ubuntu-24.04-arm runner). Used together
+# with upstream.txt by the macOS job and the Linux arm64 jobs. Every deck
+# here also differs with SPOOLES on one solver thread, whose results equal
+# plain CalculiX 2.24 on Linux x86_64, where these decks pass.
+beammrlin_diff DIFF 8.3 % with every solver on arm64; substructure matrix (*SUBSTRUCTURE GENERATE) differs from the reference, cause not yet known: issue #8
+substructure DIFF 12.4 % with every solver on arm64; substructure matrix (*SUBSTRUCTURE GENERATE) differs from the reference, cause not yet known: issue #8
+mohr1 FAIL stops with exit code 201 (too many cutbacks) on arm64 with every solver, including SPOOLES on one thread
+sens_freq_disp_cyc_explicit DIFF about 0.5 % in the .frd on arm64 with every solver, including SPOOLES on one thread
+sens_freq_disp_cyc_implicit DIFF about 0.5 % in the .frd on arm64 with every solver, including SPOOLES on one thread

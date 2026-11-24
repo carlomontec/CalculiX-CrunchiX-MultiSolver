@@ -294,12 +294,12 @@ def find_test_decks(patterns=None):
 
 
 def load_known_failures(path):
-    """Read a known-failures file: 'deck STATUS reason', '#' starts a comment."""
+    """Read a known-failures file: 'deck STATUS reason'; lines starting with '#' are comments."""
     known = {}
     with open(path, encoding="utf-8") as f:
         for line in f:
-            line = line.split("#", 1)[0].strip()
-            if not line:
+            line = line.strip()
+            if not line or line.startswith("#"):
                 continue
             parts = line.split(None, 2)
             if len(parts) < 3:
