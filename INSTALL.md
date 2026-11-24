@@ -144,7 +144,7 @@ Several solvers can be enabled in one build. The default solver, used when a dec
 
 SPOOLES is kept for compatibility with existing decks, but it is **not recommended**: MUMPS, Apple Accelerate and PARDISO are faster and actively maintained.
 
-This edition builds SPOOLES in multithreaded mode (`USE_MT`), like upstream's `Makefile_MT`. Upstream's default `Makefile` and upstream's CMake build it single-threaded. In multithreaded mode, SPOOLES results can change slightly from one run to the next when more than one thread is used, because the threads finish in a different order each time. Plain CalculiX 2.24 built with `USE_MT` does the same. The effect is mostly visible in eigenvalue analyses (`*FREQUENCY`, `*BUCKLE`, modal dynamics), where higher modes can move by around 1 % and occasionally more. See [test_NewLib/release_2.24/REPORT.md](test_NewLib/release_2.24/REPORT.md).
+This edition builds SPOOLES in multithreaded mode (`USE_MT`), like upstream's `Makefile_MT`. Upstream's default `Makefile` and upstream's CMake build it single-threaded. In multithreaded mode, SPOOLES results can change slightly from one run to the next when more than one thread is used, because the threads finish in a different order each time. Plain CalculiX 2.24 built with `USE_MT` does the same. The effect is mostly visible in eigenvalue analyses (`*FREQUENCY`, `*BUCKLE`, modal dynamics), where higher modes can move by around 1 % and occasionally more. See the [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md).
 
 For reproducible SPOOLES results that are identical to CalculiX 2.24, run SPOOLES on one thread. The rest of CalculiX keeps using all threads:
 
