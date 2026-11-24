@@ -327,6 +327,12 @@ The modifications in existing source files fall into distinct technical categori
 - **`src/getSystemCPUs.c`**:
   - Replaced Linux-only `/sys` filesystem traversal with native, multi-platform CPU detection: `sysctlbyname("hw.logicalcpu")` on macOS, `GetSystemInfo` on Windows, and `sysconf(_SC_NPROCESSORS_ONLN)` on Linux.
 
+#### Solver dispatch completed for CFD, random fields, sensitivity filters and optimisation
+- **`src/compfluidfem.c`, `src/randomfieldmain.c`, `src/filterforwardmain.c`, `src/filterbackwardmain.c`, `src/gradientprojection.c`**:
+  - These routines only dispatched to SPOOLES, SGI, TAUCS, PARDISO and PaStiX. With MUMPS or Accelerate the factorization and solve were skipped without a message (e.g. FEM CFD diverged with "con2phys: too many iterations"). MUMPS and Accelerate branches were added next to every PARDISO branch, using the main solver instance as upstream does for PARDISO.
+- **`src/massless.c`**: massless explicit contact with Accelerate now stops with a clear error. Accelerate has no second instance, so it cannot factor the contact matrix without destroying the main factorization; use SPOOLES, PARDISO or MUMPS.
+- Verification: `test_NewLib/release_2.24/REPORT.md`, section 3.
+
 #### C. Intel oneMKL PARDISO Stability Modernization
 - **`src/pardiso.c` & `src/pardiso_cp.c`**:
   - Modern Intel oneMKL releases suffer from known race conditions and hangs during multi-threaded symbolic factorization when `iparm[1] = 3` (Parallel METIS). Updated to `iparm[1] = 2` (standard sequential METIS nested dissection) across both factorization and solve phases.

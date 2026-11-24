@@ -124,8 +124,121 @@ the same reported deviations:
 The macOS release binary prints `This is Version 2.24` and
 `MultiSolver edition v2.24-multisolver-0.2`.
 
-## 3. Not covered yet
+## 3. Linux: MUMPS and PARDISO vs plain CalculiX 2.24
 
-- MUMPS, PARDISO and Accelerate backends (separate tolerance runs).
+Same machine, reference and method as section 1, `OMP_NUM_THREADS=1`. The
+release branch is built once per solver: `build_mumps` (MUMPS 5.9.1 sequential,
+system package, `CCX_BLAS=NETLIB`) and `build_pardiso` (Intel oneMKL PARDISO,
+`CCX_BLAS=MKL`, `MKL_NUM_THREADS=1`). These are different solvers from
+SPOOLES, so the expectation is agreement within Dhondt's tolerance, not
+identical bytes.
+
+| Solver | Identical | Within tol. | Diff | Exit code differs |
+|:---|---:|---:|---:|---:|
+| MUMPS | 233 | 388 | 18 | 3 |
+| PARDISO | 235 | 392 | 14 | 1 |
+
+CSV files: `linux_mumps_omp1.csv`, `linux_pardiso_omp1.csv`.
+
+Classification of the non-matching decks:
+
+| Kind | MUMPS | PARDISO | Assessment |
+|:---|:---|:---|:---|
+| Mode shape sign (within tolerance once sign is ignored) | `beam_sens_stress_coord1_implicit`, `circ10dload`, `circ10p`, `induction2`, `poi2dturb`, `segment`, `segmenttemp`, `sens_modalstress` | `circ10dload`, `circ10p`, `induction2`, `segment`, `segmenttemp`, `sens_modalstress`, `shell5a`, `shell5b` | Same result: eigenvectors are only defined up to sign |
+| Exported stiffness matrix (`.mtx` compared as `.dat`) | `beammrlin_diff`, `beammrlin_same` | same | Large entries agree within 0.04 %. `datcheck.pl` splits on whitespace, so a leading minus sign versus a leading space shifts the columns and makes it compare unrelated numbers |
+| Very small values (1e-7 to 1e-10) | `beamfsh1`, `beamt6` | `beamfsh1`, `beamt6`, `cube2` | Numerical noise near zero |
+| Mass moment of inertia (deformed configuration) | | `rotor` (0.15 %) | Just over the 0.1 % tolerance |
+| CFD | `cou2d`, `coucylcent2`, `slant` (6 vs 3 increments) | | CFD convergence path depends on the linear solver |
+| Random field | `beamprand` (215 vs 233 lines in `.dat`) | | Different number of output lines; not analysed further |
+| Mortar contact, displacements of order 1e-6 | `hueeber1_mortar` (same maximum, local differences), `hueeber2_mortar` (maximum 2.8e-6 vs 1.4e-6) | | **Needs a closer look.** Our output also prints `1.419413-158`: Fortran E-format drops the `E` for exponents below −99, so `datcheck.pl` reads it as 1.42 |
+| Exit code: plain 2.24 fails, ours completes | `oneel20fi3` | `oneel20fi3` | Plain 2.24 with SPOOLES stops with "increment size smaller than minimum"; MUMPS and PARDISO finish |
+| Exit code: ours fails | `couseg`, `couseg2` | | MUMPS: `*ERROR in con2phys: too many iterations` (CFD). Accelerate failed on the same decks in earlier runs. Known limitation of the non-SPOOLES backends on these two decks |
+
+Summary: MUMPS and PARDISO agree with plain 2.24 within the official tolerance
+in 621/642 (MUMPS) and 627/642 (PARDISO) decks. Most remaining differences
+are mode-shape signs, near-zero values or comparison artifacts.
+
+### Follow-up on the open points (2026-11-23)
+
+**`hueeber1_mortar`/`hueeber2_mortar` (MUMPS): MUMPS scaling.** These decks
+use the unsymmetric solver path. `src/mumps.c` sets `ICNTL(8)=0` (no automatic
+scaling), introduced in `e518a9f` "to avoid numerical drift on reduced
+diagonal contact DOFs". With `CCX_MUMPS_ICNTL8=77` (automatic scaling),
+`hueeber2_mortar` reproduces plain 2.24 exactly: 6 Newton iterations instead
+of 15, the same residual history, and the same maximum displacement
+(1.4358e-6). A full MUMPS run with `CCX_MUMPS_ICNTL8=77`
+(`linux_mumps_omp1_icntl8_77.csv`) fixes `hueeber1_mortar` and
+`hueeber2_mortar` but makes `rotor2` worse (4.7 % in the frequency step that
+follows a geometrically nonlinear static step). It is a trade-off, so the
+setting is unchanged for now.
+
+**`couseg`/`couseg2` (MUMPS): missing solver branches, not numerics.**
+`src/compfluidfem.c` (FEM CFD) only dispatches to SPOOLES, SGI, TAUCS,
+PARDISO and PaStiX. With MUMPS (`isolver=9`) or Accelerate (`isolver=11`), the
+factorization and solve of the pressure equation are skipped without any
+message, so the CFD iteration diverges ("con2phys: too many iterations"). No
+MUMPS setting changes this. The same gap exists in other upstream files that
+this edition's solver integration did not reach:
+
+| File | Used for | MUMPS | Accelerate |
+|:---|:---|:---:|:---:|
+| `compfluidfem.c` | FEM CFD pressure equation | missing | missing |
+| `randomfieldmain.c` | `*RANDOM FIELD` (explains `beamprand`) | missing | missing |
+| `filterforwardmain.c`, `filterbackwardmain.c` | sensitivity filters | missing | missing |
+| `gradientprojection.c` | optimisation (feasible direction) | missing | missing |
+| `massless.c` | massless explicit contact | present | missing |
+
+In all of these a missing branch means the solve is skipped silently. These
+gaps were already there before the 2.24 sync; the 2.24 release changes did not
+introduce them.
+
+### Fix: missing solver branches added (2026-11-23)
+
+- `compfluidfem.c`, `randomfieldmain.c`, `filterforwardmain.c`,
+  `filterbackwardmain.c`, `gradientprojection.c`: MUMPS (`isolver=9`) and
+  Accelerate (`isolver=11`) branches added next to every PARDISO branch
+  (factor, solve, cleanup; 22 places). They use the same main solver instance
+  as the PARDISO branches upstream, and the same "library is not linked" error
+  when the solver is not compiled in.
+- `massless.c`: Accelerate has no second (copy) instance, so it cannot factor
+  the contact matrix `Kbb` without destroying the main factorization. With
+  Accelerate, massless contact now stops with a clear error ("use
+  SOLVER=SPOOLES, PARDISO or MUMPS") instead of skipping the solve. These decks
+  (`contact15`, `contact15lin`, `contact16`, `contact17`, `contact19`,
+  `changecontacttype2`) already failed with Accelerate before.
+
+**Linux, MUMPS vs plain 2.24 after the fix** (`linux_mumps_omp1_branches.csv`):
+
+| Run | Identical | Within tol. | Diff | Exit code differs | OK |
+|:---|---:|---:|---:|---:|---:|
+| MUMPS before | 233 | 388 | 18 | 3 | 621 |
+| MUMPS after | 238 | 391 | 12 | 1 | **629** |
+
+Fixed, none made worse: `couseg`, `couseg2` and `coucylcent2` are now
+byte-identical to 2.24; `cou2d`, `poi2dturb`, `slant`, `beamprand` and
+`beam_sens_stress_coord1_implicit` are within tolerance. The 13 remaining decks
+are the cases already classified above: mode-shape signs (`circ10dload`,
+`circ10p`, `induction2`, `segment`, `segmenttemp`, `sens_modalstress`), the
+`beammrlin_*` comparison artifact, near-zero values (`beamfsh1`, `beamt6`),
+MUMPS scaling (`hueeber1_mortar`, `hueeber2_mortar`) and `oneel20fi3`, where
+plain 2.24 fails. PARDISO is not affected by the fix.
+
+**macOS, the 50 decks that use these routines** (CFD, random field, sensitivity
+filters, optimisation, massless contact), against Dhondt's `.dat.ref`:
+
+| Solver | PASS | DIFF | FAIL |
+|:---|---:|---:|---:|
+| MUMPS | 46 | 4 | 0 |
+| Accelerate | 40 | 4 | 6 |
+
+The 4 DIFF (`beamprand`, `sens_freq_disp_cyc_explicit`,
+`sens_freq_disp_cyc_implicit`, `sens_modalstress`) are the same decks in which
+macOS SPOOLES differs from the Linux reference files (section 2). The 6
+Accelerate FAIL are the massless-contact decks with the new error message.
+`couseg` and `couseg2` now pass with both MUMPS and Accelerate.
+
+## 4. Not covered yet
+
+- Full macOS suite with Accelerate and MUMPS (only the 50 affected decks were run).
 - PaStiX (Linux only, later step).
 - Windows (CI fix is the last step).

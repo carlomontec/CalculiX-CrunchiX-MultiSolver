@@ -43,8 +43,8 @@ python3 tools/verify_upstream_release.py ccx_2.24.src.tar.bz2 --ref v2.24-multis
 
 ## What this edition changes in the 2.24 sources
 
-Result of the second command: 1146 source files are identical to 2.24,
-39 are modified and 7 are added. No upstream source file is removed.
+Result of the second command: 1141 source files are identical to 2.24,
+44 are modified and 7 are added. No upstream source file is removed.
 
 **Added (new solver backends and JSON export):**
 `accelerate_solver.c/.h`, `json_export.c/.h`, `mumps.c`, `mumps.h`, `mumps_cp.c`.
@@ -55,7 +55,7 @@ Result of the second command: 1146 source files are identical to 2.24,
 |:---|:---|
 | Version banner (adds the edition line) and JSON export option | `CalculiX.c`, `CalculiXstep.c` |
 | Default solver selection and `SOLVER=` keyword for MUMPS and Accelerate | `ini_cal.c`, `buckles.f`, `cfds.f`, `couptempdisps.f`, `dynamics.f`, `electromagneticss.f`, `frequencys.f`, `greens.f`, `heattransfers.f`, `modaldynamics.f`, `statics.f`, `steadystatedynamicss.f`, `substructuregenerates.f`, `uncouptempdisps.f`, `viscos.f` |
-| Solver dispatch to MUMPS and Accelerate (new `#ifdef` branches; existing SPOOLES/PARDISO/PaStiX branches kept) | `arpack.c`, `arpackbu.c`, `arpackcs.c`, `dudsmain.c`, `dyna.c`, `dynboun.c`, `electromagnetics.c`, `linstatic.c`, `massless.c`, `nonlingeo.c`, `objectivemain_se.c`, `radflowload.c`, `steadystate.c` |
+| Solver dispatch to MUMPS and Accelerate (new `#ifdef` branches; existing SPOOLES/PARDISO/PaStiX branches kept) | `arpack.c`, `arpackbu.c`, `arpackcs.c`, `compfluidfem.c`, `dudsmain.c`, `dyna.c`, `dynboun.c`, `electromagnetics.c`, `filterbackwardmain.c`, `filterforwardmain.c`, `gradientprojection.c`, `linstatic.c`, `massless.c`, `nonlingeo.c`, `objectivemain_se.c`, `radflowload.c`, `randomfieldmain.c`, `steadystate.c` |
 | PARDISO through oneMKL | `pardiso.c`, `pardiso.h`, `pardiso_cp.c` |
 | JSON export hooks | `results.c`, `effectivemodalmass.f` (also in `arpack*.c`) |
 | OpenMP symmetric sparse matrix-vector product | `opmain.c` |
