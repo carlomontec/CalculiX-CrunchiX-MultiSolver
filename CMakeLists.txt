@@ -38,6 +38,7 @@ option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver"                OFF)
 option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
+option(CCX_SPOOLES_MT  "Build SPOOLES multithreaded (USE_MT). Faster, but with more than one thread its results can differ from run to run" ON)
 option(CCX_SOLVERS_STRICT "Fail configuration if a requested optional solver (MUMPS/PARDISO/SPOOLES) is not found; OFF disables it with a warning" ON)
 set(CCX_BLAS "AUTO" CACHE STRING "BLAS/LAPACK backend: AUTO, BLIS, OPENBLAS, MKL, NETLIB")
 set_property(CACHE CCX_BLAS PROPERTY STRINGS AUTO BLIS OPENBLAS MKL NETLIB)
@@ -46,15 +47,21 @@ set_property(CACHE CCX_BLAS PROPERTY STRINGS AUTO BLIS OPENBLAS MKL NETLIB)
 # Compiler Flags
 # -----------------------------------------------------------------------------
 # C Flags
-# USE_MT enables multithreaded SPOOLES (as upstream's Makefile_MT; upstream's
-# default Makefile and CMake leave it off). With more than one thread SPOOLES
-# results can vary slightly between runs; CCX_NPROC_EQUATION_SOLVER=1 gives
-# reproducible results identical to plain 2.24. See INSTALL.md.
 add_compile_definitions(
     ARCH=Linux
     MATRIXSTORAGE
-    USE_MT=1
 )
+
+# Multithreaded SPOOLES (USE_MT, as in upstream's Makefile_MT) is on by
+# default for speed; upstream's default Makefile and CMake build it
+# single-threaded. With more than one thread its results can differ from run
+# to run: in our tests up to 1.1 % in a static displacement, and wrong
+# eigenfrequencies in the test decks acou2 and acou3.
+# See INSTALL.md, "SPOOLES and multithreading".
+if(CCX_SPOOLES_MT)
+    add_compile_definitions(USE_MT=1)
+    message(WARNING "CCX_SPOOLES_MT=ON (default): with more than one thread, multithreaded SPOOLES results can differ from run to run, and we observed differences from single-threaded results (see INSTALL.md, SPOOLES and multithreading). For reproducible SPOOLES results set CCX_NPROC_EQUATION_SOLVER=1 at run time or configure with -DCCX_SPOOLES_MT=OFF; MUMPS, PARDISO and Accelerate are not affected.")
+endif()
 
 if(CCX_INT64)
     add_compile_definitions(INTSIZE64)

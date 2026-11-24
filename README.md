@@ -79,7 +79,7 @@ Prerequisites, installer options and manual builds are described in [INSTALL.md]
 | **MUMPS 5.x** | System package (default) | Built from vendored source | MSYS2 package (default) | Recommended open-source solver. Performance depends on the BLAS library (see [INSTALL.md](INSTALL.md#blas-and-lapack-selection)). |
 | **Apple Accelerate** | - | System framework (default) | - | Native macOS sparse solver. |
 | **Intel oneMKL PARDISO** | Optional | - | Optional | Requires Intel oneMKL. |
-| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver, kept for compatibility. **Not recommended**: use MUMPS, Accelerate or PARDISO. Built multithreaded; with more than one thread its results can vary slightly between runs ([details](INSTALL.md#spooles-and-multithreading)). |
+| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver, kept for compatibility. **Not recommended**: use MUMPS, Accelerate or PARDISO. Built multithreaded by default for speed; with more than one thread its results can differ from run to run ([details](INSTALL.md#spooles-and-multithreading)). |
 
 Several backends can be compiled into one executable. A deck selects one explicitly with, for example, `*STATIC, SOLVER=MUMPS`; otherwise the build's default solver is used.
 
