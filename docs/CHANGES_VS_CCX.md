@@ -241,21 +241,23 @@ proposed to upstream separately.
 `*MODAL DYNAMIC` was compared against `'PARDISO'`). It changes behaviour only
 for decks that request PaStiX in that step.
 
-**Build setting: multithreaded SPOOLES (`USE_MT`).** This edition's CMake
-defines `USE_MT`, like upstream's `Makefile_MT`. Upstream's default `Makefile`
-and CMake don't. With more than one thread, SPOOLES results can then vary
-slightly from run to run, mostly in higher eigenvalues (around 1 %,
-occasionally more). Plain 2.24 built with `USE_MT` does the same. With
-`CCX_NPROC_EQUATION_SOLVER=1` (or `OMP_NUM_THREADS=1`), results are identical
-to plain 2.24. SPOOLES is not the recommended solver in this edition. See
-the [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md).
+**Build setting: multithreaded SPOOLES (`USE_MT`).** On by default
+(`CCX_SPOOLES_MT=ON`), like upstream's `Makefile_MT`; upstream's default
+`Makefile` and CMake don't define it. With more than one thread, SPOOLES
+results can then differ from run to run, and we observed differences from
+single-threaded results in eigenvalue as well as static analyses (see
+[INSTALL.md](../INSTALL.md#spooles-and-multithreading) and the
+[release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md)).
+Plain 2.24 built with `USE_MT` behaves the same way. With
+`CCX_NPROC_EQUATION_SOLVER=1`, or a build with `CCX_SPOOLES_MT=OFF`, SPOOLES
+results are identical to plain 2.24.
 
 All other changes add solver backends or JSON output, or change performance
 (OpenMP in `opmain.c`, which keeps upstream's work split and summation order).
-On Linux with SPOOLES, all 642 decks of the official suite give byte-identical
-results to plain 2.24 on one thread, and with SPOOLES on one thread also when
-the rest of CalculiX runs on 4 threads (see the report for the 7 CFD decks that
-vary in upstream itself).
+On Linux with SPOOLES on one thread, all 642 decks of the official suite give
+byte-identical results to plain 2.24 on one thread, and also when the rest of
+CalculiX runs on 4 threads (see the report for the 7 CFD decks that vary in
+upstream itself).
 
 ### Preserved algorithms
 

@@ -75,12 +75,12 @@ other changes add solver backends or output, or change performance only. With
 SPOOLES on one thread, all 642 decks of the official suite give byte-identical
 results to plain 2.24 on Linux ([report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md)).
 
-One build setting differs from upstream's default: SPOOLES is built
-multithreaded (`USE_MT`, as in upstream's `Makefile_MT`). With more than one
-thread its results can vary slightly between runs. Set
-`CCX_NPROC_EQUATION_SOLVER=1` for results identical to 2.24. SPOOLES is not the
-recommended solver in this edition. Details:
-[INSTALL.md](../INSTALL.md#spooles-and-multithreading).
+SPOOLES is built multithreaded by default (`USE_MT`, as in upstream's
+`Makefile_MT`), for speed. With more than one thread its results can differ
+from run to run, and we observed differences from single-threaded results.
+Set `CCX_NPROC_EQUATION_SOLVER=1`, or configure with `-DCCX_SPOOLES_MT=OFF`,
+for results identical to 2.24. SPOOLES is not the recommended solver in this
+edition. Details: [INSTALL.md](../INSTALL.md#spooles-and-multithreading).
 
 ## Version strings
 

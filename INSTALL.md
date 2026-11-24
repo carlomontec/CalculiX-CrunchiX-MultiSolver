@@ -134,6 +134,7 @@ The C and Fortran source list is read from upstream's `src/Makefile.inc`, so the
 | `CCX_SPOOLES_VENDORED` | `ON` on macOS | Build SPOOLES from `third_party/spooles` |
 | `CCX_USE_ARPACK` | `ON` | `arpack-ng` eigenvalue solver |
 | `CCX_USE_OPENMP` | `ON` | OpenMP multithreading |
+| `CCX_SPOOLES_MT` | `ON` | Multithreaded SPOOLES (`USE_MT`). Results can differ from run to run, see [SPOOLES and multithreading](#spooles-and-multithreading) |
 | `CCX_INT64` | `OFF` | 64-bit integers (only for very large models; all libraries must be 64-bit builds) |
 | `CCX_BLAS` | `AUTO` | BLAS/LAPACK: `AUTO`, `BLIS`, `OPENBLAS`, `MKL`, `NETLIB` |
 | `CCX_SOLVERS_STRICT` | `ON` | Fail if a requested solver is not found; `OFF` disables it with a warning |
@@ -144,13 +145,23 @@ Several solvers can be enabled in one build. The default solver, used when a dec
 
 SPOOLES is kept for compatibility with existing decks, but it is **not recommended**: MUMPS, Apple Accelerate and PARDISO are faster and actively maintained.
 
-This edition builds SPOOLES in multithreaded mode (`USE_MT`), like upstream's `Makefile_MT`. Upstream's default `Makefile` and upstream's CMake build it single-threaded. In multithreaded mode, SPOOLES results can change slightly from one run to the next when more than one thread is used, because the threads finish in a different order each time. Plain CalculiX 2.24 built with `USE_MT` does the same. The effect is mostly visible in eigenvalue analyses (`*FREQUENCY`, `*BUCKLE`, modal dynamics), where higher modes can move by around 1 % and occasionally more. See the [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md).
+SPOOLES is built multithreaded by default (`USE_MT`, as in upstream's `Makefile_MT`), because single-threaded SPOOLES is slow on large models: on the ultra-fine NACA blade (715,968 equations, 6 threads, Linux) it took 773 s single-threaded and 253 s multithreaded ([results](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/tree/main/results/naca_blade)). Upstream's default `Makefile` and CMake build it single-threaded.
 
-For reproducible SPOOLES results that are identical to CalculiX 2.24, run SPOOLES on one thread. The rest of CalculiX keeps using all threads:
+> **Warning:** with more than one thread, multithreaded SPOOLES results can differ from run to run, and we observed differences from single-threaded results. Plain CalculiX 2.24 built with `USE_MT` behaves the same way. Measured examples:
+>
+> - Test deck `acou3`, 4 threads, macOS: the first eigenfrequency came out as 0 Hz instead of 8.7 Hz; `acou2`'s first mode as 24.9 Hz instead of 10.6 Hz. Both decks failed in 5 of 5 runs with 4 threads and passed in 5 of 5 with 1 thread.
+> - Official test suite, 4 threads, Linux: 58 of 642 decks outside tolerance ([release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md)).
+> - Linear static NACA blade, fine mesh (632,316 equations): tip displacement off by up to 1.1 % on macOS, 0.09 % on Linux and 0.02 % on Windows. On the ultra-fine mesh the same comparison agreed to 6e-9.
+>
+> MUMPS, PARDISO and Accelerate agree with each other and with single-threaded SPOOLES to about 1e-8 on any number of threads.
+
+For reproducible SPOOLES results, identical to CalculiX 2.24, run SPOOLES on one thread:
 
 ```bash
 export CCX_NPROC_EQUATION_SOLVER=1
 ```
+
+or build it single-threaded with `-DCCX_SPOOLES_MT=OFF`. The rest of CalculiX still uses all threads in both cases.
 
 ### Example configurations
 
