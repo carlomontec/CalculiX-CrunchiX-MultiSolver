@@ -26,7 +26,7 @@ fork for these reasons:
 
 - **The patch hooks work on whole files.** `CCX_SOURCE_EXCLUDES` /
   `CCX_SOURCE_ADDITIONS` can drop or add complete source files. This edition
-  changes code inside 39 upstream source files, so each would have to be
+  changes code inside 44 upstream source files, so each would have to be
   excluded and shipped again as a full patched copy.
 - **No install rules.** There is no `install()`, but the one-line installers
   (`install.sh`, `install.ps1`) run `cmake --install`.
