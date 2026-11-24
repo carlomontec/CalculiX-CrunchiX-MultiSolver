@@ -47,7 +47,9 @@ jobs:
           # same status, in the job's known-failures file.
           set +e
           python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers $(sysctl -n hw.ncpu) \
+            --timeout 180 \
             --known-failures test_NewLib/ci_known_failures/upstream.txt \
+            --known-failures test_NewLib/ci_known_failures/arm64.txt \
             --known-failures test_NewLib/ci_known_failures/macos-accelerate.txt \
             --write-known-failures nonpassing-macos-accelerate.txt 2>&1 | tee suite.log
           STATUS=${PIPESTATUS[0]}
@@ -147,7 +149,9 @@ jobs:
           set +e
           python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
             --threads-per-job ${{ matrix.threads_per_job }} --max-workers $(nproc) \
+            --timeout 180 \
             --known-failures test_NewLib/ci_known_failures/upstream.txt \
+            ${{ matrix.os == 'ubuntu-24.04-arm' && '--known-failures test_NewLib/ci_known_failures/arm64.txt' || '' }} \
             --known-failures test_NewLib/ci_known_failures/$JOB.txt \
             --write-known-failures nonpassing-$JOB.txt 2>&1 | tee suite.log
           STATUS=${PIPESTATUS[0]}
@@ -226,7 +230,7 @@ jobs:
         run: |
           export PYTHONIOENCODING=utf8
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
-          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" \
+          python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" --timeout 180 \
             --known-failures test_NewLib/ci_known_failures/upstream.txt \
             --known-failures test_NewLib/ci_known_failures/windows-${{ matrix.solver }}.txt
 
@@ -234,6 +238,38 @@ jobs:
         shell: pwsh
         run: |
           .\install.ps1 -Solver ${{ matrix.solver }} -NonInteractive
+
+  # ============================================================================
+  # 4. One-line installer (install.sh) on fresh Linux and macOS runners
+  # ============================================================================
+  installer:
+    name: Installer install.sh (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    steps:
+      - name: Run install.sh as a new user would, for this commit
+        run: |
+          # Download only the script (no checkout), as the README one-liner does.
+          mkdir -p "$RUNNER_TEMP/installer" && cd "$RUNNER_TEMP/installer"
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install.sh" -o install.sh
+          bash install.sh --ref "${{ github.sha }}" --yes --prefix "$HOME/ccx-install"
+
+      - name: Solve a test deck with the installed ccx and check it against the reference
+        run: |
+          mkdir -p "$RUNNER_TEMP/check" && cd "$RUNNER_TEMP/check"
+          for f in achtel2.inp achtel2.dat.ref datcheck.pl; do
+            curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/test/$f" -o "$f"
+          done
+          "$HOME/ccx-install/bin/ccx" -v
+          "$HOME/ccx-install/bin/ccx" achtel2 | tail -n 5
+          grep -q . achtel2.dat
+          test "$(wc -l < achtel2.dat)" -eq "$(wc -l < achtel2.dat.ref)"
+          OUT=$(perl datcheck.pl achtel2)
+          echo "$OUT"
+          if echo "$OUT" | grep -q "deviation"; then exit 1; fi
 
 
   update-badges:

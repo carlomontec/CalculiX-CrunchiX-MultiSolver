@@ -12,12 +12,14 @@ same status, in the job's file:
 
 | File | Job |
 |:---|:---|
+| `upstream.txt` | Every job: decks on which plain CalculiX 2.24 differs too |
+| `arm64.txt` | macOS and Linux arm64 jobs: decks that differ on arm64 with every solver |
 | `macos-accelerate.txt` | macOS, Apple Accelerate |
 | `ubuntu-24.04-mumps.txt`, `ubuntu-24.04-pardiso.txt`, `ubuntu-24.04-spooles.txt` | Linux x86_64 |
 | `ubuntu-24.04-arm-mumps.txt`, `ubuntu-24.04-arm-spooles.txt` | Linux arm64 |
 | `windows-mumps.txt` | Windows, MSYS2 (not yet enforced, see issue #1) |
 
-Format, one deck per line, `#` starts a comment:
+Format, one deck per line; lines starting with `#` are comments:
 
 ```
 <deck> <STATUS> <reason>

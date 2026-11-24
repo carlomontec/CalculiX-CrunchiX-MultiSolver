@@ -1,1 +1,3 @@
-# ubuntu-24.04-arm-mumps. Used together with upstream.txt.
+# Linux arm64, MUMPS. Used together with upstream.txt and arm64.txt.
+hueeber1_mortar DIFF mortar contact with MUMPS: automatic scaling is off for unsymmetric systems, see issue #4
+hueeber2_mortar DIFF mortar contact with MUMPS: automatic scaling is off for unsymmetric systems, see issue #4 (the percentage is relative to a block maximum near zero)
