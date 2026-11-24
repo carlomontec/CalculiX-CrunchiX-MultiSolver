@@ -220,6 +220,13 @@ void massless(ITG *kslav,ITG *lslav,ITG *ktot,ITG *ltot,double *au,double *ad,
 	printf(" *ERROR in massless: the MUMPS library is not linked\n\n");
 	FORTRAN(stop,());
 #endif
+      }else if(*isolver==11){
+	/* Accelerate has no second (copy) instance, so it cannot factor
+	   Kbb without destroying the factorization of the main system */
+	printf(" *ERROR in massless: massless contact is not supported\n");
+	printf("        with the Apple Accelerate solver;\n");
+	printf("        use SOLVER=SPOOLES, PARDISO or MUMPS\n\n");
+	FORTRAN(stop,());
       }
       SFREE(aubb);SFREE(adbb);SFREE(irowbb);SFREE(icolbb);SFREE(jqbb);
     }
