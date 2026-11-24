@@ -164,6 +164,10 @@ python3 test_NewLib/run_official_testsuite.py --custom-bin ccx
 
 Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. The badges at the top show the latest pass rates per solver and platform. Full details are in [docs/VALIDATION.md](docs/VALIDATION.md).
 
+## Benchmarks and verification reports
+
+Benchmarks live in a separate repository, [CalculiX-CrunchiX-Benchmarks](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks): the benchmark models and runner, solver timings and memory on several machines, the reports that show this edition gives the same results as official CalculiX, and longer studies. This repository keeps the code, the build system and the test suite.
+
 ## Relationship to upstream CalculiX
 
 This repository is a fork of [Dhondtguido/CalculiX](https://github.com/Dhondtguido/CalculiX) and follows its development. Upstream changes are merged regularly with a real merge (not a copy), so upstream history and authorship are preserved. Each merge is verified against the full test suite and recorded in [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md#10-upstream-synchronization-log). Last synchronized: November 2026 (upstream commit `57a4e71`, which is exactly the official ccx 2.24 release; see [docs/UPSTREAM_2.24.md](docs/UPSTREAM_2.24.md)).
@@ -185,9 +189,7 @@ The upstream `test/` directory is never modified; this edition's tests and tools
 | [docs/JSON_EXPORT.md](docs/JSON_EXPORT.md) | JSON result export and schema |
 | [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md) | Technical reference: everything that differs from upstream CCX, and the upstream sync log |
 | [docs/MODERNIZATION.md](docs/MODERNIZATION.md) | Architecture and roadmap |
-| [docs/BENCHMARK_ACCELERATE.md](docs/BENCHMARK_ACCELERATE.md) | Apple Accelerate solver integration and benchmarks |
-| [docs/STATE_OF_THE_ART_CONDA_FEEDSTOCK.md](docs/STATE_OF_THE_ART_CONDA_FEEDSTOCK.md) | Comparison with the conda-forge CalculiX package |
-| [benchmarks/](benchmarks/README.md) | Solver performance benchmarks |
+| [CalculiX-CrunchiX-Benchmarks](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks) | Benchmark models, runner, results, verification reports and studies (separate repository) |
 | [doc/](doc/) | Upstream CalculiX documentation (Dr. Dhondt) |
 
 ## About this project

@@ -50,6 +50,6 @@ cmake --build ../ccx-2.24-ref/build -j
 ```
 
 The resulting `../ccx-2.24-ref/build/CalculiX` is the reference binary used in
-`test_NewLib/release_2.24/REPORT.md`. Upstream's options are `SPOOLES` (default
+the [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md). Upstream's options are `SPOOLES` (default
 ON), `PARDISO`, `PASTIX`, `PASTIX4CALCULIX`, `MKL` and `CALCULIX_INT64`.
 SPOOLES and ARPACK must be installed so that `find_package` can find them.

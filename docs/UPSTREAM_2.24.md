@@ -73,7 +73,7 @@ Only one change is meant to change numerical results compared with 2.24:
 [CHANGES_VS_CCX.md](CHANGES_VS_CCX.md#changes-that-can-affect-results). All
 other changes add solver backends or output, or change performance only. With
 SPOOLES on one thread, all 642 decks of the official suite give byte-identical
-results to plain 2.24 on Linux ([report](../test_NewLib/release_2.24/REPORT.md)).
+results to plain 2.24 on Linux ([report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md)).
 
 One build setting differs from upstream's default: SPOOLES is built
 multithreaded (`USE_MT`, as in upstream's `Makefile_MT`). With more than one

@@ -248,7 +248,7 @@ slightly from run to run, mostly in higher eigenvalues (around 1 %,
 occasionally more). Plain 2.24 built with `USE_MT` does the same. With
 `CCX_NPROC_EQUATION_SOLVER=1` (or `OMP_NUM_THREADS=1`), results are identical
 to plain 2.24. SPOOLES is not the recommended solver in this edition. See
-`test_NewLib/release_2.24/REPORT.md`.
+the [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md).
 
 All other changes add solver backends or JSON output, or change performance
 (OpenMP in `opmain.c`, which keeps upstream's work split and summation order).
@@ -331,7 +331,7 @@ The modifications in existing source files fall into distinct technical categori
 - **`src/compfluidfem.c`, `src/randomfieldmain.c`, `src/filterforwardmain.c`, `src/filterbackwardmain.c`, `src/gradientprojection.c`**:
   - These routines only dispatched to SPOOLES, SGI, TAUCS, PARDISO and PaStiX. With MUMPS or Accelerate the factorization and solve were skipped without a message (e.g. FEM CFD diverged with "con2phys: too many iterations"). MUMPS and Accelerate branches were added next to every PARDISO branch, using the main solver instance as upstream does for PARDISO.
 - **`src/massless.c`**: massless explicit contact with Accelerate now stops with a clear error. Accelerate has no second instance, so it cannot factor the contact matrix without destroying the main factorization; use SPOOLES, PARDISO or MUMPS.
-- Verification: `test_NewLib/release_2.24/REPORT.md`, section 3.
+- Verification: [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md), section 3.
 
 #### C. Intel oneMKL PARDISO Stability Modernization
 - **`src/pardiso.c` & `src/pardiso_cp.c`**:
@@ -407,5 +407,5 @@ The following card reader subroutines were updated to recognize `SOLVER=MUMPS` (
 
 | Date | Upstream range | Notes |
 |:---|:---|:---|
-| 2026-11-20 | `0787781..57a4e71` (39 commits) | Merged into branch `merge/upstream-2026-11`. Upstream's new native CMake build (`cmake/`, `CMakePresets.json`) is kept for reference only; this fork's `CMakeLists.txt` remains the supported build. `src/date.pl` was replaced upstream by `src/buildinfo.c` (`ccx_compiletime`), which is not listed in `Makefile.inc` and is therefore added explicitly in `CMakeLists.txt` and `src/Makefile`. Upstream `INSTALL.md` archived as `doc/INSTALL_upstream.md`. Fixed JSON export for decks that request `*EL PRINT` before `*NODE PRINT`. Details: `test_NewLib/merge_2026-11/REPORT.md`. |
+| 2026-11-20 | `0787781..57a4e71` (39 commits) | Merged into branch `merge/upstream-2026-11`. Upstream's new native CMake build (`cmake/`, `CMakePresets.json`) is kept for reference only; this fork's `CMakeLists.txt` remains the supported build. `src/date.pl` was replaced upstream by `src/buildinfo.c` (`ccx_compiletime`), which is not listed in `Makefile.inc` and is therefore added explicitly in `CMakeLists.txt` and `src/Makefile`. Upstream `INSTALL.md` archived as `doc/INSTALL_upstream.md`. Fixed JSON export for decks that request `*EL PRINT` before `*NODE PRINT`. Details: [merge report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/upstream-merges/2026-11/REPORT.md). |
 | 2026-11-23 | `57a4e71` = ccx 2.24 | Verified that the official `ccx_2.24.src.tar.bz2` matches `57a4e71` (tag `ccx-2.24-upstream`); `tools/verify_upstream_release.py`. Version strings set to `Version 2.24` as in the release, with an extra `MultiSolver edition` banner line. Upstream's `CMakeLists.txt` and `CMakePresets.json` kept verbatim in `cmake/upstream/`. Release `v2.24-multisolver-0.2`. Details: [UPSTREAM_2.24.md](UPSTREAM_2.24.md). |

@@ -231,7 +231,14 @@ def main():
     parser.add_argument("--pattern", type=str, default="*", help="Pattern of decks to process (default: *)")
     parser.add_argument("--workers", type=int, default=8, help="Parallel worker count (default: 8)")
     parser.add_argument("--limit", type=int, default=None, help="Limit total decks (optional)")
+    parser.add_argument("--report-dir", type=Path, default=SCRIPT_DIR,
+                        help="Directory for the Markdown and CSV reports (default: next to this script)")
     args = parser.parse_args()
+
+    global REPORT_MD, REPORT_CSV
+    args.report_dir.mkdir(parents=True, exist_ok=True)
+    REPORT_MD = args.report_dir / REPORT_MD.name
+    REPORT_CSV = args.report_dir / REPORT_CSV.name
 
     OUT_REF_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -319,7 +326,7 @@ def main():
 
         mf.write("\n## 📁 Generated Reference Artifacts\n\n")
         mf.write(f"- Reference Directory : [`test_NewLib/originaltest_json/`](originaltest_json/)\n")
-        mf.write(f"- CSV Discrepancy Log : [`test_NewLib/originaltest_json_report.csv`](originaltest_json_report.csv)\n")
+        mf.write(f"- CSV Discrepancy Log : [`{REPORT_CSV.name}`]({REPORT_CSV.name})\n")
 
     print("\n" + "=" * 80)
     print(" Reference Generation Summary")

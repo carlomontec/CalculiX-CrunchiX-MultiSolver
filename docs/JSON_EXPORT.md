@@ -268,6 +268,6 @@ The test runner `test_NewLib/run_official_testsuite.py` uses JSON verification b
 ### Discrepancy & Exclusion Documentation
 
 Full documentation detailing verified decks versus upstream excluded decks (e.g. decks missing auxiliary files in the upstream archive) is cataloged in:
-- Markdown Report: `test_NewLib/originaltest_json_report.md`
-- CSV Summary Log: `test_NewLib/originaltest_json_report.csv`
+- Markdown Report and CSV Summary Log: written next to the script by default (`--report-dir` to change);
+  the published report is in [CalculiX-CrunchiX-Benchmarks](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/tree/main/json-export/2026-08_references)
 
