@@ -390,6 +390,8 @@ function Get-CcxInfo([string]$exe) {
         $out = @()
     } finally {
         $ErrorActionPreference = $prevEap
+        # 'ccx -v' always exits with 201; do not let that become the installer's exit code
+        $global:LASTEXITCODE = 0
     }
     foreach ($line in $out) {
         if ($line -match '^MultiSolver edition (\S+)') { $r.edition = $Matches[1] }
@@ -1267,3 +1269,7 @@ if ($builtList.Count -gt 1) {
 Write-Host "`nCheck for updates : .\install.ps1 -Action check-update" -ForegroundColor Gray
 Write-Host "Uninstall         : .\install.ps1 -Action uninstall" -ForegroundColor Gray
 Write-Host "================================================================`n" -ForegroundColor Cyan
+
+# Success: report exit code 0 explicitly (callers such as CI check the last exit code)
+if ($script:IsScriptFile) { exit 0 }
+$global:LASTEXITCODE = 0
