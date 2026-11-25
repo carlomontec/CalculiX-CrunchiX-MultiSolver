@@ -32,6 +32,8 @@ example "mode shape sign differs, eigenvalues identical", or "also differs in
 plain CalculiX 2.24 with this solver". A deck without an explanation does not
 belong here: investigate it instead.
 
+All Linux jobs and the macOS job run the decks with one solver thread, so that a list entry does not depend on thread timing. A deck that passes or fails only with several solver threads does not belong in a list; run it again with `--threads-per-job 1` first.
+
 The runner reports listed decks that now pass, so they can be removed. Every
 job uploads a `nonpassing-<job>.txt` artifact in the same format, which helps
 when updating a list.
