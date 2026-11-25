@@ -37,6 +37,12 @@
 #ifdef PARDISO
 #include "pardiso.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 #ifdef PASTIX
 #include "pastix.h"
 #endif
@@ -253,6 +259,24 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
       FORTRAN(stop,());
 #endif
     }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(add,aud,adbd,aubd,&sigma,icold,irowd,ndesibou,&nzsd,
+		     &symmetryflag,&inputformat,jqd,&nzsd);
+#else
+      printf(" *ERROR in randomfieldmain: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(add,aud,adbd,aubd,&sigma,icold,irowd,ndesibou,&nzsd,
+		     &symmetryflag,&inputformat,jqd,&nzsd);
+#else
+      printf(" *ERROR in randomfieldmain: the Apple Accelerate library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
     else if(*isolver==8){
 #ifdef PASTIX
       pastix_factor_main(add,aud,adbd,aubd,&sigma,icold,irowd,ndesibou,&nzsd,
@@ -303,6 +327,16 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
 	pardiso_solve(rhs,ndesibou,&symmetryflag,&inputformat,&nrhs);
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+        mumps_solve(rhs,ndesibou,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+        accelerate_solve(rhs,ndesibou,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
       else if(*isolver==8){
 #ifdef PASTIX
 	pastix_solve(rhs,ndesibou,&symmetryflag,&nrhs);
@@ -336,6 +370,16 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
     else if(*isolver==7){
 #ifdef PARDISO
       pardiso_cleanup(ndesibou,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(ndesibou,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(ndesibou,&symmetryflag,&inputformat);
 #endif
     }
     else if(*isolver==8){
@@ -418,6 +462,24 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
 		   &symmetryflag,&inputformat,jqs,&nzss);
 #else
     printf(" *ERROR in randomfieldmain: the PARDISO library is not linked\n\n");
+    FORTRAN(stop,());
+#endif
+  }
+  else if(*isolver==9){
+#ifdef MUMPS
+    mumps_factor(ad,au,adb,aub,&trace,icols,irows,ndesi,&nzss,
+		   &symmetryflag,&inputformat,jqs,&nzss);
+#else
+    printf(" *ERROR in randomfieldmain: the MUMPS library is not linked\n\n");
+    FORTRAN(stop,());
+#endif
+  }
+  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+    accelerate_factor(ad,au,adb,aub,&trace,icols,irows,ndesi,&nzss,
+		   &symmetryflag,&inputformat,jqs,&nzss);
+#else
+    printf(" *ERROR in randomfieldmain: the Apple Accelerate library is not linked\n\n");
     FORTRAN(stop,());
 #endif
   }
@@ -513,6 +575,16 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
 	    pardiso_solve(temp_array,ndesi,&symmetryflag,&inputformat,&nrhs);
 #endif
 	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(temp_array,ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(temp_array,ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
 	  else if(*isolver==8){
 #ifdef PASTIX
 #ifdef PARDISO
@@ -546,6 +618,16 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
 	  else if(*isolver==7){
 #ifdef PARDISO
 	    pardiso_solve(&workd[ipntr[2]-1],ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==9){
+#ifdef MUMPS
+	    mumps_solve(&workd[ipntr[2]-1],ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+	  }
+	  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+	    accelerate_solve(&workd[ipntr[2]-1],ndesi,&symmetryflag,&inputformat,&nrhs);
 #endif
 	  }
 	  else if(*isolver==8){
@@ -726,6 +808,16 @@ void randomfieldmain(ITG *kon,ITG *ipkon,char *lakon,ITG *ne,ITG *nmpc,
   else if(*isolver==7){
 #ifdef PARDISO
     pardiso_cleanup(ndesi,&symmetryflag,&inputformat);
+#endif
+  }
+  else if(*isolver==9){
+#ifdef MUMPS
+    mumps_cleanup(ndesi,&symmetryflag,&inputformat);
+#endif
+  }
+  else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+    accelerate_cleanup(ndesi,&symmetryflag,&inputformat);
 #endif
   }
   else if(*isolver==8){

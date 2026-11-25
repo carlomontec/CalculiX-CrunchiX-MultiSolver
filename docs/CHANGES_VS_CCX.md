@@ -2,6 +2,7 @@
 
 **Author**: Dr. Carlo Monjaraz-Tec  
 **Base Project**: CalculiX CrunchiX (CCX) by Dr. Guido Dhondt  
+**Upstream base**: ccx 2.24 (upstream commit `57a4e71`, tag `ccx-2.24-upstream`; see [UPSTREAM_2.24.md](UPSTREAM_2.24.md))  
 **Project**: CalculiX CrunchiX Multi-Solver Edition  
 
 ---
@@ -33,7 +34,7 @@ The objective of the **CalculiX CrunchiX Multi-Solver Edition** is not to rewrit
    - Provide high-throughput RFC 8259 JSON serialization directly from solver memory, enabling zero-overhead integration with Python, Julia, MATLAB, and optimization pipelines.
 
 6. **Isolated and Automated Verification Framework**:
-   - Maintain Dr. Dhondt's official 630+ verification test suite untouched in its upstream directory while providing a parallelized, sandboxed test harness (`test_NewLib`) with automated golden reference comparisons.
+   - Maintain Dr. Dhondt's official 630+ verification test suite untouched in its upstream directory while providing a parallelized, sandboxed test harness (`test_NewLib`) that checks every deck against Dr. Dhondt's reference files and fails CI on any unexplained difference.
 
 ---
 
@@ -41,7 +42,7 @@ The objective of the **CalculiX CrunchiX Multi-Solver Edition** is not to rewrit
 
 | Architectural Feature | Upstream CalculiX CCX (Vanilla) | Multi-Solver Modernized CCX |
 |:---|:---|:---|
-| **Build System** | Platform-specific Makefiles (`Makefile_MT`) with hardcoded library paths | Target-based `CMakeLists.txt` (CMake 3.20+) with auto-discovery and CTest support |
+| **Build System** | Makefiles (`Makefile_MT`) and, since 2.24, an official CMake build (Linux, CMake 3.28+, no install rules) | Target-based `CMakeLists.txt` (CMake 3.20+) with auto-discovery and CTest support |
 | **Source Discovery** | Static listing in individual Makefiles | Automated parser of upstream `src/Makefile.inc` generating static `CalculiX_lib` |
 | **Supported Platforms** | Primarily Linux x86_64; partial manual patches for Windows/macOS | Native out-of-the-box support for Linux (x86_64, ARM64), macOS (Apple Silicon), Windows |
 | **Default Linear Solver** | SPOOLES 2.2 (developed in 1999) | MUMPS 5.x (Linux/Win) or Apple Accelerate (macOS); SPOOLES & PARDISO selectable |
@@ -50,7 +51,7 @@ The objective of the **CalculiX CrunchiX Multi-Solver Edition** is not to rewrit
 | **BLAS / LAPACK** | Often Netlib or statically hardcoded paths | Platform-adaptive: AMD AOCL-BLIS, OpenBLAS, Intel oneMKL, or Apple Accelerate |
 | **Stack Size Management** | Default system thread stack (frequent crash on macOS with large models) | Embedded 256 MB stack configuration (`-Wl,-stack_size,0x10000000`) on macOS |
 | **Data Export** | Fixed-width ASCII `.dat` and binary/ASCII `.frd` | Full `.dat` and `.frd` preserved + direct in-memory RFC 8259 JSON export (`-j` / `--json`) |
-| **Test Verification** | Manual sequential shell/Perl scripts modifying working directory in-place | Sandboxed parallel runner (`test_NewLib`), process isolation, in-memory JSON comparisons |
+| **Test Verification** | Manual sequential shell/Perl scripts modifying working directory in-place | Sandboxed parallel runner (`test_NewLib`), process isolation, Dhondt's reference files and checkers, CI gate with listed known differences |
 | **Repository Separation** | Single monolithic tree | Upstream `test/` directory strictly untouched; modernized tooling isolated in `test_NewLib/` |
 
 ---
@@ -211,11 +212,11 @@ To maintain complete scientific and academic rigor, the test harness is explicit
 
 ### 7.2 Automated Test Runner (`test_NewLib/run_official_testsuite.py`)
 - **Process Sandboxing**: Every test deck runs inside an isolated temporary directory to prevent file collisions during concurrent execution.
-- **Process Parallelism**: Automatically leverages all CPU cores (`OMP_NUM_THREADS=1` per worker) to run hundreds of verification decks in minutes.
-- **JSON-First In-Memory Verification**:
-  - Compares test outputs directly against pre-computed golden JSON references (`test_NewLib/originaltest_json/<deck>.json.ref`).
-  - Utilizes strict relative (`1e-3`) and absolute (`1e-8`) numerical tolerances.
-  - Automatically falls back to legacy Perl `.dat` / `.frd` checking for decks without JSON references.
+- **Process Parallelism**: Runs many decks at once (`--threads-per-job` threads each, default 2) to finish the suite in minutes.
+- **Verification against Dr. Dhondt's reference files**:
+  - Every deck is checked with Dhondt's `datcheck.pl` / `frdcheck.pl` against `test/<deck>.dat.ref` and `.frd.ref` (0.1 % of the largest value in each block), and the output must have the same number of lines as the reference.
+  - The JSON references in `test_NewLib/originaltest_json/` come from this edition's own output; they are compared for information only.
+- **CI gate**: a job fails if a deck does not pass and is not listed, with a reason, in `test_NewLib/ci_known_failures/` (decks on which plain CalculiX 2.24 also differs, and solver-specific differences).
 - **Exclusion Management**: Automatically identifies and tracks auxiliary dependency decks (such as missing radiation view-factor files `.vwf` or restart files `.rin`), preventing false-positive failure reports.
 
 ### 7.3 Multi-Solver Performance Benchmarking (`test_NewLib/benchmark_solvers.py`)
@@ -227,7 +228,40 @@ To maintain complete scientific and academic rigor, the test harness is explicit
 
 ## 8. Summary of Preserved Upstream Physics
 
-To eliminate any ambiguity regarding numerical validity, the following core CalculiX CrunchiX algorithms remain **100% unaltered**:
+### Changes that can affect results
+
+Compared with ccx 2.24, exactly one change can change numerical results: the
+stable time increment for explicit dynamics (`src/calcstabletimeincvol.f`, with
+the matching `smscale` allocation in `arpack.c`, `arpackcs.c` and `nonlingeo.c`).
+See section 9.3 B for the details. It affects only explicit dynamic analyses
+(`*DYNAMIC, EXPLICIT`) and mass scaling. This fix will be documented in full and
+proposed to upstream separately.
+
+`src/modaldynamics.f` also corrects an upstream typo (`SOLVER=PASTIX` on
+`*MODAL DYNAMIC` was compared against `'PARDISO'`). It changes behaviour only
+for decks that request PaStiX in that step.
+
+**Build setting: multithreaded SPOOLES (`USE_MT`).** On by default
+(`CCX_SPOOLES_MT=ON`), like upstream's `Makefile_MT`; upstream's default
+`Makefile` and CMake don't define it. With more than one thread, SPOOLES
+results can then differ from run to run, and we observed differences from
+single-threaded results in eigenvalue as well as static analyses (see
+[INSTALL.md](../INSTALL.md#spooles-and-multithreading) and the
+[release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md)).
+Plain 2.24 built with `USE_MT` behaves the same way. With
+`CCX_NPROC_EQUATION_SOLVER=1`, or a build with `CCX_SPOOLES_MT=OFF`, SPOOLES
+results are identical to plain 2.24.
+
+All other changes add solver backends or JSON output, or change performance
+(OpenMP in `opmain.c`, which keeps upstream's work split and summation order).
+On Linux with SPOOLES on one thread, all 642 decks of the official suite give
+byte-identical results to plain 2.24 on one thread, and also when the rest of
+CalculiX runs on 4 threads (see the report for the 7 CFD decks that vary in
+upstream itself).
+
+### Preserved algorithms
+
+Apart from the change above, the following core CalculiX CrunchiX algorithms remain **100% unaltered**:
 
 1. **Element Formulations**:
    - Linear and quadratic hexahedra (C3D8, C3D8R, C3D20, C3D20R).
@@ -258,7 +292,7 @@ This section provides a detailed audit comparing the repository directly against
 - **Total C/Fortran files in upstream CCX (`src/`)**: ~1,180 files.
 - **Files Added in `src/`**: 9 files (4 C source, 3 C headers, 2 standalone Makefiles).
 - **Files Modified in `src/`**: 41 files (19 C source/headers, 22 Fortran subroutines/Makefiles).
-- **Files Added in Tooling & Build (`test_NewLib/`, root)**: CMake build system, CI/CD, installers, test runner, benchmark suite, and golden JSON references.
+- **Files Added in Tooling & Build (`test_NewLib/`, root)**: CMake build system, CI/CD, installers, test runner, benchmark suite, and JSON references of the test suite.
 - **Core Physics Code Preserved**: > 96% of files in `src/` remain completely untouched.
 
 ### 9.2 Newly Added Files in `src/`
@@ -294,6 +328,12 @@ The modifications in existing source files fall into distinct technical categori
   - Added string boundary safety (`len_trim(jobnamef(1))`), preventing segmentation faults when jobnames contain no whitespace.
 - **`src/getSystemCPUs.c`**:
   - Replaced Linux-only `/sys` filesystem traversal with native, multi-platform CPU detection: `sysctlbyname("hw.logicalcpu")` on macOS, `GetSystemInfo` on Windows, and `sysconf(_SC_NPROCESSORS_ONLN)` on Linux.
+
+#### Solver dispatch completed for CFD, random fields, sensitivity filters and optimisation
+- **`src/compfluidfem.c`, `src/randomfieldmain.c`, `src/filterforwardmain.c`, `src/filterbackwardmain.c`, `src/gradientprojection.c`**:
+  - These routines only dispatched to SPOOLES, SGI, TAUCS, PARDISO and PaStiX. With MUMPS or Accelerate the factorization and solve were skipped without a message (e.g. FEM CFD diverged with "con2phys: too many iterations"). MUMPS and Accelerate branches were added next to every PARDISO branch, using the main solver instance as upstream does for PARDISO.
+- **`src/massless.c`**: massless explicit contact with Accelerate now stops with a clear error. Accelerate has no second instance, so it cannot factor the contact matrix without destroying the main factorization; use SPOOLES, PARDISO or MUMPS.
+- Verification: [release verification report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/releases/v2.24-multisolver-0.2/equivalence/REPORT.md), section 3.
 
 #### C. Intel oneMKL PARDISO Stability Modernization
 - **`src/pardiso.c` & `src/pardiso_cp.c`**:
@@ -357,9 +397,9 @@ The following card reader subroutines were updated to recognize `SOLVER=MUMPS` (
 | **`.github/workflows/ci.yml`** | CI/CD | GitHub Actions multi-solver testing matrix across Ubuntu x86_64, macOS Apple Silicon, and Windows MSYS2. |
 | **`test_NewLib/run_official_testsuite.py`** | Verification | Sandboxed multi-process test runner validating against 630+ official decks. |
 | **`test_NewLib/benchmark_solvers.py`** | Benchmarking | Automated thread-scaling benchmark script measuring wall time, peak memory (RSS), and physical accuracy. |
-| **`test_NewLib/generate_json_references.py`** | Verification | Tool to generate golden `.json.ref` references from baseline solver runs. |
+| **`test_NewLib/generate_json_references.py`** | Verification | Tool to generate `.json.ref` files from this edition's output, after checking it against Dhondt's reference files. |
 | **`test_NewLib/json_checker.py`** | Verification | Pure Python in-memory numerical comparator for JSON output validation. |
-| **`test_NewLib/originaltest_json/*.json.ref`** | Verification | Pre-computed golden reference JSON files for upstream verification suite. |
+| **`test_NewLib/originaltest_json/*.json.ref`** | Verification | JSON export of the official test decks, from this edition's output; compared for information only (Dhondt's `.dat.ref` / `.frd.ref` decide the result). |
 | **`third_party/mumps/`** | Vendor Archive | Pinned source archive (`MUMPS_5.9.1.tar.gz`) with SHA-256 integrity check and macOS build rules. |
 | **`third_party/spooles/`** | Vendor Archive | Pinned source archive (`SPOOLES_2.2.tar.gz`) with SHA-256 integrity check for macOS. |
 
@@ -369,4 +409,5 @@ The following card reader subroutines were updated to recognize `SOLVER=MUMPS` (
 
 | Date | Upstream range | Notes |
 |:---|:---|:---|
-| 2026-11-20 | `0787781..57a4e71` (39 commits) | Merged into branch `merge/upstream-2026-11`. Upstream's new native CMake build (`cmake/`, `CMakePresets.json`) is kept for reference only; this fork's `CMakeLists.txt` remains the supported build. `src/date.pl` was replaced upstream by `src/buildinfo.c` (`ccx_compiletime`), which is not listed in `Makefile.inc` and is therefore added explicitly in `CMakeLists.txt` and `src/Makefile`. Upstream `INSTALL.md` archived as `doc/INSTALL_upstream.md`. Fixed JSON export for decks that request `*EL PRINT` before `*NODE PRINT`. Details: `test_NewLib/merge_2026-11/REPORT.md`. |
+| 2026-11-20 | `0787781..57a4e71` (39 commits) | Merged into branch `merge/upstream-2026-11`. Upstream's new native CMake build (`cmake/`, `CMakePresets.json`) is kept for reference only; this fork's `CMakeLists.txt` remains the supported build. `src/date.pl` was replaced upstream by `src/buildinfo.c` (`ccx_compiletime`), which is not listed in `Makefile.inc` and is therefore added explicitly in `CMakeLists.txt` and `src/Makefile`. Upstream `INSTALL.md` archived as `doc/INSTALL_upstream.md`. Fixed JSON export for decks that request `*EL PRINT` before `*NODE PRINT`. Details: [merge report](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks/blob/main/upstream-merges/2026-11/REPORT.md). |
+| 2026-11-23 | `57a4e71` = ccx 2.24 | Verified that the official `ccx_2.24.src.tar.bz2` matches `57a4e71` (tag `ccx-2.24-upstream`); `tools/verify_upstream_release.py`. Version strings set to `Version 2.24` as in the release, with an extra `MultiSolver edition` banner line. Upstream's `CMakeLists.txt` and `CMakePresets.json` kept verbatim in `cmake/upstream/`. Release `v2.24-multisolver-0.2`. Details: [UPSTREAM_2.24.md](UPSTREAM_2.24.md). |

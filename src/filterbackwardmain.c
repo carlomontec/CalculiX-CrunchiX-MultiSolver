@@ -38,6 +38,12 @@
 #ifdef PARDISO
 #include "pardiso.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 #ifdef PASTIX
 #include "pastix.h"
 #endif
@@ -338,6 +344,24 @@ void filterbackwardmain(double *co, double *dgdxglob, ITG *nobject,
       FORTRAN(stop,());
 #endif
     }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(ad,au,adb,aub,&sigma,icol,irow,ndesi,&nzs,
+                     &symmetryflag,&inputformat,jq,&nzs);
+#else
+      printf(" *ERROR in filterbackward: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(ad,au,adb,aub,&sigma,icol,irow,ndesi,&nzs,
+                     &symmetryflag,&inputformat,jq,&nzs);
+#else
+      printf(" *ERROR in filterbackward: the Apple Accelerate library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
     else if(*isolver==8){
 #ifdef PASTIX
       pastix_factor_main(ad,au,adb,aub,&sigma,icol,irow,ndesi,&nzs,
@@ -377,6 +401,16 @@ void filterbackwardmain(double *co, double *dgdxglob, ITG *nobject,
         pardiso_solve(rhs,ndesi,&symmetryflag,&inputformat,&nrhs);
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+        mumps_solve(rhs,ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+        accelerate_solve(rhs,ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
       else if(*isolver==8){
 #ifdef PASTIX
         pastix_solve(rhs,ndesi,&symmetryflag,&nrhs);
@@ -410,6 +444,16 @@ void filterbackwardmain(double *co, double *dgdxglob, ITG *nobject,
     else if(*isolver==7){
 #ifdef PARDISO
       pardiso_cleanup(ndesi,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(ndesi,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(ndesi,&symmetryflag,&inputformat);
 #endif
     }
     else if(*isolver==8){
@@ -464,6 +508,24 @@ void filterbackwardmain(double *co, double *dgdxglob, ITG *nobject,
       FORTRAN(stop,());
 #endif
     }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(adb,aub,ad,au,&sigma,icol,irow,ndesi,&nzs,
+                     &symmetryflag,&inputformat,jq,&nzs);
+#else
+      printf(" *ERROR in filterbackward: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(adb,aub,ad,au,&sigma,icol,irow,ndesi,&nzs,
+                     &symmetryflag,&inputformat,jq,&nzs);
+#else
+      printf(" *ERROR in filterbackward: the Apple Accelerate library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
     else if(*isolver==8){
 #ifdef PASTIX
       pastix_factor_main(adb,aub,ad,au,&sigma,icol,irow,ndesi,&nzs,
@@ -503,6 +565,16 @@ void filterbackwardmain(double *co, double *dgdxglob, ITG *nobject,
         pardiso_solve(rhs,ndesi,&symmetryflag,&inputformat,&nrhs);
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+        mumps_solve(rhs,ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+        accelerate_solve(rhs,ndesi,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
       else if(*isolver==8){
 #ifdef PASTIX
         pastix_solve(rhs,ndesi,&symmetryflag,&nrhs);
@@ -536,6 +608,16 @@ void filterbackwardmain(double *co, double *dgdxglob, ITG *nobject,
     else if(*isolver==7){
 #ifdef PARDISO
       pardiso_cleanup(ndesi,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(ndesi,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(ndesi,&symmetryflag,&inputformat);
 #endif
     }
     else if(*isolver==8){

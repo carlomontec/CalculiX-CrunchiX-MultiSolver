@@ -1,0 +1,16 @@
+# macOS, Apple Accelerate. Used together with upstream.txt and arm64.txt.
+
+# Massless contact has no Accelerate path; ccx stops with
+# "*ERROR in massless: massless contact is not supported" (issue #7).
+changecontacttype2 FAIL Accelerate does not support massless contact: issue #7
+contact15 FAIL Accelerate does not support massless contact: issue #7
+contact15lin FAIL Accelerate does not support massless contact: issue #7
+contact16 FAIL Accelerate does not support massless contact: issue #7
+contact17 FAIL Accelerate does not support massless contact: issue #7
+contact19 FAIL Accelerate does not support massless contact: issue #7
+
+membrane2 FAIL too many cutbacks; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+truss2 FAIL too many cutbacks; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+contact9 DIFF 0.27 % in the .dat; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+segmentbeam DIFF 86 % in the .dat; Accelerate only (SPOOLES on one thread passes on the same machine): issue #7
+acou2 DIFF 0.116 %, just over the 0.1 % tolerance; Accelerate only (SPOOLES on one thread passes on the same machine); same value as PARDISO on Linux: issue #7

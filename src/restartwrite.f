@@ -125,7 +125,7 @@ c     call system("rm -f temporaryrestartfile")
      &       FORM='UNFORMATTED',err=151)
       endif
 !     
-      version='Version DEVELOPMENT'
+      version='Version 2.24'
       write(15) version
 !     
       write(15)istepnew
