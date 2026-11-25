@@ -1,0 +1,39 @@
+# Known failures of the CI test-suite jobs
+
+Each CI job runs the official test suite and checks every deck against
+Dhondt's reference files (`test/<deck>.dat.ref`, `test/<deck>.frd.ref`) with
+his `datcheck.pl` and `frdcheck.pl`: a value passes if it is within 0.1 % of
+the largest value of its block. The output must also have the same number of
+lines as the reference, because both checkers compare line by line and would
+otherwise accept a truncated file.
+
+A job passes only if every deck either passes or is listed here, with the
+same status, in the job's file:
+
+| File | Job |
+|:---|:---|
+| `upstream.txt` | Every job: decks on which plain CalculiX 2.24 differs too |
+| `arm64.txt` | macOS and Linux arm64 jobs: decks that differ on arm64 with every solver |
+| `macos-accelerate.txt` | macOS, Apple Accelerate |
+| `ubuntu-24.04-mumps.txt`, `ubuntu-24.04-pardiso.txt`, `ubuntu-24.04-spooles.txt` | Linux x86_64 |
+| `ubuntu-24.04-arm-mumps.txt`, `ubuntu-24.04-arm-spooles.txt` | Linux arm64 |
+| `windows-mumps.txt` | Windows, MSYS2 |
+
+Format, one deck per line; lines starting with `#` are comments:
+
+```
+<deck> <STATUS> <reason>
+```
+
+`STATUS` is the status the runner reports: `DIFF` (outside tolerance),
+`FAIL` (non-zero exit code), `TIMEOUT`, `ERROR` or `UNVERIFIED` (output or
+checker problem). The reason says why the deck is expected not to pass, for
+example "mode shape sign differs, eigenvalues identical", or "also differs in
+plain CalculiX 2.24 with this solver". A deck without an explanation does not
+belong here: investigate it instead.
+
+All Linux jobs and the macOS job run the decks with one solver thread, so that a list entry does not depend on thread timing. A deck that passes or fails only with several solver threads does not belong in a list; run it again with `--threads-per-job 1` first.
+
+The runner reports listed decks that now pass, so they can be removed. Every
+job uploads a `nonpassing-<job>.txt` artifact in the same format, which helps
+when updating a list.

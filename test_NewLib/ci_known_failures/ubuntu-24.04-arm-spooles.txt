@@ -1,0 +1,1 @@
+# Linux arm64, SPOOLES on one solver thread. Used together with upstream.txt and arm64.txt.

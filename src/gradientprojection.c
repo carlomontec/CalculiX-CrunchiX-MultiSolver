@@ -38,6 +38,12 @@
 #ifdef PARDISO
 #include "pardiso.h"
 #endif
+#ifdef MUMPS
+#include "mumps.h"
+#endif
+#ifdef ACCELERATE_SOLVER
+#include "accelerate_solver.h"
+#endif
 #ifdef PASTIX
 #include "pastix.h"
 #endif
@@ -154,6 +160,24 @@ void gradientprojection(ITG *nobject,char *objectset,double *dgdxglob,
       FORTRAN(stop,());
 #endif
     }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_factor(ad,au,adb,aub,&sigma,icols,irows,nactive,&nzss,
+		     &symmetryflag,&inputformat,jqs,&nzss);
+#else
+      printf(" *ERROR in projectgrad: the MUMPS library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_factor(ad,au,adb,aub,&sigma,icols,irows,nactive,&nzss,
+		     &symmetryflag,&inputformat,jqs,&nzss);
+#else
+      printf(" *ERROR in projectgrad: the Apple Accelerate library is not linked\n\n");
+      FORTRAN(stop,());
+#endif
+    }
     else if(*isolver==8){
 #ifdef PASTIX
       pastix_factor_main(ad,au,adb,aub,&sigma,icols,irows,nactive,&nzss,
@@ -205,6 +229,16 @@ void gradientprojection(ITG *nobject,char *objectset,double *dgdxglob,
         pardiso_solve(rhs,nactive,&symmetryflag,&inputformat,&nrhs);
 #endif
       }
+      else if(*isolver==9){
+#ifdef MUMPS
+        mumps_solve(rhs,nactive,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
+      else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+        accelerate_solve(rhs,nactive,&symmetryflag,&inputformat,&nrhs);
+#endif
+      }
       else if(*isolver==8){
 #ifdef PASTIX
         pastix_solve(rhs,nactive,&symmetryflag,&nrhs);
@@ -242,6 +276,16 @@ void gradientprojection(ITG *nobject,char *objectset,double *dgdxglob,
     else if(*isolver==7){
 #ifdef PARDISO
       pardiso_cleanup(nactive,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==9){
+#ifdef MUMPS
+      mumps_cleanup(nactive,&symmetryflag,&inputformat);
+#endif
+    }
+    else if(*isolver==11){
+#ifdef ACCELERATE_SOLVER
+      accelerate_cleanup(nactive,&symmetryflag,&inputformat);
 #endif
     }
     else if(*isolver==8){

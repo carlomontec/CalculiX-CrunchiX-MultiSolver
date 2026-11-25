@@ -10,7 +10,7 @@
 [![PARDISO x64 Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/pardiso-x64.json)](#verification)
 [![Accelerate Pass Rate](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/carlomontec/c3df672908389cd64cb1fb8c1133f507/raw/accelerate.json)](#verification)
 
-[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition keeps his solver code unchanged and makes it easy to build and run fast on Linux, macOS and Windows.
+[CalculiX CrunchiX (CCX)](https://www.dhondt.de/) is the open-source three-dimensional finite-element solver written by Dr. Guido Dhondt. This edition is based on the official **CalculiX 2.24** release ([provenance](docs/UPSTREAM_2.24.md)). It keeps his solver code unchanged, apart from one documented fix to the explicit stable time increment ([details](docs/CHANGES_VS_CCX.md#changes-that-can-affect-results)), and makes it easy to build and run fast on Linux, macOS and Windows.
 
 The finite-element formulations, material models, contact algorithms, input syntax (`.inp`) and legacy outputs (`.dat`, `.frd`) are those of upstream CalculiX.
 
@@ -21,7 +21,7 @@ The finite-element formulations, material models, contact algorithms, input synt
 - **x86_64 and ARM.** Linux on x86_64 and ARM64 (aarch64), macOS on Apple Silicon, Windows on x86_64. The Linux ARM64 build is compiled and run against the full test suite in CI with MUMPS and SPOOLES, so it also runs on ARM servers and boards.
 - **Hardware-aware linear algebra.** The build picks the fastest BLAS/LAPACK it can find: Apple Accelerate on Apple Silicon, **AMD AOCL-BLIS** on AMD Ryzen, Threadripper and EPYC, OpenBLAS elsewhere, or Intel oneMKL with PARDISO.
 - **Modern sparse direct solvers.** MUMPS 5.x, Apple Accelerate and Intel oneMKL PARDISO next to the classic SPOOLES 2.2, selectable per analysis step. `arpack-ng` replaces the unmaintained ARPACK 96 for modal and buckling analyses.
-- **Automated verification.** All 635 decks of Dr. Dhondt's official test suite run in parallel and are compared numerically against reference results, in about 3 minutes on an 8-core Apple Silicon machine. Every solver backend and every upstream merge is checked this way.
+- **Automated verification.** All 635 decks of Dr. Dhondt's official test suite run in parallel and are compared against Dr. Dhondt's reference results (`.dat.ref`, `.frd.ref`, within 0.1 %), in about 3 minutes on an 8-core Apple Silicon machine. Every solver backend and every upstream merge is checked this way.
 - **JSON results for automated workflows.** One flag (`-j`) writes displacements, reaction forces, stresses and energies to a structured JSON file, ready for Python, Julia or MATLAB, with no `.dat` or `.frd` parsing ([example below](#json-export)).
 
 ## Compared with upstream CalculiX
@@ -34,7 +34,7 @@ Upstream CalculiX is the reference implementation, and this edition tracks it cl
 | **Sparse direct solvers** | SPOOLES, PARDISO, PaStiX | MUMPS, Apple Accelerate, PARDISO, SPOOLES |
 | **BLAS/LAPACK** | Chosen by the user | Selected for the hardware (Accelerate, AOCL-BLIS, OpenBLAS, oneMKL) |
 | **Windows** | Requires a manual toolchain setup | Installer sets up MSYS2 and builds natively |
-| **Test suite** | `test/compare` shell script, decks run one after another, text comparison | Parallel runner, numerical comparison against JSON references, reports in Markdown/CSV/JSON |
+| **Test suite** | `test/compare` shell script, decks run one after another, text comparison | Parallel runner, Dhondt's reference files and checkers, CI fails on any result not listed as a known difference, reports in Markdown/CSV/JSON |
 | **Results** | `.dat`, `.frd` | `.dat`, `.frd`, and optional JSON |
 
 ## Contents
@@ -79,7 +79,7 @@ Prerequisites, installer options and manual builds are described in [INSTALL.md]
 | **MUMPS 5.x** | System package (default) | Built from vendored source | MSYS2 package (default) | Recommended open-source solver. Performance depends on the BLAS library (see [INSTALL.md](INSTALL.md#blas-and-lapack-selection)). |
 | **Apple Accelerate** | - | System framework (default) | - | Native macOS sparse solver. |
 | **Intel oneMKL PARDISO** | Optional | - | Optional | Requires Intel oneMKL. |
-| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver; reference baseline. |
+| **SPOOLES 2.2** | System package | Built from vendored source | System package when available | Classic CalculiX solver, kept for compatibility. **Not recommended**: use MUMPS, Accelerate or PARDISO. Built multithreaded by default for speed; with more than one thread its results can differ from run to run ([details](INSTALL.md#spooles-and-multithreading)). |
 
 Several backends can be compiled into one executable. A deck selects one explicitly with, for example, `*STATIC, SOLVER=MUMPS`; otherwise the build's default solver is used.
 
@@ -146,13 +146,13 @@ What the build does:
 - **Builds MUMPS and SPOOLES from pinned, checksum-verified source archives** on macOS, where no suitable system packages exist ([third_party/](third_party/)).
 - **Chooses a BLAS/LAPACK library for the hardware** (`CCX_BLAS=AUTO`): Accelerate on Apple Silicon, AMD AOCL-BLIS on AMD Zen, OpenBLAS elsewhere, or oneMKL with PARDISO.
 
-**Upstream CalculiX now has its own CMake build.** Since November 2026, Dr. Dhondt's CalculiX ships an official CMake build (`cmake/`, `CMakePresets.json`) with presets for GCC or Intel compilers, 32- or 64-bit integers, and the SPOOLES, PARDISO and PaStiX solvers. This is an important step for the CalculiX community. The build in this repository was developed independently and earlier, for a different scope (multiple solver backends, macOS and Windows). Both are kept in the tree: this edition's `CMakeLists.txt` is the supported build here, and upstream's files and instructions ([doc/INSTALL_upstream.md](doc/INSTALL_upstream.md)) are preserved unchanged for reference.
+**Upstream CalculiX now has its own CMake build.** Since November 2026, Dr. Dhondt's CalculiX ships an official CMake build (`cmake/`, `CMakePresets.json`) with presets for GCC or Intel compilers, 32- or 64-bit integers, and the SPOOLES, PARDISO and PaStiX solvers. This is an important step for the CalculiX community. The build in this repository was developed independently and earlier, for a different scope (multiple solver backends, macOS and Windows). Both are kept in the tree: this edition's `CMakeLists.txt` is the supported build here, and upstream's `CMakeLists.txt` and `CMakePresets.json` ([cmake/upstream/](cmake/upstream/README.md)) and instructions ([doc/INSTALL_upstream.md](doc/INSTALL_upstream.md)) are preserved unchanged for reference.
 
 All build options are listed in [INSTALL.md](INSTALL.md#building-with-cmake).
 
 ## Verification
 
-Every change is checked against Dr. Dhondt's official test suite (the decks in [`test/`](test/)). The runner in [`test_NewLib/`](test_NewLib/) runs the decks in parallel and compares the results numerically against golden JSON references, with a fallback to the classic `.dat` / `.frd` comparison:
+Every change is checked against Dr. Dhondt's official test suite (the decks in [`test/`](test/)). The runner in [`test_NewLib/`](test_NewLib/) runs the decks in parallel and checks every result against Dr. Dhondt's reference files (`test/<deck>.dat.ref`, `.frd.ref`) with his own `datcheck.pl` / `frdcheck.pl` (within 0.1 % of the largest value in each block, same number of lines). In CI, a job fails if any deck does not pass and is not listed, with a reason, in [`test_NewLib/ci_known_failures/`](test_NewLib/ci_known_failures/README.md). Some decks differ from the reference files in plain CalculiX 2.24 too; they are listed there.
 
 ```bash
 # Quick check: 20 decks
@@ -162,11 +162,15 @@ python3 test_NewLib/run_official_testsuite.py --custom-bin ccx --limit 20
 python3 test_NewLib/run_official_testsuite.py --custom-bin ccx
 ```
 
-Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. The badges at the top show the latest pass rates per solver and platform. Full details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+Reports (Markdown, CSV, JSON) are written to `test_NewLib/testsuite_results/`. The badges at the top show the share of decks within tolerance of the reference files, per solver and platform, from the latest CI run on `main`. Full details are in [docs/VALIDATION.md](docs/VALIDATION.md).
+
+## Benchmarks and verification reports
+
+Benchmarks live in a separate repository, [CalculiX-CrunchiX-Benchmarks](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks): the benchmark models and runner, solver timings and memory on several machines, the reports that show this edition gives the same results as official CalculiX, and longer studies. This repository keeps the code, the build system and the test suite.
 
 ## Relationship to upstream CalculiX
 
-This repository is a fork of [Dhondtguido/CalculiX](https://github.com/Dhondtguido/CalculiX) and follows its development. Upstream changes are merged regularly with a real merge (not a copy), so upstream history and authorship are preserved. Each merge is verified against the full test suite and recorded in [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md#10-upstream-synchronization-log). Last synchronized: November 2026 (upstream commit `57a4e71`).
+This repository is a fork of [Dhondtguido/CalculiX](https://github.com/Dhondtguido/CalculiX) and follows its development. Upstream changes are merged regularly with a real merge (not a copy), so upstream history and authorship are preserved. Each merge is verified against the full test suite and recorded in [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md#10-upstream-synchronization-log). Last synchronized: November 2026 (upstream commit `57a4e71`, which is exactly the official ccx 2.24 release; see [docs/UPSTREAM_2.24.md](docs/UPSTREAM_2.24.md)).
 
 The upstream `test/` directory is never modified; this edition's tests and tools live in `test_NewLib/`.
 
@@ -185,9 +189,7 @@ The upstream `test/` directory is never modified; this edition's tests and tools
 | [docs/JSON_EXPORT.md](docs/JSON_EXPORT.md) | JSON result export and schema |
 | [docs/CHANGES_VS_CCX.md](docs/CHANGES_VS_CCX.md) | Technical reference: everything that differs from upstream CCX, and the upstream sync log |
 | [docs/MODERNIZATION.md](docs/MODERNIZATION.md) | Architecture and roadmap |
-| [docs/BENCHMARK_ACCELERATE.md](docs/BENCHMARK_ACCELERATE.md) | Apple Accelerate solver integration and benchmarks |
-| [docs/STATE_OF_THE_ART_CONDA_FEEDSTOCK.md](docs/STATE_OF_THE_ART_CONDA_FEEDSTOCK.md) | Comparison with the conda-forge CalculiX package |
-| [benchmarks/](benchmarks/README.md) | Solver performance benchmarks |
+| [CalculiX-CrunchiX-Benchmarks](https://github.com/carlomontec/CalculiX-CrunchiX-Benchmarks) | Benchmark models, runner, results, verification reports and studies (separate repository) |
 | [doc/](doc/) | Upstream CalculiX documentation (Dr. Dhondt) |
 
 ## About this project

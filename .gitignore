@@ -31,3 +31,13 @@ test_NewLib/NFIX.nam
 test_NewLib/NTIP.nam
 .aider*
 comparison_solvers.csv
+
+# Python bytecode
+__pycache__/
+
+# Reports of generate_json_references.py (published in CalculiX-CrunchiX-Benchmarks)
+test_NewLib/originaltest_json_report.md
+test_NewLib/originaltest_json_report.csv
+
+# Benchmarks moved to CalculiX-CrunchiX-Benchmarks; ignore local leftovers
+/benchmarks/
