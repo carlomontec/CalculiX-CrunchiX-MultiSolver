@@ -265,8 +265,8 @@ void pastix_init(double *ad, double *au, double *adb, double *aub,
 
     piparm[IPARM_THREAD_NBR]			= nthread_mkl;
     piparm[IPARM_GPU_NBR]   			= (int) gpu;
-    piparm[IPARM_MIN_BLOCKSIZE] 		= 1024;
-    piparm[IPARM_MAX_BLOCKSIZE] 		= 2048;
+    piparm[IPARM_MIN_BLOCKSIZE] 		= 128;
+    piparm[IPARM_MAX_BLOCKSIZE] 		= 320;
     piparm[IPARM_FACTORIZATION] 		= PastixFactLU;
     piparm[IPARM_TASKS2D_WIDTH] 		= globDoublePrecision ? 256 : 128;
     piparm[IPARM_REFINEMENT]             	= PastixRefineGMRES;
@@ -286,13 +286,23 @@ void pastix_init(double *ad, double *au, double *adb, double *aub,
     char usage_call = MULTI_SOLVE
     if( usage == usage_call ){
         pdparm[DPARM_EPSILON_REFINEMENT] 	= 1e-12;
-        piparm[IPARM_ITERMAX]            	= 50;
+        piparm[IPARM_ITERMAX]            	= 5;
         piparm[IPARM_GMRES_IM]            	= 50;
     }
     else {
         pdparm[DPARM_EPSILON_REFINEMENT] 	= 1e-12;
-        piparm[IPARM_ITERMAX]            	= 50;
+        piparm[IPARM_ITERMAX]            	= 5;
         piparm[IPARM_GMRES_IM]            	= 50;
+    }
+
+    /* Experimental tuning overrides (benchmarking only). */
+    {
+        const char *e;
+        if ((e = getenv("PASTIX_MIN_BS")))   piparm[IPARM_MIN_BLOCKSIZE] = atoi(e);
+        if ((e = getenv("PASTIX_MAX_BS")))   piparm[IPARM_MAX_BLOCKSIZE] = atoi(e);
+        if ((e = getenv("PASTIX_ITERMAX")))  piparm[IPARM_ITERMAX]       = atoi(e);
+        if ((e = getenv("PASTIX_EPS")))      pdparm[DPARM_EPSILON_REFINEMENT] = atof(e);
+        if ((e = getenv("PASTIX_FACT")))     piparm[IPARM_FACTORIZATION] = atoi(e);
     }
 
     // Initialize sparse matrix
@@ -1174,7 +1184,7 @@ void pastix_main_generic(double *ad, double *au, double *adb, double *aub,
     
         // make sure that we switch to double and do not reuse in the next iteration
         pdparm[DPARM_EPSILON_REFINEMENT] 	= 1e-12;
-        piparm[IPARM_ITERMAX]            	= 50;
+        piparm[IPARM_ITERMAX]            	= 5;
         piparm[IPARM_GMRES_IM]            	= 50;
         
         // if we do not converge with mixed precision for the third time, permanently switch to double precision
