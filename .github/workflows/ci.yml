@@ -258,7 +258,16 @@ jobs:
       - name: Verify Standalone Execution & Install Script
         shell: pwsh
         run: |
-          .\install.ps1 -Solver ${{ matrix.solver }} -NonInteractive
+          .\install.ps1 -Local -Solver ${{ matrix.solver }} -NonInteractive
+
+      - name: Installer update check and uninstall
+        shell: pwsh
+        run: |
+          .\install.ps1 -Action check-update
+          .\install.ps1 -Action uninstall -NonInteractive
+          $left = @("ccx.exe", "CalculiX.exe") | ForEach-Object { Join-Path "$env:USERPROFILE\.local\bin" $_ } | Where-Object { Test-Path $_ }
+          if ($left) { Write-Error "Uninstall left files behind: $left"; exit 1 }
+          if (Test-Path "$env:LOCALAPPDATA\ccx-multisolver\manifest-stable.txt") { Write-Error "Manifest left behind"; exit 1 }
 
   # ============================================================================
   # 4. One-line installer (install.sh) on fresh Linux and macOS runners
@@ -266,6 +275,10 @@ jobs:
   installer:
     name: Installer install.sh (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      # On pull requests github.sha is GitHub's temporary merge commit, which
+      # a plain clone cannot fetch; test the PR's head commit instead.
+      CCX_TEST_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     strategy:
       fail-fast: false
       matrix:
@@ -275,14 +288,14 @@ jobs:
         run: |
           # Download only the script (no checkout), as the README one-liner does.
           mkdir -p "$RUNNER_TEMP/installer" && cd "$RUNNER_TEMP/installer"
-          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/install.sh" -o install.sh
-          bash install.sh --ref "${{ github.sha }}" --yes --prefix "$HOME/ccx-install"
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ env.CCX_TEST_SHA }}/install.sh" -o install.sh
+          bash install.sh --ref "${{ env.CCX_TEST_SHA }}" --yes --prefix "$HOME/ccx-install"
 
       - name: Solve a test deck with the installed ccx and check it against the reference
         run: |
           mkdir -p "$RUNNER_TEMP/check" && cd "$RUNNER_TEMP/check"
           for f in achtel2.inp achtel2.dat.ref datcheck.pl; do
-            curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/test/$f" -o "$f"
+            curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ env.CCX_TEST_SHA }}/test/$f" -o "$f"
           done
           # 'ccx -v' prints the version but always exits with 201
           VERSION=$("$HOME/ccx-install/bin/ccx" -v 2>&1 || true)
@@ -294,6 +307,19 @@ jobs:
           OUT=$(perl datcheck.pl achtel2)
           echo "$OUT"
           if echo "$OUT" | grep -q "deviation"; then exit 1; fi
+
+      - name: Installer update check and uninstall
+        run: |
+          cd "$RUNNER_TEMP/installer"
+          bash install.sh --check-update
+          "$HOME/ccx-install/bin/ccx" -v 2>&1 | grep "Direct solvers:" || true
+          bash install.sh --uninstall --yes
+          for f in CalculiX ccx; do
+            if [ -e "$HOME/ccx-install/bin/$f" ] || [ -L "$HOME/ccx-install/bin/$f" ]; then
+              echo "Uninstall left $f behind"; exit 1
+            fi
+          done
+          if [ -e "$HOME/.local/share/ccx-multisolver/manifest-stable.txt" ]; then echo "Manifest left behind"; exit 1; fi
 
 
   update-badges:
