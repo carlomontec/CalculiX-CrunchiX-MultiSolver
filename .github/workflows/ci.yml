@@ -46,7 +46,7 @@ jobs:
           # The step fails if a deck does not pass and is not listed, with the
           # same status, in the job's known-failures file.
           set +e
-          python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --max-workers $(sysctl -n hw.ncpu) \
+          python3 test_NewLib/run_official_testsuite.py --solvers ACCELERATE --threads-per-job 1 --max-workers $(sysctl -n hw.ncpu) \
             --timeout 180 \
             --known-failures test_NewLib/ci_known_failures/upstream.txt \
             --known-failures test_NewLib/ci_known_failures/arm64.txt \
@@ -89,11 +89,14 @@ jobs:
           - solver: mumps
             solver_name: "MUMPS 5.x Open-Source"
             cmake_flags: "-DCCX_USE_MUMPS=ON -DCCX_USE_PARDISO=OFF -DCCX_USE_SPOOLES=OFF -DCCX_USE_ACCELERATE=OFF"
-            threads_per_job: 2
+            # one solver thread: multithreaded MUMPS changes eigenvalue
+            # results from run to run (see docs/VALIDATION.md)
+            threads_per_job: 1
           - solver: pardiso
             solver_name: "Intel oneMKL PARDISO"
             cmake_flags: "-DCCX_USE_PARDISO=ON -DCCX_USE_MUMPS=OFF -DCCX_USE_SPOOLES=OFF -DCCX_USE_ACCELERATE=OFF"
-            threads_per_job: 2
+            # one solver thread, as for MUMPS
+            threads_per_job: 1
           - solver: spooles
             solver_name: "SPOOLES 2.2 (System Lib)"
             cmake_flags: "-DCCX_USE_SPOOLES=ON -DCCX_USE_MUMPS=OFF -DCCX_USE_PARDISO=OFF -DCCX_USE_ACCELERATE=OFF"
@@ -260,7 +263,10 @@ jobs:
           for f in achtel2.inp achtel2.dat.ref datcheck.pl; do
             curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/test/$f" -o "$f"
           done
-          "$HOME/ccx-install/bin/ccx" -v
+          # 'ccx -v' prints the version but always exits with 201
+          VERSION=$("$HOME/ccx-install/bin/ccx" -v 2>&1 || true)
+          echo "$VERSION"
+          echo "$VERSION" | grep -q "Version 2.24"
           "$HOME/ccx-install/bin/ccx" achtel2 | tail -n 5
           grep -q . achtel2.dat
           test "$(wc -l < achtel2.dat)" -eq "$(wc -l < achtel2.dat.ref)"

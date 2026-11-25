@@ -107,6 +107,8 @@ python3 test_NewLib/run_official_testsuite.py --solvers MUMPS \
 
 The run exits with 0 only if every deck that does not pass is listed with the same status. Each entry needs a reason; `--write-known-failures FILE` writes the non-passing decks of a run in the same format. The file format and the list per CI job are described in [test_NewLib/ci_known_failures/README.md](../test_NewLib/ci_known_failures/README.md).
 
+CI runs every test job with one solver thread (`--threads-per-job 1`, which sets `OMP_NUM_THREADS`, `MKL_NUM_THREADS` and `CCX_NPROC_EQUATION_SOLVER` to 1) and several decks in parallel. With more than one solver thread, MUMPS, PARDISO and SPOOLES do not add up floating-point numbers in the same order from run to run, which can change eigenvalue results of cyclic-symmetry and perturbation decks (`rotor2`, `segmentbeam2`) by more than the 0.1 % tolerance. One thread makes the results reproducible; the multithreaded speed-up is measured separately by the benchmarks.
+
 ## Auxiliary Test Files
 
 Some official decks depend on generated or separately supplied files, such as:

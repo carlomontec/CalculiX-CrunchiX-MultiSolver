@@ -36,6 +36,8 @@ static ITG acc_prev_neq = 0;
 static ITG acc_prev_nnz = 0;
 static ITG acc_prev_sym = -1;
 static ITG acc_prev_inputformat = -1;
+static ITG acc_prev_nzs = -1;
+static unsigned long long acc_prev_pattern = 0;
 static int *coo_rows = NULL;
 static int *coo_cols = NULL;
 static double *coo_vals = NULL;
@@ -123,10 +125,26 @@ void accelerate_factor(double *ad, double *au, double *adb, double *aub,
 
   if(*neq == 0) return;
 
-  /* If symmetry or dimensions changed, perform full cleanup */
-  if(acc_initialized && (acc_prev_sym != *symmetryflag || acc_prev_neq != *neq || acc_prev_inputformat != *inputformat)){
+  /* Signature of the sparsity pattern (FNV-1a over icol and irow). The
+     symbolic factorization is only valid for the pattern it was built from:
+     the pattern changes e.g. when contact elements are added or removed
+     between iterations (friction1), and SparseRefactor on a changed pattern
+     writes out of bounds. */
+  unsigned long long pattern = 1469598103934665603ULL;
+  for(i = 0; i < *neq; i++){
+    pattern = (pattern ^ (unsigned long long)icol[i]) * 1099511628211ULL;
+  }
+  for(i = 0; i < *nzs; i++){
+    pattern = (pattern ^ (unsigned long long)irow[i]) * 1099511628211ULL;
+  }
+
+  /* If symmetry, dimensions or sparsity pattern changed, perform full cleanup */
+  if(acc_initialized && (acc_prev_sym != *symmetryflag || acc_prev_neq != *neq || acc_prev_inputformat != *inputformat
+                         || acc_prev_nzs != *nzs || acc_prev_pattern != pattern)){
     accelerate_cleanup(neq, symmetryflag, inputformat);
   }
+  acc_prev_nzs = *nzs;
+  acc_prev_pattern = pattern;
 
   /* 1. Configure thread count for vecLib / Accelerate (once per process) */
   accelerate_configure_env();
