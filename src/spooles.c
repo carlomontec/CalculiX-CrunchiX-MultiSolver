@@ -47,6 +47,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "CalculiX.h"
+#include "json_export.h"
 #include "spooles.h"
 
 #if USE_MT
@@ -713,6 +714,7 @@ void spooles_factor(double *ad, double *au,  double *adb, double *aub,
 	    
 	}
 	printf(" Using up to %d cpu(s) for spooles.\n\n", num_cpus);
+	json_set_num_threads(num_cpus);
 	if (num_cpus > 1) {
 	    /* do not use the multithreaded solver unless
 	     * we have multiple threads - avoid the

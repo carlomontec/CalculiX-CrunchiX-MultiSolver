@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "CalculiX.h"
 #include "pardiso.h"
+#include "json_export.h"
 
 /* next line is for the simultaneous use of PARDISO and PaStiX */
 
@@ -81,6 +82,7 @@ void pardiso_factor(double *ad, double *au, double *adb, double *aub,
   }
     
   printf(" number of threads =% d\n\n",mthread_mkl);
+  json_set_num_threads(mthread_mkl);
 
   for(i=0;i<64;i++){pt[i]=0;}
 

@@ -17,6 +17,8 @@ void json_set_active(int active);
 /* Lifecycle */
 void json_init(const char *jobname, const char *solver_name);
 void json_set_meta_stats(ITG *nk, ITG *ne, ITG *neq, ITG num_cpus);
+void json_set_solver(ITG isolver);
+void json_set_num_threads(ITG num_threads);
 void json_finalize(int exit_code, double total_time);
 
 /* Step & Increment */
