@@ -355,16 +355,18 @@ ask_questions() {
     BIN_DIR="${PREFIX}/bin"
 
     echo -e "\n${BOLD}${CYAN}--> Sparse direct solver selection${NC}"
+    local pastix_default="N"
+    [ "$WANT_PASTIX" -eq 1 ] && pastix_default="Y"
     if [ "${OS}" = "Darwin" ]; then
         echo -e "${GREEN}[INFO] macOS Detected:${NC}"
         echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (native, zero external dependencies)."
         echo -e "  * Open-source solvers (${BOLD}MUMPS 5.x${NC}, ${BOLD}PaStiX 6.4${NC}) are available as options.\n"
         if confirm "Also build MUMPS 5.x as an additional open-source solver?" N; then WANT_MUMPS=1; fi
-        if [ "$WANT_PASTIX" -eq 0 ] && confirm "Also build Inria PaStiX 6.4+ sparse direct solver?" N; then WANT_PASTIX=1; fi
+        if confirm "Also build Inria PaStiX 6.4+ sparse direct solver (downloads source on demand)?" "$pastix_default"; then WANT_PASTIX=1; else WANT_PASTIX=0; fi
     else
         echo -e "${GREEN}[INFO] Linux Detected:${NC}"
         if confirm "Enable MUMPS 5.x as an open-source multi-threaded direct solver?" Y; then WANT_MUMPS=1; fi
-        if [ "$WANT_PASTIX" -eq 0 ] && confirm "Also build Inria PaStiX 6.4+ sparse direct solver?" N; then WANT_PASTIX=1; fi
+        if confirm "Also build Inria PaStiX 6.4+ sparse direct solver (downloads source on demand)?" "$pastix_default"; then WANT_PASTIX=1; else WANT_PASTIX=0; fi
 
         if [ "${ARCH}" = "x86_64" ]; then
             if grep -qi "authenticamd" /proc/cpuinfo 2>/dev/null; then
