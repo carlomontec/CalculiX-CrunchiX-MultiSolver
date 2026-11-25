@@ -5,3 +5,4 @@ cube2 DIFF 28,355 % relative to a block maximum, probably near-zero values; PARD
 shell5a DIFF 11 % in the .frd; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
 shell5b DIFF 19 % in the .frd; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
 truss2 FAIL stops with exit code 201; PARDISO only (SPOOLES on one thread passes on the same machine): issue #6
+rotor DIFF 0.22 % in the .dat with one solver thread (0.2177 % and 0.2178 % in two runs; passes with two threads); PARDISO only (SPOOLES on one thread passes): issue #6
