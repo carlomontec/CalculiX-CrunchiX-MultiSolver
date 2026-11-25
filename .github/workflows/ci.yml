@@ -230,9 +230,30 @@ jobs:
         run: |
           export PYTHONIOENCODING=utf8
           SOLVER_FLAG=$(echo "${{ matrix.solver }}" | tr '[:lower:]' '[:upper:]')
+          JOB=windows-${{ matrix.solver }}
+          set +e
           python3 test_NewLib/run_official_testsuite.py --solvers "$SOLVER_FLAG" --timeout 180 \
             --known-failures test_NewLib/ci_known_failures/upstream.txt \
-            --known-failures test_NewLib/ci_known_failures/windows-${{ matrix.solver }}.txt
+            --known-failures test_NewLib/ci_known_failures/$JOB.txt \
+            --write-known-failures nonpassing-$JOB.txt 2>&1 | tee suite.log
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          grep -oE 'Overall Pass Rate: [0-9.]+%' suite.log | tail -n 1 | grep -oE '[0-9.]+%' > $JOB.txt || true
+          exit $STATUS
+
+      - name: Upload Windows Rate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rate-windows-${{ matrix.solver }}
+          path: windows-${{ matrix.solver }}.txt
+
+      - name: Upload non-passing decks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nonpassing-windows-${{ matrix.solver }}
+          path: nonpassing-windows-${{ matrix.solver }}.txt
 
       - name: Verify Standalone Execution & Install Script
         shell: pwsh
@@ -277,7 +298,7 @@ jobs:
 
   update-badges:
     name: Update Gist Badges
-    needs: [macos, linux]
+    needs: [macos, linux, windows]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
@@ -290,7 +311,7 @@ jobs:
       - name: Read Rates into Environment Variables
         run: |
           # Create empty files as a fallback
-          touch ACCELERATE.txt ubuntu-24.04-mumps.txt ubuntu-24.04-arm-mumps.txt ubuntu-24.04-spooles.txt ubuntu-24.04-arm-spooles.txt ubuntu-24.04-pardiso.txt
+          touch ACCELERATE.txt ubuntu-24.04-mumps.txt ubuntu-24.04-arm-mumps.txt ubuntu-24.04-spooles.txt ubuntu-24.04-arm-spooles.txt ubuntu-24.04-pardiso.txt windows-mumps.txt
           
           echo "RATE_ACCELERATE=$(cat ACCELERATE.txt | tr -d '%')" >> $GITHUB_ENV
           echo "RATE_MUMPS_X64=$(cat ubuntu-24.04-mumps.txt | tr -d '%')" >> $GITHUB_ENV
@@ -298,6 +319,7 @@ jobs:
           echo "RATE_SPOOLES_X64=$(cat ubuntu-24.04-spooles.txt | tr -d '%')" >> $GITHUB_ENV
           echo "RATE_SPOOLES_ARM=$(cat ubuntu-24.04-arm-spooles.txt | tr -d '%')" >> $GITHUB_ENV
           echo "RATE_PARDISO_X64=$(cat ubuntu-24.04-pardiso.txt | tr -d '%')" >> $GITHUB_ENV
+          echo "RATE_MUMPS_WIN=$(cat windows-mumps.txt | tr -d '%')" >> $GITHUB_ENV
 
       - name: Update Accelerate Badge
         uses: Schneegans/dynamic-badges-action@v1.9.0
@@ -368,5 +390,17 @@ jobs:
           label: PARDISO (x64)
           message: ${{ env.RATE_PARDISO_X64 }}%
           valColorRange: ${{ env.RATE_PARDISO_X64 }}
+          maxColorRange: 100
+          minColorRange: 50
+
+      - name: Update MUMPS Windows Badge
+        uses: Schneegans/dynamic-badges-action@v1.9.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: c3df672908389cd64cb1fb8c1133f507
+          filename: mumps-windows.json
+          label: MUMPS (Windows)
+          message: ${{ env.RATE_MUMPS_WIN }}%
+          valColorRange: ${{ env.RATE_MUMPS_WIN }}
           maxColorRange: 100
           minColorRange: 50
