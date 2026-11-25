@@ -35,6 +35,12 @@ DEFAULT_SOLVERS = {
         "env": {},
         "description": "MUMPS Direct Sparse Solver (High Performance Direct)",
     },
+    "PASTIX": {
+        "bin": CCX_DIR / "build_pastix" / "CalculiX",
+        "alt_bin": CCX_DIR / "src" / "CalculiX",
+        "env": {},
+        "description": "Inria PaStiX 6.4+ Direct Sparse Solver",
+    },
     "SPOOLES": {
         "bin": CCX_DIR / "build_spooles" / "CalculiX",
         "alt_bin": CCX_DIR / "src" / "CalculiX",
@@ -265,7 +271,7 @@ def run_solver(solver_name, bin_path, deck_name, is_modal, threads, custom_env):
 def main():
     parser = argparse.ArgumentParser(description="CalculiX Solver Benchmark Suite (Static & Modal)")
     parser.add_argument("--threads", nargs="+", type=int, default=[1, 2, 4, 6], help="Thread counts to evaluate")
-    parser.add_argument("--solvers", nargs="+", choices=["ACCELERATE", "MUMPS", "SPOOLES", "PARDISO", "ALL"], default=["ACCELERATE", "SPOOLES"])
+    parser.add_argument("--solvers", nargs="+", choices=["ACCELERATE", "MUMPS", "PASTIX", "SPOOLES", "PARDISO", "ALL"], default=["ACCELERATE", "SPOOLES"])
     parser.add_argument("--markdown", action="store_true", help="Output results in Markdown format")
     args = parser.parse_args()
 

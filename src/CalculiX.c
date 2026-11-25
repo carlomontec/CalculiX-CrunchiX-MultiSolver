@@ -166,10 +166,10 @@ int main(int argc,char *argv[])
       "PARDISO"
 #elif defined(MUMPS)
       "MUMPS"
-#elif defined(SPOOLES)
-      "SPOOLES"
 #elif defined(PASTIX)
       "PASTIX"
+#elif defined(SPOOLES)
+      "SPOOLES"
 #else
       "DEFAULT"
 #endif

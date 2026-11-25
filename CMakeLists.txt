@@ -34,12 +34,14 @@ else()
     option(CCX_SPOOLES_VENDORED "Build SPOOLES from vendored source"                  OFF)
 endif()
 option(CCX_USE_PARDISO "Enable Intel oneMKL PARDISO solver"          OFF)
+option(CCX_USE_PASTIX  "Enable standard Inria PaStiX 6.4+ sparse solver" OFF)
+option(CCX_PASTIX_AUTO_BUILD "Automatically download and build Inria PaStiX v6.4.0 if system PaStiX is not found" ON)
 option(CCX_USE_SPOOLES "Enable legacy SPOOLES solver"                OFF)
 option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
 option(CCX_SPOOLES_MT  "Build SPOOLES multithreaded (USE_MT). Faster, but with more than one thread its results can differ from run to run" ON)
-option(CCX_SOLVERS_STRICT "Fail configuration if a requested optional solver (MUMPS/PARDISO/SPOOLES) is not found; OFF disables it with a warning" ON)
+option(CCX_SOLVERS_STRICT "Fail configuration if a requested optional solver (MUMPS/PARDISO/PASTIX/SPOOLES) is not found; OFF disables it with a warning" ON)
 set(CCX_BLAS "AUTO" CACHE STRING "BLAS/LAPACK backend: AUTO, BLIS, OPENBLAS, MKL, NETLIB")
 set_property(CACHE CCX_BLAS PROPERTY STRINGS AUTO BLIS OPENBLAS MKL NETLIB)
 
@@ -781,6 +783,317 @@ if(CCX_USE_SPOOLES)
 endif()
 
 # -----------------------------------------------------------------------------
+# PaStiX 6.4+ Sparse Direct Solver
+# -----------------------------------------------------------------------------
+if(CCX_USE_PASTIX)
+    set(_pastix_ok FALSE)
+    set(PASTIX_INCLUDE_DIR "")
+
+    if(CCX_INT64)
+        set(_pastix_int64_str "ON")
+        set(_pastix_expected_itg_size 8)
+    else()
+        set(_pastix_int64_str "OFF")
+        set(_pastix_expected_itg_size 4)
+    endif()
+
+    # 1. Try pre-installed system/user PaStiX CMake config first
+    find_package(PASTIX 6.4 CONFIG QUIET PATHS $ENV{PASTIX_DIR} ${PASTIX_DIR})
+    if(TARGET PASTIX::pastix)
+        get_target_property(_pastix_sys_inc PASTIX::pastix INTERFACE_INCLUDE_DIRECTORIES)
+        if(_pastix_sys_inc)
+            set(_pastix_probe_file "${CMAKE_BINARY_DIR}/_pastix_probe.c")
+            file(WRITE "${_pastix_probe_file}"
+                "#include <pastix.h>\n"
+                "#include <spm.h>\n"
+                "#ifdef PASTIX_WITH_MPI\n"
+                "#error \"System PaStiX built with MPI\"\n"
+                "#endif\n"
+                "typedef char abi_check[(sizeof(spm_int_t) == ${_pastix_expected_itg_size}) ? 1 : -1];\n"
+                "int main(void) { pastix_data_t *d = NULL; pastixInit(&d, MPI_COMM_WORLD, NULL, NULL); return 0; }\n"
+            )
+            try_compile(_pastix_sys_compat
+                "${CMAKE_BINARY_DIR}/_pastix_probe_build"
+                "${_pastix_probe_file}"
+                LINK_LIBRARIES PASTIX::pastix
+            )
+            if(_pastix_sys_compat)
+                message(STATUS "Found compatible system PaStiX via CMake Config")
+                list(APPEND EXTRA_LINK_LIBS PASTIX::pastix)
+                set(_pastix_ok TRUE)
+            else()
+                message(STATUS "System PaStiX found, but incompatible with sequential/INT64=${_pastix_int64_str} CalculiX build.")
+            endif()
+        endif()
+    endif()
+
+    # 2. Auto-build official Inria PaStiX v6.4.0 static libraries if needed
+    if(NOT _pastix_ok AND CCX_PASTIX_AUTO_BUILD)
+        find_package(Python3 COMPONENTS Interpreter QUIET)
+        find_package(PkgConfig QUIET)
+        find_package(Threads REQUIRED)
+
+        # Discover hwloc
+        set(_pastix_hwloc_ok FALSE)
+        set(_pastix_hwloc_pc_dir "")
+        if(APPLE)
+            foreach(_brew_hwloc /opt/homebrew/opt/hwloc /usr/local/opt/hwloc)
+                if(EXISTS "${_brew_hwloc}/lib/pkgconfig/hwloc.pc")
+                    set(_pastix_hwloc_pc_dir "${_brew_hwloc}/lib/pkgconfig")
+                    break()
+                endif()
+            endforeach()
+        endif()
+        find_path(PASTIX_HWLOC_INC NAMES hwloc.h
+            PATHS /opt/homebrew/opt/hwloc/include /usr/local/opt/hwloc/include /usr/include /usr/local/include
+        )
+        find_library(PASTIX_HWLOC_LIB NAMES hwloc libhwloc
+            PATHS /opt/homebrew/opt/hwloc/lib /usr/local/opt/hwloc/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /usr/lib64 /usr/lib /usr/local/lib
+        )
+        if(PASTIX_HWLOC_INC AND PASTIX_HWLOC_LIB)
+            set(_pastix_hwloc_ok TRUE)
+        endif()
+
+        # Discover Scotch (sequential)
+        set(_pastix_scotch_ok FALSE)
+        set(_pastix_scotch_root "")
+        find_path(PASTIX_SCOTCH_INC NAMES scotch.h
+            PATHS /opt/homebrew/opt/scotch/include /usr/local/opt/scotch/include /usr/include/scotch /usr/include /usr/local/include
+        )
+        find_library(PASTIX_SCOTCH_LIB NAMES scotch libscotch
+            PATHS /opt/homebrew/opt/scotch/lib /usr/local/opt/scotch/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /usr/lib64 /usr/lib /usr/local/lib
+        )
+        find_library(PASTIX_SCOTCHERR_LIB NAMES scotcherr libscotcherr
+            PATHS /opt/homebrew/opt/scotch/lib /usr/local/opt/scotch/lib /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /usr/lib64 /usr/lib /usr/local/lib
+        )
+        if(PASTIX_SCOTCH_INC AND PASTIX_SCOTCH_LIB AND PASTIX_SCOTCHERR_LIB)
+            get_filename_component(_pastix_scotch_root "${PASTIX_SCOTCH_INC}" DIRECTORY)
+            if(_pastix_scotch_root MATCHES "/include$")
+                get_filename_component(_pastix_scotch_root "${_pastix_scotch_root}" DIRECTORY)
+            endif()
+            set(_pastix_scotch_ok TRUE)
+        endif()
+
+        # Discover CBLAS + LAPACKE
+        set(_pastix_blas_ok FALSE)
+        set(_pastix_cblas_dir "")
+        set(_pastix_lapacke_dir "")
+        set(_pastix_openblas_pc_dir "")
+        set(_pastix_lapack_extra_libs "")
+        if(APPLE)
+            foreach(_brew_ob /opt/homebrew/opt/openblas /usr/local/opt/openblas)
+                if(EXISTS "${_brew_ob}/include/lapacke.h" AND EXISTS "${_brew_ob}/include/cblas.h")
+                    set(_pastix_cblas_dir "${_brew_ob}")
+                    set(_pastix_lapacke_dir "${_brew_ob}")
+                    if(EXISTS "${_brew_ob}/lib/pkgconfig")
+                        set(_pastix_openblas_pc_dir "${_brew_ob}/lib/pkgconfig")
+                    endif()
+                    find_library(PASTIX_OPENBLAS_LIB NAMES openblas PATHS "${_brew_ob}/lib" NO_DEFAULT_PATH)
+                    if(PASTIX_OPENBLAS_LIB)
+                        set(_pastix_lapack_extra_libs "${PASTIX_OPENBLAS_LIB}")
+                        set(_pastix_blas_ok TRUE)
+                    endif()
+                    break()
+                endif()
+            endforeach()
+        else()
+            find_path(PASTIX_CBLAS_INC NAMES cblas.h
+                PATHS /usr/include /usr/include/openblas /usr/include/x86_64-linux-gnu /usr/include/aarch64-linux-gnu /usr/local/include
+            )
+            find_path(PASTIX_LAPACKE_INC NAMES lapacke.h
+                PATHS /usr/include /usr/include/lapacke /usr/include/openblas /usr/include/x86_64-linux-gnu /usr/include/aarch64-linux-gnu /usr/local/include
+            )
+            find_library(PASTIX_LAPACKE_LIB NAMES lapacke liblapacke openblas libopenblas
+                PATHS /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /usr/lib64 /usr/lib /usr/local/lib
+            )
+            find_library(PASTIX_CBLAS_LIB NAMES cblas libcblas openblas libopenblas
+                PATHS /usr/lib/x86_64-linux-gnu /usr/lib/aarch64-linux-gnu /usr/lib64 /usr/lib /usr/local/lib
+            )
+            if(PASTIX_CBLAS_INC AND PASTIX_LAPACKE_INC AND PASTIX_LAPACKE_LIB AND PASTIX_CBLAS_LIB)
+                set(_pastix_lapack_extra_libs "${PASTIX_LAPACKE_LIB}" "${PASTIX_CBLAS_LIB}")
+                set(_pastix_blas_ok TRUE)
+            endif()
+        endif()
+
+        if(NOT Python3_Interpreter_FOUND OR NOT _pastix_hwloc_ok OR NOT _pastix_scotch_ok OR NOT _pastix_blas_ok)
+            set(_pastix_missing_msg "PaStiX auto-build prerequisites missing:")
+            if(NOT Python3_Interpreter_FOUND)
+                string(APPEND _pastix_missing_msg " python3")
+            endif()
+            if(NOT _pastix_hwloc_ok)
+                string(APPEND _pastix_missing_msg " hwloc")
+            endif()
+            if(NOT _pastix_scotch_ok)
+                string(APPEND _pastix_missing_msg " scotch")
+            endif()
+            if(NOT _pastix_blas_ok)
+                string(APPEND _pastix_missing_msg " cblas/lapacke")
+            endif()
+            if(CCX_SOLVERS_STRICT)
+                message(FATAL_ERROR "${_pastix_missing_msg}")
+            else()
+                message(WARNING "${_pastix_missing_msg}. Building without PaStiX.")
+            endif()
+        else()
+            set(PASTIX_VERSION "6.4.0")
+            set(PASTIX_TARBALL_NAME "pastix-${PASTIX_VERSION}.tar.gz")
+            set(PASTIX_VENDORED_TARBALL "${CMAKE_SOURCE_DIR}/third_party/pastix/${PASTIX_TARBALL_NAME}")
+            set(PASTIX_CACHED_TARBALL "${CMAKE_BINARY_DIR}/_deps_cache/${PASTIX_TARBALL_NAME}")
+            set(PASTIX_BUILD_ROOT "${CMAKE_BINARY_DIR}/pastix-build")
+            set(PASTIX_SRC_DIR "${PASTIX_BUILD_ROOT}/pastix-${PASTIX_VERSION}")
+            set(PASTIX_SUBBUILD_DIR "${PASTIX_BUILD_ROOT}/build")
+            set(PASTIX_INSTALL_DIR "${CMAKE_BINARY_DIR}/pastix-install")
+            set(PASTIX_STAMP "${PASTIX_INSTALL_DIR}/lib/libpastix.a")
+            set(PASTIX_EXPECTED_SHA256 "891d426188eed56c1075fb34d2d80132593a1536ffc05cf333567f68a4811e55")
+
+            if(NOT EXISTS "${PASTIX_STAMP}")
+                if(EXISTS "${PASTIX_VENDORED_TARBALL}")
+                    set(_pastix_tarball "${PASTIX_VENDORED_TARBALL}")
+                else()
+                    set(_pastix_tarball "${PASTIX_CACHED_TARBALL}")
+                    if(NOT EXISTS "${_pastix_tarball}")
+                        message(STATUS "Downloading Inria PaStiX ${PASTIX_VERSION}...")
+                        file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/_deps_cache")
+                        file(DOWNLOAD
+                            "https://files.inria.fr/pastix/releases/v6/${PASTIX_TARBALL_NAME}"
+                            "${_pastix_tarball}"
+                            EXPECTED_HASH "SHA256=${PASTIX_EXPECTED_SHA256}"
+                            SHOW_PROGRESS
+                            STATUS _pastix_dl_status
+                        )
+                        list(GET _pastix_dl_status 0 _pastix_dl_rc)
+                        if(NOT _pastix_dl_rc EQUAL 0)
+                            file(REMOVE "${_pastix_tarball}")
+                            message(FATAL_ERROR "Failed to download ${PASTIX_TARBALL_NAME}: ${_pastix_dl_status}")
+                        endif()
+                    endif()
+                endif()
+
+                file(MAKE_DIRECTORY "${PASTIX_BUILD_ROOT}")
+                if(NOT EXISTS "${PASTIX_SRC_DIR}/CMakeLists.txt")
+                    message(STATUS "Extracting ${PASTIX_TARBALL_NAME}...")
+                    execute_process(
+                        COMMAND ${CMAKE_COMMAND} -E tar xzf "${_pastix_tarball}"
+                        WORKING_DIRECTORY "${PASTIX_BUILD_ROOT}"
+                        RESULT_VARIABLE _pastix_extract_rc
+                    )
+                    if(NOT _pastix_extract_rc EQUAL 0)
+                        message(FATAL_ERROR "Failed to extract ${PASTIX_TARBALL_NAME}.")
+                    endif()
+                endif()
+
+                set(_pastix_cmake_args
+                    -S "${PASTIX_SRC_DIR}"
+                    -B "${PASTIX_SUBBUILD_DIR}"
+                    -DCMAKE_BUILD_TYPE=Release
+                    "-DCMAKE_INSTALL_PREFIX=${PASTIX_INSTALL_DIR}"
+                    -DCMAKE_INSTALL_LIBDIR=lib
+                    "-DPASTIX_INT64=${_pastix_int64_str}"
+                    -DPASTIX_WITH_MPI=OFF
+                    -DPASTIX_WITH_CUDA=OFF
+                    -DPASTIX_WITH_PARSEC=OFF
+                    -DPASTIX_WITH_STARPU=OFF
+                    -DPASTIX_ORDERING_SCOTCH=ON
+                    -DPASTIX_ORDERING_METIS=OFF
+                    -DPASTIX_WITH_FORTRAN=OFF
+                    -DBUILD_SHARED_LIBS=OFF
+                    -DBUILD_TESTING=OFF
+                    "-DPASTIX_PRECISIONS=s\;d"
+                    "-DPython3_EXECUTABLE=${Python3_EXECUTABLE}"
+                )
+                find_program(_pastix_ninja ninja)
+                if(_pastix_ninja)
+                    list(APPEND _pastix_cmake_args -G Ninja)
+                endif()
+                if(_pastix_scotch_root)
+                    list(APPEND _pastix_cmake_args "-DSCOTCH_DIR=${_pastix_scotch_root}")
+                endif()
+                if(_pastix_cblas_dir)
+                    list(APPEND _pastix_cmake_args
+                        "-DCMAKE_PREFIX_PATH=${_pastix_cblas_dir}"
+                        "-DCBLAS_DIR=${_pastix_cblas_dir}"
+                        "-DLAPACKE_DIR=${_pastix_lapacke_dir}"
+                        -DBLA_VENDOR=OpenBLAS
+                    )
+                endif()
+
+                set(_pastix_saved_pc_path "$ENV{PKG_CONFIG_PATH}")
+                set(_pastix_pc_extra "")
+                if(_pastix_hwloc_pc_dir)
+                    string(APPEND _pastix_pc_extra "${_pastix_hwloc_pc_dir}:")
+                endif()
+                if(_pastix_openblas_pc_dir)
+                    string(APPEND _pastix_pc_extra "${_pastix_openblas_pc_dir}:")
+                endif()
+                if(_pastix_pc_extra)
+                    set(ENV{PKG_CONFIG_PATH} "${_pastix_pc_extra}$ENV{PKG_CONFIG_PATH}")
+                endif()
+
+                message(STATUS "Configuring Inria PaStiX ${PASTIX_VERSION} (INT64=${_pastix_int64_str}, static, no MPI/CUDA)...")
+                execute_process(
+                    COMMAND ${CMAKE_COMMAND} ${_pastix_cmake_args}
+                    RESULT_VARIABLE _pastix_cfg_rc
+                    OUTPUT_VARIABLE _pastix_cfg_out
+                    ERROR_VARIABLE _pastix_cfg_err
+                )
+                set(ENV{PKG_CONFIG_PATH} "${_pastix_saved_pc_path}")
+
+                if(NOT _pastix_cfg_rc EQUAL 0)
+                    message(FATAL_ERROR "PaStiX configure failed:\n${_pastix_cfg_out}\n${_pastix_cfg_err}")
+                endif()
+
+                include(ProcessorCount)
+                ProcessorCount(_pastix_nproc)
+                if(_pastix_nproc EQUAL 0)
+                    set(_pastix_nproc 4)
+                endif()
+
+                message(STATUS "Building Inria PaStiX ${PASTIX_VERSION} (${_pastix_nproc} jobs)...")
+                execute_process(
+                    COMMAND ${CMAKE_COMMAND} --build "${PASTIX_SUBBUILD_DIR}" --target install -j${_pastix_nproc}
+                    RESULT_VARIABLE _pastix_build_rc
+                    OUTPUT_VARIABLE _pastix_build_out
+                    ERROR_VARIABLE _pastix_build_err
+                )
+                if(NOT _pastix_build_rc EQUAL 0)
+                    message(FATAL_ERROR "PaStiX build failed:\n${_pastix_build_out}\n${_pastix_build_err}")
+                endif()
+                message(STATUS "Built Inria PaStiX ${PASTIX_VERSION} -> ${PASTIX_INSTALL_DIR}")
+            else()
+                message(STATUS "Built Inria PaStiX already present, reusing ${PASTIX_INSTALL_DIR}")
+            endif()
+
+            set(PASTIX_INCLUDE_DIR "${PASTIX_INSTALL_DIR}/include")
+            list(APPEND EXTRA_LINK_LIBS
+                "${PASTIX_INSTALL_DIR}/lib/libpastix.a"
+                "${PASTIX_INSTALL_DIR}/lib/libpastix_kernels.a"
+                "${PASTIX_INSTALL_DIR}/lib/libspm.a"
+                "${PASTIX_SCOTCH_LIB}"
+                "${PASTIX_SCOTCHERR_LIB}"
+                "${PASTIX_HWLOC_LIB}"
+                ${_pastix_lapack_extra_libs}
+                Threads::Threads
+                m
+            )
+            set(_pastix_ok TRUE)
+        endif()
+    elseif(NOT _pastix_ok)
+        if(CCX_SOLVERS_STRICT)
+            message(FATAL_ERROR "PaStiX requested (CCX_USE_PASTIX=ON) but no compatible system PaStiX was found and CCX_PASTIX_AUTO_BUILD=OFF.")
+        else()
+            message(WARNING "PaStiX requested but not found (CCX_PASTIX_AUTO_BUILD=OFF). Building without PaStiX.")
+        endif()
+    endif()
+
+    if(_pastix_ok)
+        add_compile_definitions(PASTIX)
+        message(STATUS "PaStiX 6.4+ sparse direct solver enabled (-DPASTIX)")
+    else()
+        set(CCX_USE_PASTIX OFF)
+    endif()
+endif()
+
+# -----------------------------------------------------------------------------
 # Source File Discovery from Makefile.inc
 # -----------------------------------------------------------------------------
 include_directories(
@@ -807,7 +1120,9 @@ foreach(F_FILE ${F_LIST})
 endforeach()
 
 foreach(C_FILE ${C_LIST})
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${C_FILE}")
+    if(CCX_USE_PASTIX AND C_FILE STREQUAL "pastix.c")
+        list(APPEND CCX_SOURCES "src/pastix_v6.c")
+    elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/${C_FILE}")
         list(APPEND CCX_SOURCES "src/${C_FILE}")
     endif()
 endforeach()
@@ -834,6 +1149,11 @@ target_include_directories(CalculiX_lib PUBLIC
 if(CCX_USE_SPOOLES AND SPOOLES_INCLUDE_DIR)
     target_include_directories(CalculiX_lib PUBLIC
         $<BUILD_INTERFACE:${SPOOLES_INCLUDE_DIR}>
+    )
+endif()
+if(CCX_USE_PASTIX AND PASTIX_INCLUDE_DIR)
+    target_include_directories(CalculiX_lib BEFORE PUBLIC
+        $<BUILD_INTERFACE:${PASTIX_INCLUDE_DIR}>
     )
 endif()
 
@@ -863,7 +1183,7 @@ install(CODE "file(CREATE_LINK CalculiX \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}
 # Solver summary (machine-readable, consumed by install.sh)
 # -----------------------------------------------------------------------------
 set(_ccx_solvers "")
-foreach(_pair ACCELERATE MUMPS PARDISO SPOOLES)
+foreach(_pair ACCELERATE MUMPS PARDISO PASTIX SPOOLES)
     if(CCX_USE_${_pair})
         list(APPEND _ccx_solvers ${_pair})
     endif()
@@ -878,6 +1198,8 @@ elseif(CCX_USE_PARDISO)
     set(_ccx_default_solver "PARDISO")
 elseif(CCX_USE_MUMPS)
     set(_ccx_default_solver "MUMPS")
+elseif(CCX_USE_PASTIX)
+    set(_ccx_default_solver "PASTIX")
 elseif(CCX_USE_SPOOLES)
     set(_ccx_default_solver "SPOOLES")
 endif()

@@ -352,12 +352,12 @@ void ini_cal(char *jobnamec,char *output,char *fneig,char *kind1,char *kind2,
   *isolver=11;
 #elif defined(SGI)
   *isolver=4;
-#elif defined(PASTIX)
-  *isolver=8;
 #elif defined(PARDISO)
   *isolver=7;
 #elif defined(MUMPS)
   *isolver=9;
+#elif defined(PASTIX)
+  *isolver=8;
 #elif defined(SPOOLES)
   *isolver=0;
 #elif defined(TAUCS)

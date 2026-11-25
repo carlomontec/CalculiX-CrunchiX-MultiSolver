@@ -25,6 +25,7 @@
 # OPTIONS:
 #   -b, --ref, --branch, --tag <ref>   Git branch, tag or commit (default: main, env: CCX_REF)
 #   --prefix <dir>                     Install prefix; binary goes to <dir>/bin (default: ~/.local)
+#   --with-pastix                      Also build Inria PaStiX 6.4+ direct solver (env: CCX_WITH_PASTIX=1)
 #   -y, --yes, --non-interactive       Accept all defaults without prompting (env: NON_INTERACTIVE=1)
 #   -j, --jobs <n>                     Parallel build jobs (default: all cores)
 #   -h, --help                         Show this help
@@ -102,13 +103,15 @@ parse_args() {
             --prefix)
                 [ -n "$2" ] || die "Option $1 requires a value."
                 PREFIX="$2"; PREFIX_SET=1; shift 2 ;;
+            --with-pastix)
+                WANT_PASTIX=1; shift ;;
             -j|--jobs)
                 [ -n "$2" ] || die "Option $1 requires a value."
                 NPROC="$2"; shift 2 ;;
             -y|--yes|--non-interactive)
                 NON_INTERACTIVE=1; shift ;;
             -h|--help)
-                echo "Usage: $0 [--ref <branch|tag|commit>] [--prefix <dir>] [--yes] [--jobs <n>]"
+                echo "Usage: $0 [--ref <branch|tag|commit>] [--prefix <dir>] [--with-pastix] [--yes] [--jobs <n>]"
                 exit 0 ;;
             *)
                 die "Unknown option: $1 (see --help)" ;;
@@ -184,6 +187,7 @@ pkg_names() {
         apt:blas)       echo "libopenblas-dev liblapack-dev" ;;
         apt:arpack)     echo "libarpack2-dev" ;;
         apt:mumps)      echo "libmumps-seq-dev" ;;
+        apt:pastix_deps) echo "libscotch-dev libhwloc-dev libopenblas-dev liblapacke-dev python3" ;;
         apt:spooles)    echo "libspooles-dev" ;;
         apt:blis)       echo "libblis-openmp-dev libflame-dev" ;;
         apt:blis_alt)   echo "libblis-dev" ;;
@@ -199,6 +203,7 @@ pkg_names() {
         dnf:blas)       echo "openblas-devel lapack-devel" ;;
         dnf:arpack)     echo "arpack-devel" ;;
         dnf:mumps)      echo "MUMPS-devel" ;;
+        dnf:pastix_deps) echo "scotch-devel hwloc-devel openblas-devel lapack-devel python3" ;;
         dnf:spooles)    echo "spooles-devel" ;;
         dnf:blis)       echo "blis-devel libflame-devel" ;;
         dnf:gnupg)      echo "gnupg2" ;;
@@ -212,6 +217,7 @@ pkg_names() {
         pacman:blas)     echo "openblas lapack" ;;
         pacman:arpack)   echo "arpack" ;;
         pacman:mumps)    echo "mumps-seq" ;;
+        pacman:pastix_deps) echo "scotch hwloc cblas lapacke python" ;;
         pacman:spooles)  echo "spooles" ;;
         pacman:blis)     echo "blis" ;;
         pacman:mkl)      echo "intel-oneapi-mkl" ;;
@@ -333,6 +339,7 @@ install_mkl() {
 # Questions (all prompts are asked here, before any installation work starts)
 # -----------------------------------------------------------------------------
 WANT_MUMPS=0
+WANT_PASTIX="${CCX_WITH_PASTIX:-0}"
 WANT_SPOOLES=0
 WANT_AOCL=0
 WANT_MKL=0
@@ -351,11 +358,13 @@ ask_questions() {
     if [ "${OS}" = "Darwin" ]; then
         echo -e "${GREEN}[INFO] macOS Detected:${NC}"
         echo -e "  * Default Solver: ${BOLD}Apple Accelerate${NC} (native, zero external dependencies)."
-        echo -e "  * An open-source solver (${BOLD}MUMPS 5.x${NC}) is available as an option.\n"
+        echo -e "  * Open-source solvers (${BOLD}MUMPS 5.x${NC}, ${BOLD}PaStiX 6.4${NC}) are available as options.\n"
         if confirm "Also build MUMPS 5.x as an additional open-source solver?" N; then WANT_MUMPS=1; fi
+        if [ "$WANT_PASTIX" -eq 0 ] && confirm "Also build Inria PaStiX 6.4+ sparse direct solver?" N; then WANT_PASTIX=1; fi
     else
         echo -e "${GREEN}[INFO] Linux Detected:${NC}"
         if confirm "Enable MUMPS 5.x as an open-source multi-threaded direct solver?" Y; then WANT_MUMPS=1; fi
+        if [ "$WANT_PASTIX" -eq 0 ] && confirm "Also build Inria PaStiX 6.4+ sparse direct solver?" N; then WANT_PASTIX=1; fi
 
         if [ "${ARCH}" = "x86_64" ]; then
             if grep -qi "authenticamd" /proc/cpuinfo 2>/dev/null; then
@@ -376,7 +385,7 @@ ask_questions() {
 
         if confirm "Also enable legacy SPOOLES solver via system library?" N; then WANT_SPOOLES=1; fi
 
-        if [ "$WANT_MUMPS" -eq 0 ] && [ "$WANT_MKL" -eq 0 ] && [ "$WANT_SPOOLES" -eq 0 ]; then
+        if [ "$WANT_MUMPS" -eq 0 ] && [ "$WANT_PASTIX" -eq 0 ] && [ "$WANT_MKL" -eq 0 ] && [ "$WANT_SPOOLES" -eq 0 ]; then
             echo -e "\n${BOLD}${RED}[WARNING] No direct sparse solver selected!${NC}"
             echo -e "CalculiX requires at least one direct sparse solver (MUMPS, PARDISO, or SPOOLES) to solve standard FEA models."
             echo -e "Without one, CCX falls back to an internal iterative solver that fails on most simulations.\n"
@@ -428,6 +437,15 @@ install_macos_deps() {
     command -v cmake    &>/dev/null || missing="${missing} cmake"
     command -v gfortran &>/dev/null || missing="${missing} gcc"
     brew list arpack    &>/dev/null || missing="${missing} arpack"
+    if [ "$WANT_MUMPS" -eq 1 ]; then
+        brew list metis &>/dev/null || missing="${missing} metis"
+    fi
+    if [ "$WANT_PASTIX" -eq 1 ]; then
+        brew list scotch   &>/dev/null || missing="${missing} scotch"
+        brew list hwloc    &>/dev/null || missing="${missing} hwloc"
+        brew list openblas &>/dev/null || missing="${missing} openblas"
+        command -v python3 &>/dev/null || missing="${missing} python3"
+    fi
 
     if [ -n "$missing" ]; then
         echo -e "${YELLOW}Missing packages:${NC}${missing}"
@@ -466,6 +484,13 @@ install_linux_solver_deps() {
         fi
     fi
 
+    if [ "$WANT_PASTIX" -eq 1 ]; then
+        info "Installing PaStiX build prerequisites (Scotch, hwloc, OpenBLAS/LAPACKE, Python 3)..."
+        if ! install_optional pastix_deps; then
+            warn "Some PaStiX build prerequisites could not be installed; CMake will check what is present."
+        fi
+    fi
+
     if [ "$WANT_SPOOLES" -eq 1 ]; then
         info "Installing SPOOLES..."
         if ! install_optional spooles && [ ! -d "/usr/include/spooles" ]; then
@@ -474,8 +499,8 @@ install_linux_solver_deps() {
         fi
     fi
 
-    if [ "$WANT_MUMPS" -eq 0 ] && [ "$WANT_MKL" -eq 0 ] && [ "$WANT_SPOOLES" -eq 0 ]; then
-        die "No direct sparse solver is installed or enabled (MUMPS/PARDISO/SPOOLES). Cannot build a functional CalculiX binary."
+    if [ "$WANT_MUMPS" -eq 0 ] && [ "$WANT_PASTIX" -eq 0 ] && [ "$WANT_MKL" -eq 0 ] && [ "$WANT_SPOOLES" -eq 0 ]; then
+        die "No direct sparse solver is installed or enabled (MUMPS/PaStiX/PARDISO/SPOOLES). Cannot build a functional CalculiX binary."
     fi
 }
 
@@ -520,9 +545,9 @@ build_and_install() {
     local flags="-DCCX_SOLVERS_STRICT=OFF"
 
     if [ "${OS}" = "Darwin" ]; then
-        flags="${flags} -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=$(on_off $WANT_MUMPS)"
+        flags="${flags} -DCCX_USE_ACCELERATE=ON -DCCX_USE_MUMPS=$(on_off $WANT_MUMPS) -DCCX_USE_PASTIX=$(on_off $WANT_PASTIX)"
     else
-        flags="${flags} -DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=$(on_off $WANT_MUMPS)"
+        flags="${flags} -DCCX_USE_ACCELERATE=OFF -DCCX_USE_MUMPS=$(on_off $WANT_MUMPS) -DCCX_USE_PASTIX=$(on_off $WANT_PASTIX)"
         flags="${flags} -DCCX_USE_PARDISO=$(on_off $WANT_MKL) -DCCX_USE_SPOOLES=$(on_off $WANT_SPOOLES)"
     fi
 
@@ -605,6 +630,7 @@ print_summary() {
             ACCELERATE) def_desc="Apple Accelerate (macOS Hardware)" ;;
             PARDISO)    def_desc="Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)" ;;
             MUMPS)      def_desc="MUMPS 5.x (Open-Source Multi-Threaded)" ;;
+            PASTIX)     def_desc="Inria PaStiX 6.4+ (Open-Source Multi-Threaded)" ;;
             SPOOLES)    def_desc="SPOOLES 2.2 (Classic Built-in)" ;;
         esac
         echo -e "Default solver       : ${BOLD}${CYAN}${def_desc}${NC}"
@@ -613,7 +639,7 @@ print_summary() {
 
     # Warn about requested-but-missing solvers (CMake disables them in non-strict mode)
     local s
-    for s in MUMPS:$WANT_MUMPS PARDISO:$WANT_MKL SPOOLES:$WANT_SPOOLES; do
+    for s in MUMPS:$WANT_MUMPS PASTIX:$WANT_PASTIX PARDISO:$WANT_MKL SPOOLES:$WANT_SPOOLES; do
         if [ "${s#*:}" -eq 1 ] && [[ ",${BUILT_SOLVERS}," != *",${s%%:*},"* ]]; then
             warn "${s%%:*} was requested but could not be enabled (see CMake warnings above)."
         fi
@@ -625,6 +651,7 @@ print_summary() {
     if [[ "$BUILT_SOLVERS" == *,* ]]; then
         echo -e "\n${BOLD}Selecting Alternative Solvers in Your Input Decks (*.inp):${NC}"
         [[ ",${BUILT_SOLVERS}," == *",MUMPS,"*      ]] && echo -e "  *STATIC, SOLVER=MUMPS       -> MUMPS 5.x (Open-Source Multi-Threaded)"
+        [[ ",${BUILT_SOLVERS}," == *",PASTIX,"*     ]] && echo -e "  *STATIC, SOLVER=PASTIX      -> Inria PaStiX 6.4+ (Open-Source Multi-Threaded)"
         [[ ",${BUILT_SOLVERS}," == *",PARDISO,"*    ]] && echo -e "  *STATIC, SOLVER=PARDISO     -> Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)"
         [[ ",${BUILT_SOLVERS}," == *",ACCELERATE,"* ]] && echo -e "  *STATIC, SOLVER=ACCELERATE  -> Apple Accelerate (macOS Hardware)"
         [[ ",${BUILT_SOLVERS}," == *",SPOOLES,"*    ]] && echo -e "  *STATIC, SOLVER=SPOOLES     -> SPOOLES 2.2 (Classic Built-in)"

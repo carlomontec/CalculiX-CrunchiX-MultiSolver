@@ -122,6 +122,10 @@ SOLVER_CONFIGS = {
         },
         "description": "MUMPS 5.x Direct Solver",
     },
+    "PASTIX": {
+        "env": {},
+        "description": "Inria PaStiX 6.4+ Direct Solver",
+    },
     "ACCELERATE": {
         "env": {},
         "description": "Apple Accelerate Sparse Direct Solver",
@@ -155,14 +159,14 @@ def get_viable_solvers():
     arch = platform.machine().lower()
 
     if sys_os == "Darwin":
-        return ["SPOOLES", "MUMPS", "ACCELERATE"]
+        return ["SPOOLES", "MUMPS", "ACCELERATE", "PASTIX"]
     elif sys_os == "Linux":
         if arch in ("x86_64", "amd64"):
-            return ["SPOOLES", "MUMPS", "PARDISO"]
+            return ["SPOOLES", "MUMPS", "PARDISO", "PASTIX"]
         elif arch in ("aarch64", "arm64", "armv7l", "armv8l"):
-            return ["SPOOLES", "MUMPS"]
+            return ["SPOOLES", "MUMPS", "PASTIX"]
         else:
-            return ["SPOOLES", "MUMPS"]
+            return ["SPOOLES", "MUMPS", "PASTIX"]
     elif sys_os == "Windows" or os.name == "nt":
         return ["PARDISO", "MUMPS"]
     
@@ -743,7 +747,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     parser.add_argument("--pattern", nargs="+", help="Glob pattern(s) to filter test decks (e.g. 'achtel*' 'beam*')")
-    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "ACCELERATE", "ALL", "CUSTOM", "NONE"], default=None, help="Solvers to test (default: ALL, or CUSTOM if --custom-bin is provided)")
+    parser.add_argument("--solvers", nargs="+", choices=["SPOOLES", "PARDISO", "MUMPS", "PASTIX", "ACCELERATE", "ALL", "CUSTOM", "NONE"], default=None, help="Solvers to test (default: ALL, or CUSTOM if --custom-bin is provided)")
     parser.add_argument("--threads-per-job", type=int, default=2, help="OpenMP threads per job (default: 2)")
     parser.add_argument("--max-workers", type=int, default=None, help="Max concurrent workers (default: physical_cores // threads_per_job)")
     parser.add_argument("--timeout", type=int, default=60, help="Per-test timeout in seconds (default: 60s)")
