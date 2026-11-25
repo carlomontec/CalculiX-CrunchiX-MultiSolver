@@ -39,6 +39,7 @@ option(CCX_USE_ARPACK  "Enable ARPACK eigenvalue solver"             ON)
 option(CCX_USE_OPENMP  "Enable OpenMP multithreading"                ON)
 option(CCX_INT64       "Use 64-bit integers (-DINTSIZE64)"           OFF)
 option(CCX_SPOOLES_MT  "Build SPOOLES multithreaded (USE_MT). Faster, but with more than one thread its results can differ from run to run" ON)
+option(CCX_NATIVE      "Tune for the build machine's CPU (-march=native / -mcpu=native). The binary may not run on other CPUs; used by install.sh/install.ps1 source builds" OFF)
 option(CCX_SOLVERS_STRICT "Fail configuration if a requested optional solver (MUMPS/PARDISO/SPOOLES) is not found; OFF disables it with a warning" ON)
 set(CCX_BLAS "AUTO" CACHE STRING "BLAS/LAPACK backend: AUTO, BLIS, OPENBLAS, MKL, NETLIB")
 set_property(CACHE CCX_BLAS PROPERTY STRINGS AUTO BLIS OPENBLAS MKL NETLIB)
@@ -74,6 +75,28 @@ endif()
 # Fortran Flags
 if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-O2;-g;-cpp;-Wno-unused-dummy-argument;-Wno-unused-variable;-Wno-unused-label;-fallow-argument-mismatch>")
+endif()
+
+# CPU tuning for source installs. Off by default so CI and release binaries
+# stay portable. Native flags may enable FMA and change the last digits of
+# results compared with a portable build.
+if(CCX_NATIVE)
+    include(CheckCCompilerFlag)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64|ARM64)$")
+        set(_ccx_native_flag "-mcpu=native")
+    else()
+        set(_ccx_native_flag "-march=native")
+    endif()
+    check_c_compiler_flag("${_ccx_native_flag}" CCX_C_HAS_NATIVE)
+    if(CCX_C_HAS_NATIVE)
+        add_compile_options("$<$<COMPILE_LANGUAGE:C>:${_ccx_native_flag}>")
+        if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+            add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:${_ccx_native_flag}>")
+        endif()
+        message(STATUS "CCX_NATIVE=ON: compiling with ${_ccx_native_flag}")
+    else()
+        message(WARNING "CCX_NATIVE=ON but the C compiler does not accept ${_ccx_native_flag}; building portable code.")
+    endif()
 endif()
 
 if(APPLE)
@@ -881,6 +904,11 @@ elseif(CCX_USE_MUMPS)
 elseif(CCX_USE_SPOOLES)
     set(_ccx_default_solver "SPOOLES")
 endif()
+
+# Shown by 'ccx -v' (read by install.sh / install.ps1 --check-update)
+target_compile_definitions(CalculiX PRIVATE
+    CCX_SOLVERS_BUILT="${_ccx_solvers_csv}"
+    CCX_SOLVER_DEFAULT="${_ccx_default_solver}")
 
 file(WRITE ${CMAKE_BINARY_DIR}/ccx_solvers.txt "${_ccx_solvers_csv}\n${_ccx_default_solver}\n")
 message(STATUS "Enabled direct solvers: ${_ccx_solvers_csv}")

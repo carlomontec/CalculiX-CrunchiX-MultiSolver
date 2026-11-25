@@ -30,6 +30,12 @@
 #ifndef CCX_EDITION
 #define CCX_EDITION "v2.24-multisolver-0.2"
 #endif
+#ifndef CCX_SOLVERS_BUILT
+#define CCX_SOLVERS_BUILT "unknown"
+#endif
+#ifndef CCX_SOLVER_DEFAULT
+#define CCX_SOLVER_DEFAULT "unknown"
+#endif
 
 #ifdef CALCULIX_MPI
 ITG myid = 0,nproc = 0;
@@ -139,7 +145,8 @@ int main(int argc,char *argv[])
       }
       if(strcmp1(argv[i],"-v")==0){
         printf("\nThis is Version 2.24\n");
-        printf("MultiSolver edition %s\n\n",CCX_EDITION);
+        printf("MultiSolver edition %s\n",CCX_EDITION);
+        printf("Direct solvers: %s (default: %s)\n\n",CCX_SOLVERS_BUILT,CCX_SOLVER_DEFAULT);
         FORTRAN(stop,());
       }
       if(argv[i][0]!='-' && jin==0){

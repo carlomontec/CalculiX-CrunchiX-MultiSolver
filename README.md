@@ -59,11 +59,11 @@ Upstream CalculiX is the reference implementation, and this edition tracks it cl
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.sh)"
 ```
 
-The installer asks its questions first, then installs the required packages, builds with CMake and installs the `ccx` executable (default `~/.local/bin`). If you accept the shell-configuration prompt, that directory is added to your `PATH`.
+The installer offers four choices: build the latest stable release optimized for your computer (default), download the prebuilt stable binary, build the bleeding edge as `ccx_dev`, or uninstall. Before building, it shows which solvers will be built and which one is the default. The executable goes to `~/.local/bin` by default; if you accept the shell-configuration prompt, that directory is added to your `PATH`.
 
 ### Windows (PowerShell)
 
-The installer detects or installs MSYS2 and the MinGW-w64 toolchain. In a Windows PowerShell prompt:
+The same menu is offered on Windows; for source builds the installer detects or installs MSYS2 and the MinGW-w64 toolchain. In a Windows PowerShell prompt:
 
 ```powershell
 irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex

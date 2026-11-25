@@ -4,21 +4,33 @@
 # 1-Liner Usage (from Windows PowerShell or PowerShell 7):
 #   irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
 #
+# Actions (asked in a menu, or given with -Action / $env:CCX_ACTION):
+#   1) stable        Build the latest stable release, optimized for this computer [default]
+#   2) binary        Download the latest stable prebuilt binary (portable, SHA-256 checked)
+#   3) edge          Build the bleeding edge ('main'), installed as 'ccx_dev'
+#   4) uninstall     Remove what this installer installed
+#   check-update     Compare the installed versions with the latest ones, then exit
+#
 # Environment Variables (for 1-liner customization):
-#   $env:CCX_REF             = "main"   # Git branch, tag, or commit SHA
+#   $env:CCX_ACTION          = "stable" # stable | binary | edge | uninstall | check-update
+#   $env:CCX_REF             = ""       # Build this branch, tag or commit instead
 #   $env:CCX_SOLVER          = "auto"   # auto | mumps | pardiso | spooles
 #   $env:CCX_INSTALL_DIR     = "$env:USERPROFILE\.local\bin"
 #   $env:CCX_NON_INTERACTIVE = "1"      # Accept defaults without prompting
 #
-# Local Usage (from cloned repo):
+# Local Usage (from a cloned repo):
 #   .\install.ps1
-#   .\install.ps1 -Solver mumps -NonInteractive
-#   .\install.ps1 -Solver pardiso
-#   .\install.ps1 -Ref v2.23-json-export
+#   .\install.ps1 -Action edge
+#   .\install.ps1 -Action check-update
+#   .\install.ps1 -Local -Solver mumps -NonInteractive   # build this checkout
+#   .\install.ps1 -Ref v2.24-multisolver-0.2
 # ==============================================================================
-
 [CmdletBinding()]
 param (
+    [Parameter(Mandatory=$false)]
+    [ValidateSet("stable", "binary", "edge", "uninstall", "check-update")]
+    [string]$Action = $(if ($env:CCX_ACTION) { $env:CCX_ACTION } else { "" }),
+
     [Parameter(Mandatory=$false)]
     [ValidateSet("auto", "mumps", "pardiso", "spooles")]
     [string]$Solver = $(if ($env:CCX_SOLVER) { $env:CCX_SOLVER } else { "auto" }),
@@ -27,7 +39,16 @@ param (
     [string]$InstallDir = $(if ($env:CCX_INSTALL_DIR) { $env:CCX_INSTALL_DIR } else { "$env:USERPROFILE\.local\bin" }),
 
     [Parameter(Mandatory=$false)]
-    [string]$Ref = $(if ($env:CCX_REF) { $env:CCX_REF } else { "main" }),
+    [string]$Ref = $(if ($env:CCX_REF) { $env:CCX_REF } else { "" }),
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Local,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Portable,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Force,
 
     [Parameter(Mandatory=$false)]
     [switch]$NonInteractive
@@ -283,9 +304,256 @@ function Invoke-MsysBashScript {
     }
 }
 
+
+# =============================================================================
+# Releases, Manifests, Uninstall and Update Check
+# =============================================================================
+$script:Repo = "carlomontec/CalculiX-CrunchiX-MultiSolver"
+$script:RepoUrl = "https://github.com/$($script:Repo).git"
+$script:ApiUrl = "https://api.github.com/repos/$($script:Repo)"
+$script:Platform = "windows-x86_64"
+$script:DataDir = Join-Path $env:LOCALAPPDATA "ccx-multisolver"      # manifests + source/build cache
+$script:CacheDir = Join-Path $script:DataDir "cache"
+
+function Get-StableTag {
+    try {
+        $rel = Invoke-RestMethod -Uri "$($script:ApiUrl)/releases/latest" -UseBasicParsing -TimeoutSec 15
+        return [string]$rel.tag_name
+    } catch {
+        return ""
+    }
+}
+
+function Get-EdgeSha {
+    try {
+        $c = Invoke-RestMethod -Uri "$($script:ApiUrl)/commits/main" -UseBasicParsing -TimeoutSec 15
+        return ([string]$c.sha).Substring(0, 7)
+    } catch {
+        return ""
+    }
+}
+
+function Get-ReleaseAssetUrl([string]$tag, [string]$name) {
+    return "https://github.com/$($script:Repo)/releases/download/$tag/$name"
+}
+
+function Test-BinaryAvailable([string]$tag) {
+    if (-not $tag) { return $false }
+    try {
+        Invoke-WebRequest -Uri (Get-ReleaseAssetUrl $tag "ccx-$($script:Platform).zip") -Method Head -UseBasicParsing -TimeoutSec 15 | Out-Null
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Get-ManifestPath([string]$channel) {
+    return Join-Path $script:DataDir "manifest-$channel.txt"
+}
+
+function Read-Manifest([string]$channel) {
+    $path = Get-ManifestPath $channel
+    if (-not (Test-Path $path)) { return $null }
+    $m = @{ files = @(); path_dirs = @() }
+    foreach ($line in (Get-Content -Path $path)) {
+        $i = $line.IndexOf('=')
+        if ($i -lt 1) { continue }
+        $k = $line.Substring(0, $i); $v = $line.Substring($i + 1)
+        if ($k -eq "file") { $m.files += $v }
+        elseif ($k -eq "path_dir") { $m.path_dirs += $v }
+        elseif (-not $m.ContainsKey($k)) { $m[$k] = $v }
+    }
+    return $m
+}
+
+function Write-Manifest([string]$channel, [hashtable]$info, [string[]]$files, [string[]]$pathDirs) {
+    New-Item -ItemType Directory -Path $script:DataDir -Force | Out-Null
+    $lines = @("channel=$channel")
+    foreach ($k in @("method", "version", "ref", "commit", "solvers", "default_solver", "native", "prefix")) {
+        $lines += "$k=$($info[$k])"
+    }
+    $lines += "date=$((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))"
+    foreach ($d in $pathDirs) { if ($d) { $lines += "path_dir=$d" } }
+    foreach ($f in $files) { if ($f) { $lines += "file=$f" } }
+    Set-Content -Path (Get-ManifestPath $channel) -Value $lines -Encoding UTF8
+}
+
+# 'ccx -v' prints "MultiSolver edition <x>" and "Direct solvers: A,B (default: A)"
+function Get-CcxInfo([string]$exe) {
+    $r = @{ edition = ""; solvers = ""; default = "" }
+    if (-not (Test-Path $exe)) { return $r }
+    $prevEap = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = "Continue"
+        $out = & $exe -v 2>&1 | ForEach-Object { [string]$_ }
+    } catch {
+        $out = @()
+    } finally {
+        $ErrorActionPreference = $prevEap
+    }
+    foreach ($line in $out) {
+        if ($line -match '^MultiSolver edition (\S+)') { $r.edition = $Matches[1] }
+        if ($line -match '^Direct solvers: (.*) \(default: (\w+)\)') { $r.solvers = $Matches[1]; $r.default = $Matches[2] }
+    }
+    return $r
+}
+
+function Get-SolverDesc([string]$s) {
+    switch ($s) {
+        "ACCELERATE" { "Apple Accelerate (macOS Hardware)" }
+        "PARDISO"    { "Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)" }
+        "MUMPS"      { "MUMPS 5.x (Open-Source Multi-Threaded)" }
+        "SPOOLES"    { "SPOOLES 2.2 (Classic Built-in)" }
+        default      { $s }
+    }
+}
+
+function Show-SolverPlan([string]$solvers, [string]$default) {
+    Write-Step "Direct solvers"
+    Write-Host "  Solvers          : $($solvers -replace ',', ', ')"
+    Write-Host "  Default solver   : $(Get-SolverDesc $default)" -ForegroundColor Green
+    Write-Host "                     used when a deck has no SOLVER= on *STATIC, *FREQUENCY, ..." -ForegroundColor Gray
+    Write-Host "  Order            : Accelerate > PARDISO > MUMPS > SPOOLES (fixed when ccx is compiled)" -ForegroundColor Gray
+    Write-Host "  Choose per deck  : e.g. *STATIC, SOLVER=MUMPS" -ForegroundColor Gray
+}
+
+function Remove-FromUserPath([string[]]$dirs) {
+    $userRaw = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)
+    if (-not $userRaw) { return }
+    $entries = @($userRaw -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    $kept = @($entries | Where-Object { -not (Test-PathEntryPresent $dirs $_) })
+    if ($kept.Count -ne $entries.Count) {
+        [Environment]::SetEnvironmentVariable("Path", ($kept -join ';'), [EnvironmentVariableTarget]::User)
+        foreach ($d in $dirs) { Write-Success "Removed $d from User PATH." }
+    }
+}
+
+function Invoke-Uninstall([string]$fallbackDir) {
+    Write-Step "Uninstall"
+    $files = @(); $pathDirs = @(); $manifests = @()
+    foreach ($ch in @("stable", "edge")) {
+        $m = Read-Manifest $ch
+        if ($m) {
+            $manifests += (Get-ManifestPath $ch)
+            $files += $m.files
+            $pathDirs += $m.path_dirs
+            Write-Host "  $($ch): $($m.version) ($($m.method), $($m.prefix))"
+        }
+    }
+    if ($manifests.Count -eq 0) {
+        foreach ($n in @("CalculiX.exe", "ccx.exe", "ccx_dev.exe")) {
+            $p = Join-Path $fallbackDir $n
+            if (Test-Path $p) { $files += $p }
+        }
+        if ($files.Count -eq 0) {
+            Write-Host "Nothing to uninstall (no manifest in $($script:DataDir), no ccx in $fallbackDir)."
+            Write-Host "Installed somewhere else? Run again with -Action uninstall -InstallDir <dir>."
+            return
+        }
+        Write-Warn "No installer manifest found; these files look like a previous install (runtime DLLs next to them are left in place)."
+    }
+
+    $files = @($files | Select-Object -Unique)
+    $pathDirs = @($pathDirs | Select-Object -Unique)
+    Write-Host "`nWill remove:"
+    foreach ($f in @($files | Where-Object { $_ -notmatch '\.dll$' })) { Write-Host "  $f" }
+    $dllCount = @($files | Where-Object { $_ -match '\.dll$' }).Count
+    if ($dllCount -gt 0) { Write-Host "  $dllCount runtime DLLs (kept if other programs remain in their folder)" }
+    foreach ($d in $pathDirs) { Write-Host "  User PATH entry $d (kept if other programs remain there)" }
+    if (Test-Path $script:CacheDir) { Write-Host "  build cache $($script:CacheDir)" }
+
+    if (-not $Force -and -not $NonInteractive) {
+        if (-not (Confirm-User "Uninstall CalculiX MultiSolver?" "N")) { Write-Host "Cancelled."; return }
+    }
+    # Runtime DLLs are shared with other programs in the same folder (e.g. CalculiX GraphiX):
+    # remove them only when no other executable is left there.
+    $exes = @($files | Where-Object { $_ -notmatch '\.dll$' })
+    $dlls = @($files | Where-Object { $_ -match '\.dll$' })
+    foreach ($f in $exes) { Remove-Item -Path $f -Force -ErrorAction SilentlyContinue }
+    $keptDlls = 0
+    foreach ($dir in @($dlls | ForEach-Object { Split-Path -Parent $_ } | Select-Object -Unique)) {
+        $others = @(Get-ChildItem -Path $dir -Filter "*.exe" -ErrorAction SilentlyContinue)
+        $here = @($dlls | Where-Object { (Split-Path -Parent $_) -eq $dir })
+        if ($others.Count -eq 0) {
+            foreach ($f in $here) { Remove-Item -Path $f -Force -ErrorAction SilentlyContinue }
+        } else {
+            $keptDlls += $here.Count
+            Write-Host "  Kept $($here.Count) runtime DLLs in $dir; other programs there may use them ($(($others | Select-Object -ExpandProperty Name) -join ', '))." -ForegroundColor Gray
+        }
+    }
+    # Only drop the PATH entry when the folder holds nothing else
+    $pathDirs = @($pathDirs | Where-Object { -not (Test-Path $_) -or -not (Get-ChildItem -Path $_ -Filter "*.exe" -ErrorAction SilentlyContinue) })
+    if ($pathDirs.Count -gt 0) { Remove-FromUserPath $pathDirs }
+    Remove-Item -Path $script:CacheDir -Recurse -Force -ErrorAction SilentlyContinue
+    foreach ($m in $manifests) { Remove-Item -Path $m -Force -ErrorAction SilentlyContinue }
+    if ((Test-Path $script:DataDir) -and -not (Get-ChildItem $script:DataDir)) { Remove-Item $script:DataDir -Force }
+    Write-Success "CalculiX MultiSolver removed."
+    Write-Host "MSYS2, its packages and Intel oneMKL were left in place; remove them separately if nothing else needs them." -ForegroundColor Gray
+}
+
+# True if release $a is newer than $b (v2.24-multisolver-0.2 style)
+function ConvertTo-ReleaseVersion([string]$v) {
+    if ($v -match '(\d+)\.(\d+)-multisolver-(\d+)\.(\d+)') {
+        return [version]("{0}.{1}.{2}.{3}" -f $Matches[1], $Matches[2], $Matches[3], $Matches[4])
+    }
+    return $null
+}
+
+function Test-VersionNewer([string]$a, [string]$b) {
+    $va = ConvertTo-ReleaseVersion $a
+    $vb = ConvertTo-ReleaseVersion $b
+    if ($va -and $vb) { return ($va -gt $vb) }
+    return ($a -ne $b)
+}
+
+function Invoke-CheckUpdate {
+    Write-Step "Checking for updates"
+    $tag = Get-StableTag
+    $sha = Get-EdgeSha
+    Write-Host "  Latest stable release : $(if ($tag) { $tag } else { 'unknown (offline?)' })"
+    Write-Host "  Bleeding edge (main)  : $(if ($sha) { $sha } else { 'unknown' })`n"
+    $found = $false
+    $m = Read-Manifest "stable"
+    if ($m) {
+        $found = $true
+        if ($tag -and (Test-VersionNewer $tag $m.version)) {
+            Write-Host "  ccx     : $($m.version) ($($m.ref)) -> update available: $tag" -ForegroundColor Yellow
+            Write-Host "            re-run the installer and choose 1 (or: -Action stable)"
+        } else {
+            Write-Host "  ccx     : $($m.version) ($($m.ref)) up to date" -ForegroundColor Green
+        }
+    }
+    $m = Read-Manifest "edge"
+    if ($m) {
+        $found = $true
+        $c = if ($m.commit.Length -ge 7) { $m.commit.Substring(0, 7) } else { $m.commit }
+        if ($sha -and ($c -ne $sha)) {
+            Write-Host "  ccx_dev : main @ $c -> newer main: $sha" -ForegroundColor Yellow
+            Write-Host "            re-run the installer and choose 3 (or: -Action edge)"
+        } else {
+            Write-Host "  ccx_dev : main @ $c up to date" -ForegroundColor Green
+        }
+    }
+    if (-not $found) {
+        $cmd = Get-Command ccx -ErrorAction SilentlyContinue
+        if ($cmd) {
+            $ci = Get-CcxInfo $cmd.Source
+            Write-Host "  ccx at $($cmd.Source): $(if ($ci.edition) { $ci.edition } else { 'unknown version' }) (no installer manifest)."
+            Write-Host "  Latest stable is $(if ($tag) { $tag } else { 'unknown' })."
+        } else {
+            Write-Host "  No CalculiX MultiSolver installation found."
+        }
+    }
+}
 # =============================================================================
 # Banner & Platform Detection
 # =============================================================================
+Write-Host ''
+Write-Host '  ____  ____ __  __ ' -ForegroundColor Cyan
+Write-Host ' / ___|/ ___|\ \/ / ' -ForegroundColor Cyan
+Write-Host '| |   | |     \  /  ' -ForegroundColor Cyan
+Write-Host '| |___| |___  /  \  ' -ForegroundColor Cyan
+Write-Host ' \____|\____|/_/\_\ ' -ForegroundColor Cyan
 Write-Header "CalculiX CrunchiX (CCX) Multi-Solver - Windows Installer"
 
 if (-not [Environment]::Is64BitOperatingSystem) {
@@ -293,96 +561,224 @@ if (-not [Environment]::Is64BitOperatingSystem) {
 }
 Write-Host "Detected Platform: Windows (x86_64 64-bit)" -ForegroundColor Green
 
+if ($Action -and ($Action -notin @("stable", "binary", "edge", "uninstall", "check-update"))) {
+    Fail-Install "Unknown action '$Action' (stable | binary | edge | uninstall | check-update)."
+}
+if ($Ref -and $Local) {
+    Fail-Install "Use either -Ref or -Local, not both."
+}
+# An explicit ref or a local checkout means a source build of that code
+if ($Ref -or $Local) {
+    if (-not $Action) { $Action = "stable" }
+    if ($Action -notin @("stable", "edge")) {
+        Fail-Install "-Ref/-Local only apply to source builds (-Action stable or edge)."
+    }
+}
+
+if ($Action -eq "check-update") {
+    Invoke-CheckUpdate
+    if ($script:IsScriptFile) { exit 0 }
+    return
+}
+
+$isCheckout = ($scriptDir -and (Test-Path (Join-Path $scriptDir "CMakeLists.txt")) -and (Test-Path (Join-Path $scriptDir "src")))
+if ($Local -and -not $isCheckout) {
+    Fail-Install "-Local: this script is not inside a CalculiX MultiSolver checkout."
+}
+
+# Keep stable and bleeding edge side by side in the directory used before
+$existingDir = $null
+foreach ($ch in @("stable", "edge")) {
+    $m = Read-Manifest $ch
+    if ($m -and $m.prefix) { $existingDir = $m.prefix; break }
+}
+$installDirGiven = $PSBoundParameters.ContainsKey("InstallDir") -or $env:CCX_INSTALL_DIR
+if ($existingDir -and -not $installDirGiven) { $InstallDir = $existingDir }
+
+$stableTag = ""
+$edgeSha = ""
+$binaryAvailable = $false
+if (-not $Action) {
+    $stableTag = Get-StableTag
+    $edgeSha = Get-EdgeSha
+    $binaryAvailable = Test-BinaryAvailable $stableTag
+    if ($isCheckout) {
+        Write-Host "[INFO] Running from a checkout; use -Local to build this checkout instead." -ForegroundColor Cyan
+    }
+    $stableLbl = if ($stableTag) { $stableTag } else { "latest release" }
+    $edgeLbl = if ($edgeSha) { "main @ $edgeSha" } else { "main" }
+    Write-Host "`nChoose action:" -ForegroundColor Cyan
+    Write-Host "  1) Build latest stable ($stableLbl, optimized for this computer) " -NoNewline
+    Write-Host "[Default]" -ForegroundColor Green
+    Write-Host "  2) Download latest stable binary ($stableLbl, prebuilt, portable)" -NoNewline
+    if ($binaryAvailable) { Write-Host "" } else { Write-Host " (not available for $($script:Platform) yet)" -ForegroundColor Yellow }
+    Write-Host "  3) Build bleeding edge ($edgeLbl) -> installed as 'ccx_dev'"
+    Write-Host "  4) Uninstall"
+    $choice = Prompt-Value "Select [1/2/3/4]" "1"
+    switch ($choice) {
+        "1" { $Action = "stable" }
+        "2" { $Action = "binary" }
+        "3" { $Action = "edge" }
+        "4" { $Action = "uninstall" }
+        default { Fail-Install "Invalid selection: $choice" }
+    }
+} elseif ($Action -eq "stable" -and -not $Ref -and -not $Local) {
+    $stableTag = Get-StableTag
+} elseif ($Action -eq "binary") {
+    $stableTag = Get-StableTag
+    $binaryAvailable = Test-BinaryAvailable $stableTag
+}
+
+if ($Action -eq "uninstall") {
+    Invoke-Uninstall (Resolve-NormalizedPath $InstallDir)
+    if ($script:IsScriptFile) { exit 0 }
+    return
+}
+
+$isBinary = ($Action -eq "binary")
+$channel = if ($Action -eq "edge") { "edge" } else { "stable" }
+$exeName = if ($channel -eq "edge") { "ccx_dev.exe" } else { "ccx.exe" }
+
+if ($isBinary -and -not $binaryAvailable) {
+    Fail-Install "No prebuilt binary for $($script:Platform) in release $(if ($stableTag) { $stableTag } else { '?' }) yet. Choose 1 (build latest stable) instead."
+}
+if ($channel -eq "stable" -and -not $isBinary -and -not $Ref -and -not $Local -and -not $stableTag) {
+    Fail-Install "Could not find the latest stable release (no network?). Use -Ref <tag> or -Action edge."
+}
+$sourceRef = if ($Ref) { $Ref } elseif ($channel -eq "edge") { "main" } else { $stableTag }
+
 $script:MsysRoot = Find-MsysRoot
 $detectedMklRoot = Find-MklRoot
 
-$localRepoMode = ($scriptDir -and (Test-Path (Join-Path $scriptDir "CMakeLists.txt")) -and (Test-Path (Join-Path $scriptDir "src")))
-if ($localRepoMode) {
+if ($isBinary) {
+    Write-Host "Source Mode      : Prebuilt binary ($stableTag)" -ForegroundColor Cyan
+} elseif ($Local) {
     Write-Host "Source Mode      : Local repository ($scriptDir)" -ForegroundColor Cyan
 } else {
-    Write-Host "Source Mode      : GitHub clone (Ref: $Ref)" -ForegroundColor Cyan
+    Write-Host "Source Mode      : GitHub ($sourceRef), cached in $($script:CacheDir)" -ForegroundColor Cyan
 }
 
-if ($script:MsysRoot) {
-    Write-Host "MSYS2 Detected   : $script:MsysRoot" -ForegroundColor Green
-} else {
-    Write-Host "MSYS2 Detected   : Not found (will install automatically)" -ForegroundColor Yellow
+if (-not $isBinary) {
+    if ($script:MsysRoot) {
+        Write-Host "MSYS2 Detected   : $script:MsysRoot" -ForegroundColor Green
+    } else {
+        Write-Host "MSYS2 Detected   : Not found (will install automatically)" -ForegroundColor Yellow
+    }
+    if ($detectedMklRoot) {
+        Write-Host "Intel oneMKL     : Found at $detectedMklRoot" -ForegroundColor Green
+    }
 }
-
-if ($detectedMklRoot) {
-    Write-Host "Intel oneMKL     : Found at $detectedMklRoot" -ForegroundColor Green
-}
-
 # =============================================================================
 # Phase 1: Ask All Questions Up Front
 # =============================================================================
-if (-not $PSBoundParameters.ContainsKey("InstallDir") -and -not $env:CCX_INSTALL_DIR) {
+if (-not $installDirGiven -and -not $existingDir) {
     $InstallDir = Prompt-Value "`nInstall directory (executables go here)" $InstallDir
 }
 $InstallDir = Resolve-NormalizedPath $InstallDir
 
-$doInstallMsys = $false
-if (-not $script:MsysRoot) {
-    Write-Warn "MSYS2 was not found on your system."
-    Write-Host "MSYS2 provides the native open-source GCC/gfortran and UCRT64 toolchain required to compile CalculiX on Windows."
-    if (-not (Confirm-User "Would you like to download and install MSYS2 automatically now?" "Y")) {
-        Fail-Install "MSYS2 is required to build CalculiX on Windows. Please install MSYS2 from https://www.msys2.org and re-run."
+# Existing installation of the same channel: replace / cancel / uninstall
+$existing = Read-Manifest $channel
+$existingDesc = $null
+if ($existing) {
+    $existingDesc = "$($existing.version) ($($existing.method), $(Join-Path $existing.prefix $exeName))"
+} elseif (Test-Path (Join-Path $InstallDir $exeName)) {
+    $existingDesc = "$(Join-Path $InstallDir $exeName) (installed without a manifest)"
+}
+if ($existingDesc) {
+    Write-Host "`nExisting installation found: $existingDesc" -ForegroundColor Yellow
+    if (-not $Force -and -not $NonInteractive) {
+        $answer = Prompt-Value "Replace it, cancel, or uninstall? (Y=replace, n=cancel, u=uninstall)" "Y"
+        if ($answer -match '^[Uu]') { Invoke-Uninstall $InstallDir; if ($script:IsScriptFile) { exit 0 }; return }
+        if ($answer -notmatch '^[Yy]') { Write-Host "Cancelled."; if ($script:IsScriptFile) { exit 0 }; return }
     }
-    $doInstallMsys = $true
 }
 
-$doUpdatePkgs = Confirm-User "Update MSYS2 and ensure required MinGW-w64 UCRT64 build tools and math packages are installed?" "Y"
-
-Write-Step "Sparse Direct Solver Selection"
-Write-Host "  * MUMPS 5.x (Open-Source, MSYS2 UCRT64 package, OpenBLAS)" -ForegroundColor Green
-Write-Host "  * Intel oneMKL PARDISO (Optional, proprietary, requires Intel oneMKL)" -ForegroundColor Yellow
-
+$doInstallMsys = $false
+$doUpdatePkgs = $false
 $wantMumps = $false
 $wantMkl = $false
 $wantSpooles = $false
 
-switch ($Solver) {
-    "mumps" {
-        $wantMumps = $true
-    }
-    "pardiso" {
-        $wantMumps = $true
-        $wantMkl = $true
-    }
-    "spooles" {
-        Write-Warn "MSYS2 UCRT64 does not ship a SPOOLES package; this requires SPOOLES_DIR to be set manually."
-        $wantSpooles = $true
-    }
-    default {
-        $wantMumps = Confirm-User "Enable MUMPS 5.x as open-source multi-threaded direct solver?" "Y"
-        if ($detectedMklRoot) {
-            $mklDefault = if ($NonInteractive) { "N" } else { "Y" }
-            $wantMkl = Confirm-User "Found Intel oneMKL on your system. Enable Intel oneMKL PARDISO?" $mklDefault
-        } else {
-            Write-Host "  To install oneMKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html" -ForegroundColor Cyan
-            $wantMkl = Confirm-User "Enable Intel oneMKL PARDISO (requires oneMKL already installed)?" "N"
+if ($isBinary) {
+    $metaText = ""
+    try {
+        $metaText = [string](Invoke-WebRequest -Uri (Get-ReleaseAssetUrl $stableTag "ccx-$($script:Platform).solvers.txt") -UseBasicParsing -TimeoutSec 15).Content
+    } catch { }
+    $metaLines = @($metaText -split "`r?`n" | Where-Object { $_ })
+    if ($metaLines.Count -ge 2) { Show-SolverPlan $metaLines[0] $metaLines[1] }
+    Write-Host "  Prebuilt binaries are portable (not tuned for this CPU) and include only" -ForegroundColor Yellow
+    Write-Host "  freely redistributable solvers. For PARDISO, SPOOLES or CPU tuning, choose 1." -ForegroundColor Yellow
+} else {
+    if (-not $script:MsysRoot) {
+        Write-Warn "MSYS2 was not found on your system."
+        Write-Host "MSYS2 provides the native open-source GCC/gfortran and UCRT64 toolchain required to compile CalculiX on Windows."
+        if (-not (Confirm-User "Would you like to download and install MSYS2 automatically now?" "Y")) {
+            Fail-Install "MSYS2 is required to build CalculiX on Windows. Please install MSYS2 from https://www.msys2.org and re-run."
         }
+        $doInstallMsys = $true
+    }
 
-        if (-not $wantMumps -and -not $wantMkl -and -not $wantSpooles) {
-            Write-Host ""
-            Write-Warn "No direct sparse solver selected!"
-            Write-Host "CalculiX requires at least one direct sparse solver (MUMPS, PARDISO, or SPOOLES) for standard FEA models."
-            if (Confirm-User "Would you like to enable MUMPS 5.x (strongly recommended)?" "Y") {
-                $wantMumps = $true
+    $doUpdatePkgs = Confirm-User "Update MSYS2 and ensure required MinGW-w64 UCRT64 build tools and math packages are installed?" "Y"
+
+    Write-Step "Sparse Direct Solver Selection"
+    Write-Host "  * MUMPS 5.x (Open-Source, MSYS2 UCRT64 package, OpenBLAS)" -ForegroundColor Green
+    Write-Host "  * Intel oneMKL PARDISO (Optional, proprietary, requires Intel oneMKL)" -ForegroundColor Yellow
+
+
+    switch ($Solver) {
+        "mumps" {
+            $wantMumps = $true
+        }
+        "pardiso" {
+            $wantMumps = $true
+            $wantMkl = $true
+        }
+        "spooles" {
+            Write-Warn "MSYS2 UCRT64 does not ship a SPOOLES package; this requires SPOOLES_DIR to be set manually."
+            $wantSpooles = $true
+        }
+        default {
+            $wantMumps = Confirm-User "Enable MUMPS 5.x as open-source multi-threaded direct solver?" "Y"
+            if ($detectedMklRoot) {
+                $mklDefault = if ($NonInteractive) { "N" } else { "Y" }
+                $wantMkl = Confirm-User "Found Intel oneMKL on your system. Enable Intel oneMKL PARDISO?" $mklDefault
             } else {
-                Fail-Install "Installation aborted: At least one direct solver must be enabled."
+                Write-Host "  To install oneMKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html" -ForegroundColor Cyan
+                $wantMkl = Confirm-User "Enable Intel oneMKL PARDISO (requires oneMKL already installed)?" "N"
+            }
+
+            if (-not $wantMumps -and -not $wantMkl -and -not $wantSpooles) {
+                Write-Host ""
+                Write-Warn "No direct sparse solver selected!"
+                Write-Host "CalculiX requires at least one direct sparse solver (MUMPS, PARDISO, or SPOOLES) for standard FEA models."
+                if (Confirm-User "Would you like to enable MUMPS 5.x (strongly recommended)?" "Y") {
+                    $wantMumps = $true
+                } else {
+                    Fail-Install "Installation aborted: At least one direct solver must be enabled."
+                }
             }
         }
     }
-}
 
-if ($wantMkl -and -not $detectedMklRoot) {
-    Write-Warn "Intel oneMKL was not detected in MKLROOT or standard Intel oneAPI paths."
-    if (-not $wantMumps -and -not $wantSpooles) {
-        Fail-Install "PARDISO was requested without MUMPS, and Intel oneMKL was not found."
+    if ($wantMkl -and -not $detectedMklRoot) {
+        Write-Warn "Intel oneMKL was not detected in MKLROOT or standard Intel oneAPI paths."
+        if (-not $wantMumps -and -not $wantSpooles) {
+            Fail-Install "PARDISO was requested without MUMPS, and Intel oneMKL was not found."
+        }
+        Write-Host "  Continuing without PARDISO (MUMPS 5.x will be used)." -ForegroundColor Yellow
+        $wantMkl = $false
     }
-    Write-Host "  Continuing without PARDISO (MUMPS 5.x will be used)." -ForegroundColor Yellow
-    $wantMkl = $false
+
+
+    $plannedList = @()
+    if ($wantMkl) { $plannedList += "PARDISO" }
+    if ($wantMumps) { $plannedList += "MUMPS" }
+    if ($wantSpooles) { $plannedList += "SPOOLES" }
+    $plannedDefault = if ($plannedList.Count -gt 0) { $plannedList[0] } else { "NONE" }
+    Show-SolverPlan ($plannedList -join ",") $plannedDefault
+    if (-not $Portable) {
+        Write-Host "  CPU tuning       : on (-march=native; use -Portable to switch off)" -ForegroundColor Gray
+    }
 }
 
 $allPathEntries = Get-AllPathEntries
@@ -399,6 +795,12 @@ if ($needPathInstallDir -or $needPathMkl) {
     } else {
         $addPath = Confirm-User "Add Intel oneMKL runtime directories to your Windows User PATH (needed for PARDISO)?" "Y"
     }
+}
+
+if (-not (Confirm-User "`nProceed?" "Y")) {
+    Write-Host "Cancelled."
+    if ($script:IsScriptFile) { exit 0 }
+    return
 }
 
 # =============================================================================
@@ -490,47 +892,119 @@ $builtSolvers = ""
 $defaultSolver = "NONE"
 
 try {
-    if ($localRepoMode) {
-        $sourceDir = $scriptDir
-        Write-Step "Using local repository: $sourceDir"
-    } else {
-        $sourceDir = Join-Path $tempRoot "src"
-        Write-Step "Cloning CalculiX-CrunchiX-MultiSolver repository (Ref: $Ref)..."
-        $cloneScript = @'
-set -e
-DEST_DIR="$(cygpath -u "$CCX_DEST_WIN")"
-REPO_URL="https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver.git"
-if [ "$CCX_REF" = "main" ]; then
-    git clone --depth 1 "$REPO_URL" "$DEST_DIR"
-elif ! git clone --depth 1 --branch "$CCX_REF" "$REPO_URL" "$DEST_DIR" 2>/dev/null; then
-    rm -rf "$DEST_DIR"
-    git clone "$REPO_URL" "$DEST_DIR"
-    git -C "$DEST_DIR" checkout "$CCX_REF"
-fi
-'@
-        Invoke-MsysBashScript -ScriptContent $cloneScript -ExtraEnv @{
-            "CCX_DEST_WIN" = $sourceDir
-            "CCX_REF"      = $Ref
+    $installedFiles = @()
+    $installedRef = ""
+    $installedCommit = ""
+    if ($isBinary) {
+        # ---------------------------------------------------------------------
+        # Prebuilt binary from the latest release, checked against SHA256SUMS.txt
+        # ---------------------------------------------------------------------
+        $asset = "ccx-$($script:Platform).zip"
+        $zipPath = Join-Path $tempRoot $asset
+        $sumsPath = Join-Path $tempRoot "SHA256SUMS.txt"
+        Write-Step "Downloading $asset ($stableTag)..."
+        Invoke-WebRequest -Uri (Get-ReleaseAssetUrl $stableTag $asset) -OutFile $zipPath -UseBasicParsing
+        try {
+            Invoke-WebRequest -Uri (Get-ReleaseAssetUrl $stableTag "SHA256SUMS.txt") -OutFile $sumsPath -UseBasicParsing
+        } catch {
+            Fail-Install "SHA256SUMS.txt is missing from release $stableTag; refusing to install an unchecked binary."
         }
-    }
+        $expected = $null
+        foreach ($line in (Get-Content $sumsPath)) {
+            $parts = $line.Trim() -split '\s+', 2
+            if ($parts.Count -eq 2 -and ($parts[1].TrimStart('*') -eq $asset)) { $expected = $parts[0].ToLower(); break }
+        }
+        if (-not $expected) { Fail-Install "$asset is not listed in SHA256SUMS.txt." }
+        $actual = (Get-FileHash -Path $zipPath -Algorithm SHA256).Hash.ToLower()
+        if ($expected -ne $actual) { Fail-Install "SHA-256 mismatch for $asset (expected $expected, got $actual)." }
+        Write-Success "SHA-256 verified."
 
-    # Build CMake flags explicitly
-    $onOff = { param([bool]$b) if ($b) { "ON" } else { "OFF" } }
-    $cmakeFlags = @(
-        "-DCCX_SOLVERS_STRICT=OFF",
-        "-DCCX_USE_ACCELERATE=OFF",
-        "-DCCX_USE_ARPACK=ON",
-        "-DCCX_USE_MUMPS=$(& $onOff $wantMumps)",
-        "-DCCX_USE_PARDISO=$(& $onOff $wantMkl)",
-        "-DCCX_USE_SPOOLES=$(& $onOff $wantSpooles)"
-    )
-    if (-not $wantMkl) {
-        $cmakeFlags += "-DCCX_BLAS=OPENBLAS"
-    }
-    $cmakeFlagsStr = $cmakeFlags -join " "
+        $extractDir = Join-Path $tempRoot "bin"
+        Expand-Archive -Path $zipPath -DestinationPath $extractDir -Force
+        $exeSrc = Get-ChildItem -Path $extractDir -Recurse -Include "ccx.exe", "CalculiX.exe" | Select-Object -First 1
+        if (-not $exeSrc) { Fail-Install "No ccx.exe found in $asset." }
 
-    Write-Step "Configuring CalculiX with CMake + Ninja..."
-    $configureScript = @'
+        Write-Step "Installing executables and runtime DLLs to $InstallDir..."
+        New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+        $installedCcx = Join-Path $InstallDir "ccx.exe"
+        $installedCalculiX = Join-Path $InstallDir "CalculiX.exe"
+        Copy-Item -Path $exeSrc.FullName -Destination $installedCcx -Force
+        Copy-Item -Path $exeSrc.FullName -Destination $installedCalculiX -Force
+        $installedFiles = @($installedCcx, $installedCalculiX)
+        foreach ($dll in (Get-ChildItem -Path $exeSrc.DirectoryName -Filter "*.dll")) {
+            Copy-Item -Path $dll.FullName -Destination $InstallDir -Force
+            $installedFiles += (Join-Path $InstallDir $dll.Name)
+        }
+        Write-Success "Installed: $installedCcx (and CalculiX.exe, $($installedFiles.Count - 2) DLLs)"
+        $info = Get-CcxInfo $installedCcx
+        $builtSolvers = $info.solvers
+        $defaultSolver = $info.default
+        $installMethod = "binary"
+        $installedNative = "0"
+        $installedRef = $stableTag
+        $sourceDir = $null
+        $mklRuntimeDirs = @()
+    } else {
+        if ($Local) {
+            $sourceDir = $scriptDir
+            $buildDir = Join-Path $tempRoot "build"
+            Write-Step "Using local repository: $sourceDir"
+            $installedRef = "local"
+        } else {
+            # Cached checkout: rebuilds only fetch what changed and compile incrementally
+            $sourceDir = Join-Path $script:CacheDir "src"
+            $buildDir = Join-Path $script:CacheDir "build-$channel"
+            New-Item -ItemType Directory -Path $script:CacheDir -Force | Out-Null
+            Write-Step "Fetching CalculiX-CrunchiX-MultiSolver ($sourceRef) into $sourceDir..."
+            $fetchScript = @'
+set -e
+SRC="$(cygpath -u "$CCX_SRC_WIN")"
+URL="https://github.com/carlomontec/CalculiX-CrunchiX-MultiSolver.git"
+if [ -d "$SRC/.git" ] && git -C "$SRC" fetch --tags --force --prune origin; then
+    :
+else
+    rm -rf "$SRC"
+    git clone --filter=blob:none "$URL" "$SRC"
+fi
+if git -C "$SRC" rev-parse --verify -q "refs/remotes/origin/$CCX_REF" >/dev/null; then
+    TARGET="origin/$CCX_REF"
+elif git -C "$SRC" rev-parse --verify -q "$CCX_REF^{commit}" >/dev/null; then
+    TARGET="$CCX_REF"
+else
+    git -C "$SRC" fetch origin "$CCX_REF"
+    TARGET="FETCH_HEAD"
+fi
+git -C "$SRC" checkout --quiet --force --detach "$TARGET"
+git -C "$SRC" clean -fdxq
+'@
+            Invoke-MsysBashScript -ScriptContent $fetchScript -ExtraEnv @{
+                "CCX_SRC_WIN" = $sourceDir
+                "CCX_REF"     = $sourceRef
+            }
+            $installedRef = $sourceRef
+        }
+        $commitOut = Invoke-MsysBashScript -ScriptContent 'git -C "$(cygpath -u "$CCX_SRC_WIN")" rev-parse HEAD' -ExtraEnv @{ "CCX_SRC_WIN" = $sourceDir } -CaptureOutput -AllowNonZero
+        $installedCommit = ([string](@($commitOut) | Select-Object -Last 1)).Trim()
+    if ($installedCommit -notmatch '^[0-9a-f]{40}$') { $installedCommit = "unknown" }
+
+        # Build CMake flags explicitly
+        $onOff = { param([bool]$b) if ($b) { "ON" } else { "OFF" } }
+        $cmakeFlags = @(
+            "-DCCX_SOLVERS_STRICT=OFF",
+            "-DCCX_USE_ACCELERATE=OFF",
+            "-DCCX_USE_ARPACK=ON",
+            "-DCCX_USE_MUMPS=$(& $onOff $wantMumps)",
+            "-DCCX_USE_PARDISO=$(& $onOff $wantMkl)",
+            "-DCCX_USE_SPOOLES=$(& $onOff $wantSpooles)",
+            "-DCCX_NATIVE=$(& $onOff (-not $Portable))"
+        )
+        if (-not $wantMkl) {
+            $cmakeFlags += "-DCCX_BLAS=OPENBLAS"
+        }
+        $cmakeFlagsStr = $cmakeFlags -join " "
+
+        Write-Step "Configuring CalculiX with CMake + Ninja..."
+        $configureScript = @'
 set -e
 SRC_DIR="$(cygpath -u "$CCX_SRC_WIN")"
 BLD_DIR="$(cygpath -u "$CCX_BUILD_WIN")"
@@ -544,27 +1018,27 @@ cmake -S "$SRC_DIR" -B "$BLD_DIR" -G Ninja \
     -DCMAKE_PREFIX_PATH=/ucrt64 \
     $CCX_CMAKE_FLAGS
 '@
-    $cfgEnv = @{
-        "CCX_SRC_WIN"     = $sourceDir
-        "CCX_BUILD_WIN"   = $buildDir
-        "CCX_CMAKE_FLAGS" = $cmakeFlagsStr
-        "CCX_MKL_WIN"     = $(if ($wantMkl -and $detectedMklRoot) { $detectedMklRoot } else { "" })
-    }
-    Invoke-MsysBashScript -ScriptContent $configureScript -ExtraEnv $cfgEnv
+        $cfgEnv = @{
+            "CCX_SRC_WIN"     = $sourceDir
+            "CCX_BUILD_WIN"   = $buildDir
+            "CCX_CMAKE_FLAGS" = $cmakeFlagsStr
+            "CCX_MKL_WIN"     = $(if ($wantMkl -and $detectedMklRoot) { $detectedMklRoot } else { "" })
+        }
+        Invoke-MsysBashScript -ScriptContent $configureScript -ExtraEnv $cfgEnv
 
-    # Fail-fast barrier via ccx_solvers.txt
-    $solversFile = Join-Path $buildDir "ccx_solvers.txt"
-    if (Test-Path $solversFile) {
-        $lines = Get-Content -Path $solversFile
-        if ($lines.Count -ge 1 -and $lines[0]) { $builtSolvers = $lines[0].Trim() }
-        if ($lines.Count -ge 2 -and $lines[1]) { $defaultSolver = $lines[1].Trim() }
-    }
-    if ([string]::IsNullOrWhiteSpace($builtSolvers) -or ($defaultSolver -eq "NONE")) {
-        Fail-Install "No sparse direct solver was enabled by CMake (MUMPS/PARDISO/SPOOLES). Refusing to compile a non-functional CalculiX binary."
-    }
+        # Fail-fast barrier via ccx_solvers.txt
+        $solversFile = Join-Path $buildDir "ccx_solvers.txt"
+        if (Test-Path $solversFile) {
+            $lines = Get-Content -Path $solversFile
+            if ($lines.Count -ge 1 -and $lines[0]) { $builtSolvers = $lines[0].Trim() }
+            if ($lines.Count -ge 2 -and $lines[1]) { $defaultSolver = $lines[1].Trim() }
+        }
+        if ([string]::IsNullOrWhiteSpace($builtSolvers) -or ($defaultSolver -eq "NONE")) {
+            Fail-Install "No sparse direct solver was enabled by CMake (MUMPS/PARDISO/SPOOLES). Refusing to compile a non-functional CalculiX binary."
+        }
 
-    Write-Step "Compiling CalculiX..."
-    $buildScript = @'
+        Write-Step "Compiling CalculiX..."
+        $buildScript = @'
 set -e
 BLD_DIR="$(cygpath -u "$CCX_BUILD_WIN")"
 if [ -n "${CCX_MKL_WIN:-}" ]; then
@@ -574,30 +1048,34 @@ else
 fi
 cmake --build "$BLD_DIR" --parallel
 '@
-    Invoke-MsysBashScript -ScriptContent $buildScript -ExtraEnv $cfgEnv
+        Invoke-MsysBashScript -ScriptContent $buildScript -ExtraEnv $cfgEnv
 
-    $builtExe = Join-Path $buildDir "CalculiX.exe"
-    if (-not (Test-Path $builtExe)) {
-        Fail-Install "Build failed: $builtExe was not generated."
-    }
-    Write-Success "CalculiX.exe built successfully!"
+        $builtExe = Join-Path $buildDir "CalculiX.exe"
+        if (-not (Test-Path $builtExe)) {
+            Fail-Install "Build failed: $builtExe was not generated."
+        }
+        Write-Success "CalculiX.exe built successfully!"
 
-    # -------------------------------------------------------------------------
-    # Install Binaries & Dynamically Bundle Required UCRT64 DLLs
-    # -------------------------------------------------------------------------
-    Write-Step "Installing executables and runtime DLLs to $InstallDir..."
-    if (-not (Test-Path $InstallDir)) {
-        New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-    }
+        # -------------------------------------------------------------------------
+        # Install Binaries & Dynamically Bundle Required UCRT64 DLLs
+        # -------------------------------------------------------------------------
+        Write-Step "Installing executables and runtime DLLs to $InstallDir..."
+        if (-not (Test-Path $InstallDir)) {
+            New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+        }
 
-    $installedCcx = Join-Path $InstallDir "ccx.exe"
-    $installedCalculiX = Join-Path $InstallDir "CalculiX.exe"
-    Copy-Item -Path $builtExe -Destination $installedCalculiX -Force
-    Copy-Item -Path $builtExe -Destination $installedCcx -Force
-    Write-Success "Installed: $installedCalculiX"
-    Write-Success "Installed: $installedCcx"
+        $installedCcx = Join-Path $InstallDir $exeName
+        Copy-Item -Path $builtExe -Destination $installedCcx -Force
+        Write-Success "Installed: $installedCcx"
+        $installedFiles = @($installedCcx)
+        if ($channel -eq "stable") {
+            $installedCalculiX = Join-Path $InstallDir "CalculiX.exe"
+            Copy-Item -Path $builtExe -Destination $installedCalculiX -Force
+            Write-Success "Installed: $installedCalculiX"
+            $installedFiles += $installedCalculiX
+        }
 
-    $bfsScript = @'
+        $bfsScript = @'
 set -e
 EXE_PATH="$(cygpath -u "$CCX_EXE_WIN")"
 declare -A seen
@@ -617,22 +1095,28 @@ while [ ${#queue[@]} -gt 0 ]; do
     done < <(objdump -p "$cur" 2>/dev/null | sed -n 's/^[[:space:]]*DLL Name:[[:space:]]*//p' | tr -d '\r')
 done | sort
 '@
-    $dllLines = Invoke-MsysBashScript -ScriptContent $bfsScript -ExtraEnv @{ "CCX_EXE_WIN" = $installedCcx } -CaptureOutput
-    $ucrtBin = Join-Path $script:MsysRoot "ucrt64\bin"
-    $copiedDlls = @()
-    foreach ($line in $dllLines) {
-        $dllName = ([string]$line).Trim()
-        if ([string]::IsNullOrWhiteSpace($dllName)) { continue }
-        $srcDll = Join-Path $ucrtBin $dllName
-        if (Test-Path $srcDll) {
-            Copy-Item -Path $srcDll -Destination $InstallDir -Force
-            $copiedDlls += $dllName
+        $dllLines = Invoke-MsysBashScript -ScriptContent $bfsScript -ExtraEnv @{ "CCX_EXE_WIN" = $installedCcx } -CaptureOutput
+        $ucrtBin = Join-Path $script:MsysRoot "ucrt64\bin"
+        $copiedDlls = @()
+        foreach ($line in $dllLines) {
+            $dllName = ([string]$line).Trim()
+            if ([string]::IsNullOrWhiteSpace($dllName)) { continue }
+            $srcDll = Join-Path $ucrtBin $dllName
+            if (Test-Path $srcDll) {
+                Copy-Item -Path $srcDll -Destination $InstallDir -Force
+                $copiedDlls += $dllName
+            }
         }
+        if ($copiedDlls.Count -eq 0) {
+            Fail-Install "Failed to discover UCRT64 runtime DLL dependencies for $installedCcx."
+        }
+        Write-Success "Bundled $($copiedDlls.Count) UCRT64 runtime DLLs: $($copiedDlls -join ', ')"
+        $installedFiles += @($copiedDlls | ForEach-Object { Join-Path $InstallDir $_ })
+        $installMethod = "source"
+        # Native only if this source knows CCX_NATIVE and the compiler accepted the flag
+        $cacheFile = Join-Path $buildDir "CMakeCache.txt"
+        $installedNative = if (-not $Portable -and (Test-Path $cacheFile) -and (Select-String -Path $cacheFile -Pattern '^CCX_C_HAS_NATIVE:INTERNAL=1' -Quiet)) { "1" } else { "0" }
     }
-    if ($copiedDlls.Count -eq 0) {
-        Fail-Install "Failed to discover UCRT64 runtime DLL dependencies for $installedCcx."
-    }
-    Write-Success "Bundled $($copiedDlls.Count) UCRT64 runtime DLLs: $($copiedDlls -join ', ')"
 
     # -------------------------------------------------------------------------
     # PATH Configuration (and MKL runtime PATH when PARDISO is built)
@@ -648,16 +1132,37 @@ done | sort
         if ($ompBin) { $mklRuntimeDirs += $ompBin }
     }
 
+    $pathDirsAdded = @()
     if ($addPath) {
         $dirsForUserPath = @($InstallDir) + $mklRuntimeDirs
+        $pathBefore = Get-AllPathEntries
+        $pathDirsAdded = @($dirsForUserPath | Where-Object { $_ -and -not (Test-PathEntryPresent $pathBefore $_) })
         Add-ToUserPath $dirsForUserPath
     }
+
+    # -------------------------------------------------------------------------
+    # Manifest (used by -Action uninstall and -Action check-update)
+    # -------------------------------------------------------------------------
+    $ccxInfo = Get-CcxInfo $installedCcx
+    $installedVersion = if ($ccxInfo.edition) { $ccxInfo.edition } else { $installedRef }
+    $prevManifest = Read-Manifest $channel
+    if ($prevManifest) { $pathDirsAdded = @($pathDirsAdded + $prevManifest.path_dirs | Select-Object -Unique) }
+    Write-Manifest $channel @{
+        method = $installMethod; version = $installedVersion; ref = $installedRef; commit = $installedCommit
+        solvers = $builtSolvers; default_solver = $defaultSolver; native = $installedNative; prefix = $InstallDir
+    } $installedFiles $pathDirsAdded
 
     # -------------------------------------------------------------------------
     # Standalone Verification Test (with MSYS2 stripped from PATH)
     # -------------------------------------------------------------------------
     Write-Step "Running standalone verification test (achtel2.inp)..."
-    $deckSrc = Join-Path $sourceDir "test\achtel2.inp"
+    $deckSrc = if ($sourceDir) { Join-Path $sourceDir "test\achtel2.inp" } else { Join-Path $tempRoot "achtel2.inp" }
+    if (-not $sourceDir) {
+        try {
+            $deckRef = if ($installedRef) { $installedRef } else { "main" }
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/$($script:Repo)/$deckRef/test/achtel2.inp" -OutFile $deckSrc -UseBasicParsing -TimeoutSec 30
+        } catch { }
+    }
     if (-not (Test-Path $deckSrc)) {
         Write-Warn "Verification deck not found at $deckSrc; skipping."
     } else {
@@ -716,14 +1221,11 @@ done | sort
 # Summary
 # =============================================================================
 $builtList = @($builtSolvers -split ',' | Where-Object { $_ })
-$defaultDesc = switch ($defaultSolver) {
-    "PARDISO" { "Intel oneMKL PARDISO (x86_64 AVX2/AVX-512)" }
-    "MUMPS"   { "MUMPS 5.x (Open-Source Multi-Threaded)" }
-    "SPOOLES" { "SPOOLES 2.2 (Classic Built-in)" }
-    default   { $defaultSolver }
-}
+$defaultDesc = Get-SolverDesc $defaultSolver
+$tuning = if ($installedNative -eq "1") { ", optimized for this computer" } else { "" }
 
 Write-Header "CalculiX CrunchiX (CCX) Installed Successfully!"
+Write-Host "Version             : $installedVersion ($installMethod$tuning)" -ForegroundColor Cyan
 Write-Host "Install directory   : $InstallDir" -ForegroundColor Cyan
 Write-Host "Direct solvers built: $builtSolvers" -ForegroundColor Green
 Write-Host "Default solver      : $defaultDesc" -ForegroundColor Cyan
@@ -747,8 +1249,7 @@ if (($builtList -contains "PARDISO") -and (-not $addPath) -and ($mklRuntimeDirs.
 }
 
 Write-Host "`nTo run a simulation from any Command Prompt or PowerShell:" -ForegroundColor Green
-Write-Host "   ccx input_deck_name       (without .inp extension)" -ForegroundColor Cyan
-Write-Host "   CalculiX input_deck_name" -ForegroundColor Cyan
+Write-Host "   $($exeName -replace '\.exe$', '') input_deck_name       (without .inp extension)" -ForegroundColor Cyan
 
 if ($builtList.Count -gt 1) {
     Write-Host "`nSelecting Alternative Solvers in Your Input Decks (*.inp):" -ForegroundColor Yellow
@@ -763,5 +1264,6 @@ if ($builtList.Count -gt 1) {
     }
 }
 
-Write-Host "`nSee README.md for complete solver benchmarks and documentation." -ForegroundColor Gray
+Write-Host "`nCheck for updates : .\install.ps1 -Action check-update" -ForegroundColor Gray
+Write-Host "Uninstall         : .\install.ps1 -Action uninstall" -ForegroundColor Gray
 Write-Host "================================================================`n" -ForegroundColor Cyan

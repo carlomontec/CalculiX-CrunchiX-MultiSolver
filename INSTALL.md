@@ -13,7 +13,30 @@ This guide covers installing and building the CalculiX CrunchiX Multi-Solver Edi
 
 ## 1. Automated installation
 
-The installers ask all questions first, then install the required packages, configure and build with CMake, and install the `ccx` executable. Missing optional solvers produce a warning rather than an error, and the solvers that were actually built are reported at the end.
+The installers start with a menu:
+
+```
+Choose action:
+  1) Build latest stable (<tag>, optimized for this computer)   [Default]
+  2) Download latest stable binary (<tag>, prebuilt, portable)
+  3) Build bleeding edge (main @ <commit>) -> installed as 'ccx_dev'
+  4) Uninstall
+```
+
+1. **Build latest stable** (default) compiles the latest GitHub release with `-march=native` (x86_64) or `-mcpu=native` (arm64), so the binary is tuned for your CPU. It lets you choose the solvers, including Intel oneMKL PARDISO and SPOOLES.
+2. **Download latest stable binary** installs the prebuilt binary of the same release after checking its SHA-256 checksum. Prebuilt binaries are portable and contain only freely redistributable solvers: Apple Accelerate on macOS, MUMPS on Linux and Windows. This option shows "not available yet" until a release provides a binary for your platform.
+3. **Build bleeding edge** compiles the current `main` branch and installs it as `ccx_dev`, next to the stable `ccx`.
+4. **Uninstall** removes what the installer installed (see below).
+
+Before anything is downloaded or built, the installer shows which solvers will be built and which one is the **default solver**, the one used when a deck has no `SOLVER=` parameter. The default follows a fixed order when `ccx` is compiled: Accelerate, then PARDISO, then MUMPS, then SPOOLES. Any built solver can be chosen per step with `SOLVER=` (see [section 5](#5-selecting-a-solver-at-run-time)). `ccx -v` also prints the solvers and the default.
+
+All questions are asked first; the installation then runs unattended. Missing optional solvers produce a warning rather than an error, and the solvers actually built are reported at the end.
+
+**What the installer keeps.** Each installation writes a manifest (version, commit, solvers, installed files, PATH entry): `~/.local/share/ccx-multisolver/` on Linux and macOS, `%LOCALAPPDATA%\ccx-multisolver\` on Windows. Source builds keep the source and build directories in a cache (`~/.cache/ccx-multisolver/` or `%LOCALAPPDATA%\ccx-multisolver\cache\`), so a rebuild only fetches what changed and compiles incrementally.
+
+**Updates.** `install.sh --check-update` (Windows: `-Action check-update`) compares the installed `ccx` and `ccx_dev` with the latest release and the latest `main`.
+
+**Uninstall** removes the files listed in the manifests, the PATH entry the installer added and the build cache. Packages installed as dependencies (Homebrew, apt, dnf, pacman, MSYS2, oneMKL) are left in place.
 
 ### Linux and macOS
 
@@ -25,12 +48,20 @@ Options, when running a local copy of `install.sh`:
 
 | Option | Meaning |
 |:---|:---|
-| `--prefix <dir>` | Install prefix; the binary goes to `<dir>/bin` (default `~/.local`) |
-| `-b`, `--ref <ref>` | Git branch, tag or commit to build (default `main`, or environment variable `CCX_REF`) |
+| `--stable` | Build the latest stable release (menu option 1) |
+| `--binary` | Download the latest stable prebuilt binary (menu option 2) |
+| `--edge` | Build `main` and install it as `ccx_dev` (menu option 3) |
+| `-u`, `--uninstall` | Uninstall (menu option 4) |
+| `--check-update` | Report whether newer versions exist, then exit |
+| `-b`, `--ref <ref>` | Build this git branch, tag or commit (or environment variable `CCX_REF`) |
+| `--local` | Build the checkout the script is in |
+| `--prefix <dir>` | Install prefix; binaries go to `<dir>/bin` (default `~/.local`) |
+| `--portable` | Build without CPU-specific tuning |
 | `-y`, `--yes` | Accept all defaults without prompting (or `NON_INTERACTIVE=1`) |
+| `-f`, `--force` | Replace or uninstall without asking |
 | `-j`, `--jobs <n>` | Parallel build jobs (default: all cores) |
 
-With the one-line command, set the reference through the environment, e.g. `CCX_REF=<branch-or-tag> /bin/bash -c "$(curl -fsSL ...)"`.
+With the one-line command, pass options after `-s --`, e.g. `curl -fsSL .../install.sh | bash -s -- --edge`, or set the reference through the environment, e.g. `CCX_REF=<branch-or-tag> /bin/bash -c "$(curl -fsSL ...)"`.
 
 ### Windows
 
@@ -40,18 +71,22 @@ In a Windows PowerShell prompt:
 irm https://raw.githubusercontent.com/carlomontec/CalculiX-CrunchiX-MultiSolver/main/install.ps1 | iex
 ```
 
-The installer detects or installs MSYS2 and the MinGW-w64 UCRT64 toolchain, builds `ccx.exe` and `CalculiX.exe`, and bundles the required runtime DLLs for standalone execution.
+For source builds the installer detects or installs MSYS2 and the MinGW-w64 UCRT64 toolchain, builds `ccx.exe` and `CalculiX.exe` (`ccx_dev.exe` for the bleeding edge), and bundles the required runtime DLLs for standalone execution.
 
 Options, when running a local copy of `install.ps1`:
 
 | Option | Env Var (for 1-liner) | Meaning |
 |:---|:---|:---|
+| `-Action <name>` | `$env:CCX_ACTION` | `stable` (default), `binary`, `edge`, `uninstall` or `check-update`; without it, the menu is shown |
 | `-Solver <name>` | `$env:CCX_SOLVER` | Solver preset: `auto` (default), `mumps`, `pardiso`, or `spooles` |
 | `-InstallDir <dir>` | `$env:CCX_INSTALL_DIR` | Target directory for `ccx.exe` (default `$env:USERPROFILE\.local\bin`) |
-| `-Ref <ref>` | `$env:CCX_REF` | Git branch, tag or commit to build (default `main`) |
+| `-Ref <ref>` | `$env:CCX_REF` | Build this git branch, tag or commit |
+| `-Local` | | Build the checkout the script is in |
+| `-Portable` | | Build without CPU-specific tuning |
+| `-Force` | | Replace or uninstall without asking |
 | `-NonInteractive` | `$env:CCX_NON_INTERACTIVE=1` | Accept defaults without prompting |
 
-With the one-line command, set options via environment variables beforehand, e.g. `$env:CCX_REF="<branch-or-tag>"; irm ... | iex`.
+With the one-line command, set options via environment variables beforehand, e.g. `$env:CCX_ACTION="edge"; irm ... | iex`.
 
 ## 2. Prerequisites
 
@@ -138,6 +173,7 @@ The C and Fortran source list is read from upstream's `src/Makefile.inc`, so the
 | `CCX_INT64` | `OFF` | 64-bit integers (only for very large models; all libraries must be 64-bit builds) |
 | `CCX_BLAS` | `AUTO` | BLAS/LAPACK: `AUTO`, `BLIS`, `OPENBLAS`, `MKL`, `NETLIB` |
 | `CCX_SOLVERS_STRICT` | `ON` | Fail if a requested solver is not found; `OFF` disables it with a warning |
+| `CCX_NATIVE` | `OFF` | Tune for the build machine's CPU (`-march=native` or `-mcpu=native`). The installers turn it on for source builds. The binary may not run on other CPUs, and results can differ in the last digits from a portable build. |
 
 Several solvers can be enabled in one build. The default solver, used when a deck does not name one, is the first enabled in this order: Accelerate, PARDISO, MUMPS, SPOOLES.
 
