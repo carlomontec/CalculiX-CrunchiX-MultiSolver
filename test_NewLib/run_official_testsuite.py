@@ -342,6 +342,10 @@ def run_checker(command, cwd, timeout):
         )
     except subprocess.TimeoutExpired:
         return None
+    except FileNotFoundError as exc:
+        # A missing interpreter (e.g. perl not on PATH) must not kill the
+        # whole worker pool; report the deck as unverified instead.
+        return subprocess.CompletedProcess(command, 127, stdout=f"checker not runnable: {exc}")
 
 
 def run_single_test(task):

@@ -209,6 +209,7 @@ jobs:
             mingw-w64-ucrt-x86_64-scotch
             mingw-w64-ucrt-x86_64-python
             mingw-w64-ucrt-x86_64-pkgconf
+            perl
 
       - name: Build CalculiX in MSYS2
         shell: msys2 {0}
@@ -222,10 +223,6 @@ jobs:
           cmake --build build_${{ matrix.solver }} -j
 
       - name: Run Verification Test in MSYS2
-        # The runner stops at deck 98 of 635 on Windows (issue #1). Until that
-        # is fixed this step may fail without failing the job; the failure
-        # stays visible in the log and the run summary.
-        continue-on-error: true
         shell: msys2 {0}
         run: |
           export PYTHONIOENCODING=utf8
