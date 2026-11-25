@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include "CalculiX.h"
 #include "mumps.h"
+#include "json_export.h"
 #include <dmumps_c.h>
 
 /*
@@ -99,6 +100,7 @@ void mumps_factor(double *ad, double *au, double *adb, double *aub,
       if(env){ nthread = atoi(env); }
     }
     if(nthread < 1) nthread = 1;
+    json_set_num_threads(nthread);
 
     /* 3. Configure MUMPS control parameters */
     id.icntl[0] = -1;  /* Error output stream suppressed (quiet) */

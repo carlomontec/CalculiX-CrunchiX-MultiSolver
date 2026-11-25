@@ -1390,7 +1390,8 @@ void CalculiXstep(int argc,char argv[][133],ITG **nelemloadp,double **xloadp,
     /* nmethod=14: Robustness w.r.t. to geometric tolerances */
 
     if(json_is_active()){
-      json_set_meta_stats(nk, ne, neq, 1);
+      json_set_meta_stats(nk, ne, neq, 0);
+      json_set_solver(isolver);
       const char *stype = "STATIC";
       if(*nmethod == 2) stype = "FREQUENCY";
       else if(*nmethod == 3) stype = "BUCKLE";

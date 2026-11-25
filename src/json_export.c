@@ -9,6 +9,10 @@
 #include "CalculiX.h"
 #include "json_export.h"
 
+#ifndef CCX_EDITION
+#define CCX_EDITION "v2.24-multisolver-0.2"
+#endif
+
 /* Internal dynamic buffer for JSON generation */
 typedef struct {
   char *data;
@@ -134,6 +138,34 @@ void json_set_meta_stats(ITG *nk, ITG *ne, ITG *neq, ITG num_cpus) {
   if (num_cpus > 0) g_num_cpus = num_cpus;
 }
 
+/* Solver actually selected for the step (isolver codes as in statics.f /
+   frequencys.f). Called before json_start_step; the last step's solver is
+   what meta.solver reports. */
+void json_set_solver(ITG isolver) {
+  const char *name;
+  switch (isolver) {
+    case 0:  name = "SPOOLES"; break;
+    case 2:  name = "ITERATIVESCALING"; break;
+    case 3:  name = "ITERATIVECHOLESKY"; break;
+    case 4:  name = "SGI"; break;
+    case 5:  name = "TAUCS"; break;
+    case 6:  name = "MATRIXSTORAGE"; break;
+    case 7:  name = "PARDISO"; break;
+    case 8:  name = "PASTIX"; break;
+    case 9:  name = "MUMPS"; break;
+    case 11: name = "ACCELERATE"; break;
+    default: return;
+  }
+  strncpy(g_solver_name, name, sizeof(g_solver_name) - 1);
+  g_solver_name[sizeof(g_solver_name) - 1] = '\0';
+}
+
+/* Thread count the equation solver actually uses; reported by each solver
+   once it has resolved its environment variables. */
+void json_set_num_threads(ITG num_threads) {
+  if (num_threads > 0) g_num_cpus = num_threads;
+}
+
 static ITG g_last_iinc = -1;
 static int g_step_has_increments = 0;
 
@@ -150,6 +182,7 @@ void json_start_step(ITG istep, const char *step_type) {
 
   buf_printf(&g_steps_buf, "    {\n      \"step_number\": %d,\n", (int)istep);
   buf_printf(&g_steps_buf, "      \"type\": \"%s\",\n", step_type ? step_type : "UNKNOWN");
+  buf_printf(&g_steps_buf, "      \"solver\": \"%s\",\n", g_solver_name);
   buf_append(&g_steps_buf, "      \"converged\": true");
 
   g_current_step_open = 1;
@@ -496,7 +529,7 @@ void json_finalize(int exit_code, double total_time) {
   fprintf(fp, "{\n");
   fprintf(fp, "  \"meta\": {\n");
   fprintf(fp, "    \"jobname\": \"%s\",\n", g_jobname);
-  fprintf(fp, "    \"ccx_version\": \"2.21-multisolver\",\n");
+  fprintf(fp, "    \"ccx_version\": \"%s\",\n", CCX_EDITION);
   fprintf(fp, "    \"solver\": \"%s\",\n", g_solver_name);
   fprintf(fp, "    \"num_threads\": %d,\n", (int)g_num_cpus);
   fprintf(fp, "    \"success\": %s,\n", (exit_code == 0) ? "true" : "false");

@@ -27,6 +27,7 @@
 #endif
 #include <Accelerate/Accelerate.h>
 #include "CalculiX.h"
+#include "json_export.h"
 #include "accelerate_solver.h"
 
 static SparseMatrix_Double acc_A;
@@ -72,6 +73,7 @@ static void accelerate_configure_env(void) {
   if(acc_nthread < 1){
     acc_nthread = (pcores > 0) ? pcores : 1;
   }
+  json_set_num_threads(acc_nthread);
 
   /* Cap thread count at physical P-cores to prevent severe barrier synchronization
      latency when worker threads spill onto lower-clocked Efficiency cores */
